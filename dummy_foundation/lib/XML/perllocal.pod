@@ -1,0 +1,22 @@
+=head2 Fri Apr 23 19:59:32 2004: C<Module> L<XML::XPath|XML::XPath>
+
+=over 4
+
+=item *
+
+C<installed into: F:\perforce\build\build_sys\personal\project\pr97\common\generic\tools\build\lib\XML>
+
+=item *
+
+C<LINKTYPE: dynamic>
+
+=item *
+
+C<VERSION: 1.13>
+
+=item *
+
+C<EXE_FILES: examples/xpath>
+
+=back
+
