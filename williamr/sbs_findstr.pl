@@ -20,6 +20,8 @@ my $expression = shift @ARGV;
 my $line;
 my $skipping = 1;
 
+@ARGV = map {glob} @ARGV;
+
 while ($line =<>)
   {
   if (substr($line,0,9) eq "</recipe>")
