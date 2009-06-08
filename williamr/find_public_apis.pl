@@ -21,27 +21,24 @@ use strict;
 my $debug = 0;
 
 my @public_included = ();
-my $reason;
 
-sub is_public_api($$)
+sub analyse_api($$$)
   {
-  my ($file,$name) = @_;
+  my ($file,$name,$includelistref) = @_;
   
   if ($name =~ /^epoc32\/include\/platform\//)
     {
     # /epoc32/include/platform files are "Platform by export"
-    $reason = "Platform by export";
-    return 0; # Not public
+    return "Platform by export";
     }
   
   if ($name =~ /\./ && $name !~ /\.(h|rh|hrh|inl|c|hpp)$/i)
     {
     # Not a file which contains APIs anyway
-    $reason = "Wrong extension";
-    return 0; # not public
+    return "Non-API extension";
     }
 
-  open FILE, "<$file" or print "ERROR: Cannot open $file: $!\n" and return 1; # assume Public
+  open FILE, "<$file" or print "ERROR: Cannot open $file: $!\n" and return "Cannot open";
   my @lines = <FILE>; # they are all of a modest size
   close FILE;
   
@@ -55,10 +52,10 @@ sub is_public_api($$)
       my $extension = $2;
       
       # print "++ $filename ($extension)\n";
-      if ($extension =~ /mbg|rsg|rls|ra/i)
+      if ($extension =~ /mbg|rsg/i)
         {
         # generated file referenced by #include
-        push @includefiles, $filename; 
+        push @{$includelistref}, $filename; 
         print STDERR "** $file - $includeline";
         }
       }
@@ -68,7 +65,7 @@ sub is_public_api($$)
   if (scalar @apitaglines == 0)
     {
     # no API classification tags - must be "Public by export" 
-    $reason = "Public by export";
+    return "Public by export";
     }
   else
     {
@@ -80,17 +77,34 @@ sub is_public_api($$)
     if (scalar @publishedAll == 0)
       {
       # the API classification tags are all @publishedPartner or @internal
-      $reason = "Platform by tag";
-      return 0; # not public
+      return "Platform by tag";
       }
     # contains at least one @publishedAll element - must be "Public by tag"
-    $reason = "Public by tag";
+    return "Public by tag";
     }
-  push @public_included, @includefiles;   # #included files are therefore also public
-  return 1; # Public API
   }
 
-my %classification;
+my %location_by_filename;
+my %precedent;
+
+# Read list of Symbian^1 files
+my $line;
+while ($line = <>)
+  {
+  chomp $line;
+  $line =~ s/\\/\//g; # Unix separators please
+  if ($line =~ /(epoc32\/include\/(.*\/)?([^\/]+))\s*$/)
+    {
+    my $fullname = $1;
+    my $filename = $3;
+
+    $precedent{lc $fullname} = $fullname;
+    }
+  }
+
+# Process epoc32\include tree
+
+my %rationale;
 my %origin;
 my %ignoring_case;
 
@@ -113,52 +127,57 @@ sub scan_directory($$)
       next;
       }
     
-    if (is_public_api($newpath,$newname))
-      {
-      # print "PUBLIC\t$newname\t$reason\n";
-      }
-    else
-      {
-      # print "PARTNER\t$newname\t$reason\n";
-      }
-    $classification{$newname} = $reason;
     $origin{$newname} = "Symbian^2";
     $ignoring_case{lc $newname} = $newname;
+    
+    my @includefiles = ();
+    my $reason = analyse_api($newpath,$newname, \@includefiles);
+
+    if (defined $precedent{lc $newname})
+      {
+      $origin{$newname} = "Symbian^1";  # present in Symbian^1 list of Public apis
+      if ($reason !~ /Public/)
+        {
+        $reason = "Public by precedent";    # was made public in Symbian^1
+        }
+      }
+    $rationale{$newname} = $reason;
+ 
+    if ($reason =~ /Public/)
+      {
+      push @public_included, @includefiles;   # #included files are therefore also public
+      }
     }
   }
 
 scan_directory("/epoc32/include", "epoc32/include");
+
+# Add the generated files which are included in public API files
 
 foreach my $file (@public_included)
   {
   # print "PUBLIC\tepoc32/include/$file\tIncluded\n";
   my $newname = "epoc32/include/$file";
   $newname = $ignoring_case{lc $newname};
-  $classification{$newname} = "Public by Inclusion";
+  $rationale{$newname} = "Public by Inclusion";
   }
 
-# Read list of Symbian^1 files
-my $line;
-while ($line = <>)
+# Look for Symbian^1 files which have moved or simply been deleted
+
+foreach my $file (values %precedent)
   {
-  chomp $line;
-  $line =~ s/\\/\//g; # Unix separators please
-  if ($line =~ /(epoc32\/include\/.*)\s*$/)
+  if (!defined $origin{$file})
     {
-    my $name = $1;
-    $origin{$name} = "Symbian^1";
-    if (!defined $ignoring_case{lc $name})
-      {
-      $classification{$name} = "Deleted";
-      }
+    $rationale{$file} = "Deleted";
+    $origin{$file} = "Symbian^1";
     }
   }
 
 print "Filename\tClassification\tReason\tOrigin\n";
-foreach my $file (sort keys %classification)
+foreach my $file (sort keys %rationale)
   {
-  my $reason = $classification{$file};
-  my $type = "Platform";
-  $type = "Public" if ($reason =~ /Public/);
-  print "$file\t$type\t$reason\t$origin{$file}\n";
+  my $reason = $rationale{$file};
+  my $classification = "Platform";
+  $classification = "Public" if ($reason =~ /Public/);
+  print "$file\t$classification\t$reason\t$origin{$file}\n";
   }

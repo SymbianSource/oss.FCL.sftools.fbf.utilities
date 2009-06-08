@@ -19,7 +19,6 @@ my $pdk_src = "../.."; # path to sf tree - correct from "build/output"
 my %missing_files;
 my %damaged_components;
 my %excluded_things;
-my %abld_import;
 my %damaged_bldinfs;
 
 sub canonical_path($)
@@ -107,17 +106,6 @@ sub scan_logfile($)
   my $line;
   while ($line = <FILE>)
     {
-    # Could not export s:/sf/mw/classicui/commonuisupport/uikon/docs/Uikon_1.2_Caps_Lock_Extension.doc to s:/epoc32/engdoc/application_framework/uikon/uikon_1.2_caps_lock_extension.doc
-    if ($line =~ /^Could not export .*\/(sf\/.*) to .:\/(epoc32\/.*)$/)
-      {
-      my $source = $1;
-      my $exported = $2;
-      if (-e "m:/$exported")
-        {
-        $abld_import{$source} = $exported;
-        }
-      next;
-      }
     # Source of export does not exist:  s:/sf/mw/messagingmw/messagingfw/msgtests/group/msgerr.ra
     # Source zip for export does not exist: s:/sf/os/deviceplatformrelease/S60LocFiles/data/96.zip
     if ($line =~ /^Source (of|zip for) export does not exist.\s+.*\/(sf\/.*)$/)
@@ -148,6 +136,19 @@ sub scan_logfile($)
         }
       do_missing_file("$parent/../$relative", $parent, "#include");
       next;  
+      }
+    # make.exe: *** No rule to make target `m:/sf/os/security/crypto/weakcrypto/source/symmetric/des.cpp', needed by `m:/epoc32/build/weakcrypto/c_126994d895f12d1a/weak_cryptography_dll/winscw/udeb/des.o'.
+    if ($line =~ /No rule to make target .*(sf\/.*)', needed by .*(epoc32\/.*)'/)
+      {
+      my $missing = $1;
+      my $impact = "building $2";
+      # epoc32/build/weakcrypto/c_126994d895f12d1a/weak_cryptography_dll
+      if ($impact =~ /epoc32\/build\/[^\/]+\/[^\/]+\/([^\/]+)\//)
+        {
+        $impact = "building $1";
+        }
+      do_missing_file($missing, "??", $impact);
+      next;
       }
     }
     close FILE;
@@ -187,8 +188,6 @@ sub scan_logfile($)
   print "\nMissing files\n";
   foreach my $missing (sort keys %missing_files)
     {
-    my $exported = $abld_import{$missing};
-    $exported = "(not in PDK)" if (!defined $exported);
     my $reason = $missing_files{$missing};
     my @dirs = split /\//, $missing;
     my $path = shift @dirs;
@@ -202,7 +201,7 @@ sub scan_logfile($)
         $path .= "/$dir";
         next;
         }
-      print "\t$reason\t$path\t\t", join("/", $dir,@dirs), "\t$exported\n";
+      print "\t$reason\t$path\t\t", join("/", $dir,@dirs), "\n";
       last;
       }    
     }
