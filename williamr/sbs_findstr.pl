@@ -19,6 +19,7 @@ use strict;
 my $expression = shift @ARGV;
 my $line;
 my $skipping = 1;
+my $current_target = "";
 
 @ARGV = map {glob} @ARGV;
 
@@ -35,11 +36,21 @@ while ($line =<>)
     if ($line =~ /$expression/io)
       {
       $skipping = 0;
+      $current_target = "";
+      if ($line =~ /(target='[^']+') /)
+        {
+        $current_target = $1;
+        }
       }
     else
       {
       $skipping = 1;
       }
     }
-  print $line if ($skipping == 0);  
+  next if ($skipping == 1);  
+  if (substr($line,0,8) eq "<status ")
+    {
+    substr($line,-3) = "$current_target />\n";
+    }
+  print $line;
   }
