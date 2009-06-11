@@ -17,7 +17,7 @@
 use strict;
 
 my @clone_options = (); # use ("--noupdate") to clone without extracting the source
-my $hostname = "prod.foundationhost.org";
+my $hostname = "developer.symbian.org";
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
@@ -212,7 +212,7 @@ foreach my $package (@sf_packages, @sftools_packages)
   
   $path .= "/$destdir";   # this is where the repository will go
 
-  my $repo_url = "http://$username:$password\@$hostname/$package/";
+  my $repo_url = "https://$username:$password\@$hostname/$package/";
   if ($license ne "sfl")
     {
     # user registration is not required for reading public package repositories
