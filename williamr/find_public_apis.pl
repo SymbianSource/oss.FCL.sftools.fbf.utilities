@@ -84,28 +84,9 @@ sub analyse_api($$$)
     }
   }
 
-my %location_by_filename;
-my %precedent;
-
-# Read list of Symbian^1 files
-my $line;
-while ($line = <>)
-  {
-  chomp $line;
-  $line =~ s/\\/\//g; # Unix separators please
-  if ($line =~ /(epoc32\/include\/(.*\/)?([^\/]+))\s*$/)
-    {
-    my $fullname = $1;
-    my $filename = $3;
-
-    $precedent{lc $fullname} = $fullname;
-    }
-  }
-
 # Process epoc32\include tree
 
 my %rationale;
-my %origin;
 my %ignoring_case;
 
 sub scan_directory($$)
@@ -127,20 +108,11 @@ sub scan_directory($$)
       next;
       }
     
-    $origin{$newname} = "Symbian^2";
     $ignoring_case{lc $newname} = $newname;
     
     my @includefiles = ();
     my $reason = analyse_api($newpath,$newname, \@includefiles);
 
-    if (defined $precedent{lc $newname})
-      {
-      $origin{$newname} = "Symbian^1";  # present in Symbian^1 list of Public apis
-      if ($reason !~ /Public/)
-        {
-        $reason = "Public by precedent";    # was made public in Symbian^1
-        }
-      }
     $rationale{$newname} = $reason;
  
     if ($reason =~ /Public/)
@@ -162,22 +134,11 @@ foreach my $file (@public_included)
   $rationale{$newname} = "Public by Inclusion";
   }
 
-# Look for Symbian^1 files which have moved or simply been deleted
-
-foreach my $file (values %precedent)
-  {
-  if (!defined $origin{$file})
-    {
-    $rationale{$file} = "Deleted";
-    $origin{$file} = "Symbian^1";
-    }
-  }
-
-print "Filename\tClassification\tReason\tOrigin\n";
+print "Filename\tClassification\tReason\n";
 foreach my $file (sort keys %rationale)
   {
   my $reason = $rationale{$file};
   my $classification = "Platform";
   $classification = "Public" if ($reason =~ /Public/);
-  print "$file\t$classification\t$reason\t$origin{$file}\n";
+  print "$file\t$classification\t$reason\n";
   }
