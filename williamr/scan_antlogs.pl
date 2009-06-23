@@ -108,7 +108,7 @@ sub scan_logfile($)
     {
     # Source of export does not exist:  s:/sf/mw/messagingmw/messagingfw/msgtests/group/msgerr.ra
     # Source zip for export does not exist: s:/sf/os/deviceplatformrelease/S60LocFiles/data/96.zip
-    if ($line =~ /^Source (of|zip for) export does not exist.\s+.*\/(sf\/.*)$/)
+    if ($line =~ /Source (of|zip for) export does not exist.\s+.*\/(sf\/.*)$/)
       {
       do_missing_file($2, "??", "source of export");
       next;
@@ -121,6 +121,15 @@ sub scan_logfile($)
   
       do_missing_file($bldinf, $bldinf, "no bld.inf");
       $damaged_bldinfs{"$bldinf\t(missing)"} = 1;
+      next;
+      }
+    # Can't find mmp file 'm:/sf/mw/mmmw/mmmiddlewarefws/mmfw/SoundDev/PlatSec/MMPFiles/Sounddevice/advancedaacencodesettingsci.mmp' referred to by 'm:/sf/mw/mmmw/mmmiddlewarefws/mmfw/SoundDev/group_pluginsupport/bld.inf'
+    if ($line =~ /Can.t find mmp file .*(sf\/.*)' referred to by .*(sf\/.*)'/i)
+      {
+      my $mmpfile = $1;
+      my $bldinf = $2;
+  
+      do_missing_file($mmpfile, $bldinf, "no mmp file");
       next;
       }
     # D:/Symbian/Tools/PDT_1.0/raptor/win32/mingw/bin/cpp.exe: s:/sf/os/networkingsrv/networksecurity/ipsec/group/bld.inf:19:42: ../eventmediator/group/bld.inf: No such file or directory
