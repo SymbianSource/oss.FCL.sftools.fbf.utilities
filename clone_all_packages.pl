@@ -15,27 +15,86 @@
 # Perl script to clone or update all of the Foundation MCL repositories
 
 use strict;
+use Getopt::Long;
+
+sub Usage($)
+  {
+  my ($msg) = @_;
+  
+  print "$msg\n\n" if ($msg ne "");
+  
+	print <<'EOF';
+clone_all_repositories - simple script for cloning Symbian repository tree
+	
+This script will clone repositories, or pull changes into a previously
+cloned repository. The script will prompt for your username and
+password, which will be needed to access the SFL repositories, or you can
+supply them with command line arguments.
+
+Important: 
+  This script uses https access to the repositories, so the username and
+  password will be stored as cleartext in the .hg/hgrc file for each repository.
+
+Used with the "-mirror" option, the script will copy both MCL and FCL
+repositories into the same directory layout as the Symbian website, and will
+use the Mercurial "--noupdate" option when cloning.
+
+Options:
+
+-username      username at the Symbian website
+-password      password to go with username
+-mirror        create a "mirror" of the Symbian repository tree
+-retries       number of times to retry a failed operation (default 1)
+-verbose       print the underlying "hg" commands before executing them
+-n             do nothing - don't actually execute the hg commands
+-help          print this help information
+
+EOF
+  exit (1);  
+  }
 
 my @clone_options = (); # use ("--noupdate") to clone without extracting the source
 my @pull_options  = (); # use ("--rebase") to rebase your changes when pulling
 my $hostname = "developer.symbian.org";
+
+my $username = "";
+my $password = "";
 my $mirror = 0; # set to 1 if you want to mirror the repository structure
 my $retries = 1;  # number of times to retry problem repos
+my $verbose = 0;  # turn on more tracing
+my $do_nothing = 0; # print the hg commands, don't actually do them
+my $help = 0;
+
+if (!GetOptions(
+    "u|username" => \$username,
+    "p|password" => \$password,
+    "m|mirror" => \$mirror, 
+    "r|retries=i" => \$retries,
+    "v|verbose" => \$verbose,
+    "n" => \$do_nothing,
+    "h|help" => \$help,
+    ))
+  {
+  Usage("Invalid argument");
+  }
+  
+Usage("Too many arguments") if ($ARGV);
+Usage("") if ($help);
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
 # .hg/hgrc file in each repository.
 
-my $username = "";
-my $password = "";
-
-if ($username eq "" || $password eq "")
+if ($username eq "" )
   {
   print "Username: ";
   $username = <STDIN>;
+  chomp $username;
+  }
+if ($password eq "" )
+  {
   print "Password: ";
   $password = <STDIN>;
-  chomp $username;
   chomp $password;
   }
 
@@ -212,6 +271,19 @@ my @other_repos = (
 "oss/MCL/utilities",
 );
 
+sub do_system(@)
+  {
+  my (@cmd) = @_;
+  
+  if ($verbose)
+    {
+    print "* ", join(" ", @cmd), "\n";
+    }
+  return 0 if ($do_nothing);
+  
+  return system(@cmd);
+  }
+
 sub get_repo($)
   {
   my ($package) = @_;
@@ -252,14 +324,14 @@ sub get_repo($)
     # The repository already exists, so just do an update
     
     print "Updating $destdir from $package...\n";
-    return system("hg", "pull", @pull_options, "-R", $path, $repo_url);
+    return do_system("hg", "pull", @pull_options, "-R", $path, $repo_url);
     }
   else
     {
     # Clone the repository
     
     print "Cloning $destdir from $package...\n";
-    return system("hg", "clone", @clone_options, $repo_url, $path);
+    return do_system("hg", "clone", @clone_options, $repo_url, $path);
     }
   
   }
@@ -271,6 +343,61 @@ my @all_packages;
 if ($mirror)
   {
   push @clone_options, "--noupdate";
+  
+  if (0)
+    {
+    # Prototype code to scrape the repository list from the website
+    # Needs to have extra modules and executables installed to support https
+    # so this would only work for the oss packages at present...
+    
+    # Create a user agent object
+    use LWP::UserAgent;
+    use HTTP::Request::Common;
+    my $ua = LWP::UserAgent->new;
+    $ua->agent("clone_all_packages.pl ");
+  
+    # Request the oss package list
+    my $res = $ua->request(GET "http://$hostname/oss");
+  
+    # Check the outcome of the response
+    if (! $res->is_success) 
+      {
+      print "Failed to read oss package list:\n\t", $res->status_line, "\n";
+      }
+    
+    my @oss_packages = ($res->content =~ m/<td><a href="\/(oss\/[^"]+)\/?">/g);  # umatched "
+    print join ("\n\t",@oss_packages), "\n";
+
+    # Request the oss package list
+    $res = $ua->request(GET "https://$username:$password\@$hostname/sfl");
+  
+    # Check the outcome of the response
+    if (! $res->is_success) 
+      {
+      print "Failed to read sfl package list:\n\t", $res->status_line, "\n";
+      }
+    
+    my @sfl_packages = ($res->content =~ m/<td><a href="\/(sfl\/[^"]+)\/?">/g);  # umatched "
+    
+    @all_packages = (@sfl_packages, @oss_packages);
+    }
+  else
+    {
+    # Assume that every MCL has a matching FCL
+    my @list_with_fcls = ();
+    foreach my $package (@all_packages)
+      {
+      push @list_with_fcls, $package;
+      if ($package =~ /MCL/)
+        {
+        # If mirroring, get the matching FCLs as well as MCLs
+        $package =~ s/MCL/FCL/;
+        push @list_with_fcls, $package;
+        }
+      }
+    @all_packages = @list_with_fcls;
+    }
+
   }
 
 my @problem_packages = ();
@@ -281,22 +408,18 @@ foreach my $package (@all_packages)
   my $err = get_repo($package);
   $total_packages++;
   push @problem_packages, $package if ($err); 
-  
-  if ($mirror && $package =~ /MCL/)
-    {
-    # If mirroring, get the matching FCLs as well as MCLs
-    $package =~ s/MCL/FCL/;
-    $err = get_repo($package);
-    $total_packages++;
-    push @problem_packages, $package if ($err); 
-    }
   }
   
 # retry problem packages
 
-while ($retries > 0 && scalar @problem_packages) 
+my $attempt = 0;
+while ($attempt < $retries && scalar @problem_packages) 
   {
-  $retries --;
+  $attempt++;
+  printf "\n\n------------\nRetry attempt %d on %d packages\n",
+    $attempt, scalar @problem_packages;
+  print join("\n", @problem_packages, ""), "\n";
+    
   my @list = @problem_packages;
   @problem_packages = ();
   foreach my $package (@list)
