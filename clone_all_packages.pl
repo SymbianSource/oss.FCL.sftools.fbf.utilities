@@ -66,8 +66,8 @@ my $do_nothing = 0; # print the hg commands, don't actually do them
 my $help = 0;
 
 if (!GetOptions(
-    "u|username" => \$username,
-    "p|password" => \$password,
+    "u|username=s" => \$username,
+    "p|password=s" => \$password,
     "m|mirror" => \$mirror, 
     "r|retries=i" => \$retries,
     "v|verbose" => \$verbose,
@@ -368,7 +368,7 @@ if ($mirror)
     my @oss_packages = ($res->content =~ m/<td><a href="\/(oss\/[^"]+)\/?">/g);  # umatched "
     print join ("\n\t",@oss_packages), "\n";
 
-    # Request the oss package list
+    # Request the sfl package list
     $res = $ua->request(GET "https://$username:$password\@$hostname/sfl");
   
     # Check the outcome of the response
@@ -378,6 +378,7 @@ if ($mirror)
       }
     
     my @sfl_packages = ($res->content =~ m/<td><a href="\/(sfl\/[^"]+)\/?">/g);  # umatched "
+    print join ("\n\t",@sfl_packages), "\n";
     
     @all_packages = (@sfl_packages, @oss_packages);
     }
