@@ -17,7 +17,10 @@
 use strict;
 
 my @clone_options = (); # use ("--noupdate") to clone without extracting the source
+my @pull_options  = (); # use ("--rebase") to rebase your changes when pulling
 my $hostname = "developer.symbian.org";
+my $mirror = 0; # set to 1 if you want to mirror the repository structure
+my $retries = 1;  # number of times to retry problem repos
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
@@ -28,8 +31,12 @@ my $password = "";
 
 if ($username eq "" || $password eq "")
   {
-  print "Must edit this script to supply your username and password\n";
-  exit 1;
+  print "Username: ";
+  $username = <STDIN>;
+  print "Password: ";
+  $password = <STDIN>;
+  chomp $username;
+  chomp $password;
   }
 
 my @sf_packages = (
@@ -98,7 +105,7 @@ my @sf_packages = (
 "sfl/MCL/sf/mw/mmappfw",
 "sfl/MCL/sf/mw/mmmw",
 "sfl/MCL/sf/mw/mmuifw",
-"sfl/MCL/sf/mw/mobiletv",
+# "sfl/MCL/sf/mw/mobiletv", - empty package abandoned
 "sfl/MCL/sf/mw/netprotocols",
 "sfl/MCL/sf/mw/networkingdm",
 "sfl/MCL/sf/mw/opensrv",
@@ -132,7 +139,6 @@ my @sf_packages = (
 # "sfl/MCL/sf/os/misc",  - removed in 7 May 09 delivery
 "sfl/MCL/sf/os/mm",
 "sfl/MCL/sf/os/networkingsrv",
-"sfl/MCL/sf/os/osrndtools",   # added 7 Mar 09
 "sfl/MCL/sf/os/ossrv",
 "sfl/MCL/sf/os/persistentdata",
 "sfl/MCL/sf/os/security",
@@ -192,13 +198,35 @@ my @sftools_packages = (
 "sfl/MCL/sftools/dev/ui",
 );
 
-foreach my $package (@sf_packages, @sftools_packages)
+my @other_repos = (
+# Foundation build framework
+"oss/FCL/interim/fbf/bootstrap",
+"oss/FCL/interim/fbf/configs/default",
+"oss/FCL/interim/fbf/configs/pkgbuild",
+"oss/FCL/interim/fbf/projects/packages/serviceapi",
+"oss/FCL/interim/fbf/projects/packages/serviceapifw",
+"oss/FCL/interim/fbf/projects/packages/web",
+"oss/FCL/interim/fbf/projects/packages/webuis",
+"oss/FCL/interim/fbf/projects/platforms",
+# Utilities
+"oss/MCL/utilities",
+);
+
+sub get_repo($)
   {
+  my ($package) = @_;
   my @dirs = split /\//, $package;
   my $license = shift @dirs;
   my $repotree = shift @dirs; # remove the MCL or FCL repo tree information
   my $destdir = pop @dirs;  # ignore the package name, because Mercurial will create that
   
+  if ($mirror)
+    {
+    # Mirror the full directory structure, so put back the license & repotree dirs
+    unshift @dirs, $repotree;
+    unshift @dirs, $license;
+    }
+
   # Ensure the directories already exist as far as the parent of the repository
   my $path = "";
   foreach my $dir (@dirs)
@@ -224,14 +252,63 @@ foreach my $package (@sf_packages, @sftools_packages)
     # The repository already exists, so just do an update
     
     print "Updating $destdir from $package...\n";
-    system("hg", "pull", "-R", $path, $repo_url);
+    return system("hg", "pull", @pull_options, "-R", $path, $repo_url);
     }
   else
     {
     # Clone the repository
     
     print "Cloning $destdir from $package...\n";
-    system("hg", "clone", @clone_options, $repo_url, $path);
+    return system("hg", "clone", @clone_options, $repo_url, $path);
     }
   
+  }
+
+my @all_packages;
+
+@all_packages = (@sf_packages, @sftools_packages, @other_repos);
+
+if ($mirror)
+  {
+  push @clone_options, "--noupdate";
+  }
+
+my @problem_packages = ();
+my $total_packages = 0;
+
+foreach my $package (@all_packages)
+  {
+  my $err = get_repo($package);
+  $total_packages++;
+  push @problem_packages, $package if ($err); 
+  
+  if ($mirror && $package =~ /MCL/)
+    {
+    # If mirroring, get the matching FCLs as well as MCLs
+    $package =~ s/MCL/FCL/;
+    $err = get_repo($package);
+    $total_packages++;
+    push @problem_packages, $package if ($err); 
+    }
+  }
+  
+# retry problem packages
+
+while ($retries > 0 && scalar @problem_packages) 
+  {
+  $retries --;
+  my @list = @problem_packages;
+  @problem_packages = ();
+  foreach my $package (@list)
+    {
+    my $err = get_repo($package);
+    push @problem_packages, $package if ($err); 
+   }
+  }
+
+printf "\n------------\nProcessed %d packages, of which %d reported errors\n", 
+  $total_packages, scalar @problem_packages;
+if (scalar @problem_packages)
+  {
+  print join("\n", @problem_packages, "");
   }
