@@ -46,8 +46,22 @@ Options:
 -mirror        create a "mirror" of the Symbian repository tree
 -retries       number of times to retry a failed operation (default 1)
 -verbose       print the underlying "hg" commands before executing them
--n             do nothing - don't actually execute the hg commands
+-n             do nothing - don't actually execute the commands
 -help          print this help information
+-exec          execute command on each repository
+-filter <RE>   only process repository paths matching regular expression <RE>
+
+The -exec option processes the rest of the command line, treating it as
+a command to apply to each repository in turn. Some keywords are expanded
+to repository-specific values, and "hg" is always expanded to "hg -R %REPO%"
+
+%REPO%         relative path to the repository
+%WREPO%        relative path to repository, with Windows path separators
+%URL%          URL of the master repository
+%PUSHURL%      URL suitable for pushing (always includes username & password)
+
+It's often useful to use "--" to separate the exec command from the options
+to this script, e.g. "-exec -- hg update -C tip"
 
 EOF
   exit (1);  
@@ -64,6 +78,8 @@ my $retries = 1;  # number of times to retry problem repos
 my $verbose = 0;  # turn on more tracing
 my $do_nothing = 0; # print the hg commands, don't actually do them
 my $help = 0;
+my $exec = 0;
+my $filter = "";
 
 if (!GetOptions(
     "u|username=s" => \$username,
@@ -73,25 +89,45 @@ if (!GetOptions(
     "v|verbose" => \$verbose,
     "n" => \$do_nothing,
     "h|help" => \$help,
+    "e|exec" => \$exec,
+    "f|filter=s" => \$filter,
     ))
   {
   Usage("Invalid argument");
   }
   
-Usage("Too many arguments") if ($ARGV);
+Usage("Too many arguments") if (scalar @ARGV > 0 && !$exec);
+Usage("Too few arguments for -exec") if (scalar @ARGV == 0 && $exec);
 Usage("") if ($help);
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
 # .hg/hgrc file in each repository.
 
-if ($username eq "" )
+my $needs_id = 1; # assumed necessary for clone/pull
+
+my @exec_cmd = @ARGV;
+if ($exec)
+  {
+  if ($exec_cmd[0] eq "hg")
+    {
+    shift @exec_cmd;
+    unshift @exec_cmd, "hg", "-R", "%REPO%";
+    }
+  if ($verbose)
+    {
+    print "* Exec template = >", join("<,>", @exec_cmd), "<\n";
+    }
+  $needs_id = grep /URL%/,@exec_cmd; # only need id if using %URL% or %PUSHURL%
+  }
+
+if ($needs_id && $username eq "" )
   {
   print "Username: ";
   $username = <STDIN>;
   chomp $username;
   }
-if ($password eq "" )
+if ($needs_id && $password eq "" )
   {
   print "Password: ";
   $password = <STDIN>;
@@ -313,13 +349,32 @@ sub get_repo($)
   $path .= "/$destdir";   # this is where the repository will go
 
   my $repo_url = "https://$username:$password\@$hostname/$package/";
+  my $repo_push_url =$repo_url;
   if ($license ne "sfl")
     {
     # user registration is not required for reading public package repositories
     $repo_url = "http://developer.symbian.org/$package/";
     }
   
-  if (-d "$path/.hg")
+  if ($exec)
+    {
+    # iteration functionality - process the keywords
+    my $wpath = $path;
+    $wpath =~ s/\//\\/g;  # win32 path separator
+    my @repo_cmd = ();
+    foreach my $origcmd (@exec_cmd)
+      {
+      my $cmd = $origcmd; # avoid altering the original
+      $cmd =~ s/%REPO%/$path/;
+      $cmd =~ s/%WREPO%/$wpath/;
+      $cmd =~ s/%URL%/$repo_url/;
+      $cmd =~ s/%PUSHURL%/$repo_push_url/;
+      push @repo_cmd, $cmd;
+      }
+    print "Processing $path...\n";
+    return do_system(@repo_cmd);
+    }
+  elsif (-d "$path/.hg")
     {
     # The repository already exists, so just do an update
     
@@ -406,6 +461,10 @@ my $total_packages = 0;
 
 foreach my $package (@all_packages)
   {
+  if ($filter && $package !~ /$filter/)
+    {
+    next; # skip repos which don't match the filter
+    }
   my $err = get_repo($package);
   $total_packages++;
   push @problem_packages, $package if ($err); 
