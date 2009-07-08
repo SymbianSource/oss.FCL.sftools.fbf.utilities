@@ -236,7 +236,7 @@ my @sf_packages = (
 "sfl/MCL/sf/os/networkingsrv",
 "sfl/MCL/sf/os/ossrv",
 "sfl/MCL/sf/os/persistentdata",
-"sfl/MCL/sf/os/security",
+  "oss/MCL/sf/os/security",  # moved from SFL to EPL, 8th July 09
 "sfl/MCL/sf/os/shortlinksrv",
 "sfl/MCL/sf/os/textandloc",
 "sfl/MCL/sf/os/unref",
