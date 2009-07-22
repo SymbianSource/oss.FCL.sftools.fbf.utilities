@@ -19,6 +19,7 @@ use strict;
 my %listings;
 my $current_repo = "";
 my @filelist = ();
+my %all_repos;
 
 sub record_file($$)
   {
@@ -31,11 +32,15 @@ sub record_file($$)
 
 sub finished_repo()
   {
-  if ($current_repo ne "" && scalar @filelist > 0)
+  if ($current_repo ne "")
     {
     $current_repo =~ s/^.*CL\/sf/sf/; # remove leading MCL or FCL stuff
-    @{$listings{$current_repo}} = sort @filelist;
-    # printf STDERR "* %s %d\n", $current_repo, scalar @filelist;
+    $all_repos{$current_repo} = 1;
+    if (scalar @filelist > 0)
+      {
+      @{$listings{$current_repo}} = sort @filelist;
+      # printf STDERR "* %s %d\n", $current_repo, scalar @filelist;
+      }
     }
   @filelist = ();
   $current_repo = "";
@@ -55,7 +60,7 @@ while ($line = <>)
   if ($line =~ /^abort/)
     {
     # ignore the current repo, as it probably didn't have the right tag
-    $current_repo = "";
+    # $current_repo = "";
     next;
     }
   if ($line =~ /^([MARC]) (\S.*\S)\s*$/)
@@ -68,6 +73,12 @@ while ($line = <>)
   }
 
 finished_repo();
+
+foreach my $repo (sort keys %all_repos)
+  {
+  next if (defined $listings{$repo});
+  print STDERR "No valid comparison for $repo\n";
+  }
 
 print "Package\tChange\tComponent\tFilename\tCount\n";
 foreach my $repo (sort keys %listings)
