@@ -209,10 +209,11 @@ sub parse_bklog {
 sub printhelp
 {
 
-	print "\n\n version 0.3 
+	print "\n\n version 0.4 
 	\ngettd.pl -t=url -d=domain \nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
 	\n Optional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
-	\n\t-a setup authorisation by cookie follow instructions in http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies";
+	\n\t-a setup authorisation by cookie follow instructions in http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies
+	\n\t -p adds support for package backlog analysis. just run gettd.pl -p";
 	exit;
 }
 
