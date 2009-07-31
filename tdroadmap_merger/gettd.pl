@@ -6,9 +6,10 @@ use IO::Socket;
 use Getopt::Long;
 
 
-my $target_url;
-my $tdomain;
-my $csvfile;
+my $target_url; #target url for the roadmap
+my $tdomain; #tag for the domain to be use in csv file
+my $csvfile; #output csv file name
+my $authon= '';	; #does it require authorisation? default is false
 
 sub getpage
 {
@@ -23,7 +24,7 @@ sub getpage
 	$port = "http(80)";
 	$getmess = "GET " . $page ." HTTP/1.1\n" . $auth;
 
-	print "sending message - $getmess\n";
+	print "INFO - sending message - $getmess\n";
 	print outputfile "$getmess\n\n";
 
 	$sock = IO::Socket::INET->new 	
@@ -112,7 +113,7 @@ sub td_roadmap
 		$exp="\\<h2\\>.*?\\>".$_;
 		
 		if ($roadmap =~ m /($exp)/sg) { 
-			print "Found entry for $_ \n";
+			print "PASS - Found entry for $_ \n";
 			$relroad =$';	
 			
 			if ($relroad =~ m /(.*?)\<h2/sg) { $relroad =$1;}
@@ -150,9 +151,10 @@ sub td_roadmap
 sub printhelp
 {
 
-	print "\n\n version 0.2 
+	print "\n\n version 0.3 
 	\ngettd.pl -t=url -d=domain \nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
-	\n Optional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help";
+	\n Optional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
+	\n\t-a setup authorisation by cookie follow instructions in http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies";
 	exit;
 }
 
@@ -165,7 +167,7 @@ sub cmd_options
   my $help;
 
 
-  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile);
+  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 'a' => \$authon);
 
   if ($help) {
     printhelp;
@@ -190,19 +192,24 @@ sub cmd_options
 	$csvfile="output.csv";
  }
  print "\nINFO-output recorded in $csvfile \n";
-        
+
+
+
+     
 
 
 
 }
 #main
 $/ = " ";
+cmd_options();
 
-#file containing login details from http cookie
-$mycookie = loadfile("mycookie.txt");
+if ($authon) {
+	#file containing login details from http cookie
+	$mycookie = loadfile("mycookie.txt");
 
-#$auth ="Authorization: Basic Zm91bmRhdGlvbjp0ZXN0MA==";
-$auth = "Cookie: " . $mycookie ;
+	$auth = "Cookie: " . $mycookie ;
+}
 
 #foundation releases - add as required
 @releases=("Symbian\\^2","Symbian\\^3","Symbian\\^4");
@@ -211,7 +218,7 @@ $auth = "Cookie: " . $mycookie ;
 $host1 = "developer.symbian.org";
 
 
-cmd_options();
+
 
 getpage($target_url, $host1, $auth, "debug.txt");
 td_roadmap("debug.txt" , $csvfile, $tdomain ,@releases);
