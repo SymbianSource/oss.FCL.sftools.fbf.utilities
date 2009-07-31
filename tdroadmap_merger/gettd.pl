@@ -9,7 +9,9 @@ use Getopt::Long;
 my $target_url; #target url for the roadmap
 my $tdomain; #tag for the domain to be use in csv file
 my $csvfile; #output csv file name
-my $authon= '';	; #does it require authorisation? default is false
+my $authon= '';	 #does it require authorisation? default is false
+
+my $ispackage;
 
 sub getpage
 {
@@ -147,6 +149,62 @@ sub td_roadmap
 }
 
 
+sub parse_category {
+
+	#arguments
+	($infile)=@_;
+
+	my @mylink;
+
+	$mypage=loadfile $infile;
+	$i=0;	
+	if ( $mypage =~ m/Pages in category(.*)\<\/table/sg) {
+		print "INFO - Category page found\n";
+		$mypage = $1;
+		while ($mypage =~ m /\<a href\=\"(\/wiki\/index\.php\/.*?)\"/g) {
+			
+			$mylink[$i] = $1;	
+			$i++;
+			
+		}
+	print "INFO - Found $i items in the category page\n"
+	}
+	return @mylink;
+}
+
+sub parse_bklog {
+	
+	#arguments
+	($infile,$outfile)=@_;
+	$mypkg=loadfile $infile;
+	open ( outputfile, ">>".$outfile);
+	open ( soutputfile, ">>"."summary_".$outfile);
+	
+	if ($mypkg =~ m/index\.php\/(.*?) HTTP/sg) {
+
+		$pagename = $1;
+		print "INFO -Processing Package $pagename \n";
+		$i=0;
+		#while ($mypkg =~ m/\<tr\>\<td\>(.*?)\<\/td\>/g) {
+		while ($mypkg =~ m/\<tr\>(.*?)\<\/tr/sg) {
+			$i++;
+			$myfeat= $1;
+			$myfeat =~ s/\<\/td\>/\t/sg;
+			$myfeat =~ s/\<.*?\>//sg;
+			$myfeat =~ s/\n//sg;
+			print outputfile "$pagename\t$myfeat\n";
+			
+		}
+
+	print soutputfile "$pagename\t$i\n";
+	
+	}
+
+
+
+
+}
+
 #help print
 sub printhelp
 {
@@ -163,22 +221,29 @@ sub printhelp
 sub cmd_options
 {
 
-
   my $help;
 
 
-  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 'a' => \$authon);
+  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 'a' => \$authon , 'p' => \$ispackage);
 
   if ($help) {
     printhelp;
   }
 
-  
+ if ($ispackage) {
+
+ 	$tdomain =" ";
+	$target_url = "http://developer.symbian.org/wiki/index.php/Category:Package_Backlog";
+	
+ }  
+ 
+
  if ( not $target_url) {
 
 	print "ERROR-missing arguments target url\n";
 	printhelp;	
   } 
+
 
  if (not $tdomain){
 	print "ERROR-missing arguments domain level\n";
@@ -195,13 +260,13 @@ sub cmd_options
 
 
 
-     
-
 
 
 }
 #main
 $/ = " ";
+$host1 = "developer.symbian.org";
+
 cmd_options();
 
 if ($authon) {
@@ -211,14 +276,25 @@ if ($authon) {
 	$auth = "Cookie: " . $mycookie ;
 }
 
-#foundation releases - add as required
-@releases=("Symbian\\^2","Symbian\\^3","Symbian\\^4");
 
+if ($ispackage) {
+	getpage($target_url, $host1, $auth, "debug.txt");
+	@bklog = parse_category("debug.txt");
+	$i=0;
+	foreach (@bklog) {
+		getpage("http://".$host1.$_, $host1, $auth, "pkg".$i.".txt");
+		parse_bklog ("pkg".$i.".txt",$csvfile);
+		$i++;
+		
+	
 
-$host1 = "developer.symbian.org";
+	}
 
+} else {
 
+	#foundation releases - add as required
+	@releases=("Symbian\\^2","Symbian\\^3","Symbian\\^4");
 
-
-getpage($target_url, $host1, $auth, "debug.txt");
-td_roadmap("debug.txt" , $csvfile, $tdomain ,@releases);
+	getpage($target_url, $host1, $auth, "debug.txt");
+	td_roadmap("debug.txt" , $csvfile, $tdomain ,@releases);
+}
