@@ -187,12 +187,16 @@ sub parse_bklog {
 		$i=0;
 		#while ($mypkg =~ m/\<tr\>\<td\>(.*?)\<\/td\>/g) {
 		while ($mypkg =~ m/\<tr\>(.*?)\<\/tr/sg) {
-			$i++;
+			
 			$myfeat= $1;
 			$myfeat =~ s/\<\/td\>/\t/sg;
 			$myfeat =~ s/\<.*?\>//sg;
 			$myfeat =~ s/\n//sg;
-			print outputfile "$pagename\t$myfeat\n";
+			
+			if ($myfeat =~ m/[A-z]/sg ) {
+				print outputfile "$pagename\t$myfeat\n";
+				$i++;
+			}
 			
 		}
 
@@ -281,11 +285,11 @@ if ($authon) {
 if ($ispackage) {
 	getpage($target_url, $host1, $auth, "debug.txt");
 	@bklog = parse_category("debug.txt");
-	$i=0;
+	$j=0;
 	foreach (@bklog) {
-		getpage("http://".$host1.$_, $host1, $auth, "pkg".$i.".txt");
-		parse_bklog ("pkg".$i.".txt",$csvfile);
-		$i++;
+		getpage("http://".$host1.$_, $host1, $auth, "pkg".$j.".txt");
+		parse_bklog ("pkg".$j.".txt",$csvfile);
+		$j++;
 		
 	
 
