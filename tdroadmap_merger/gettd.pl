@@ -13,6 +13,7 @@ my $authon= '';	 #does it require authorisation? default is false
 
 my $ispackage;
 
+
 sub getpage
 {
 	#arguments
@@ -175,51 +176,85 @@ sub parse_category {
 sub parse_bklog {
 	
 	#arguments
-	($infile,$outfile)=@_;
+	($infile,$outfile,$id)=@_;
 	$mypkg=loadfile $infile;
 	open ( outputfile, ">>".$outfile);
 	open ( soutputfile, ">>"."summary_".$outfile);
 	
 	if ($mypkg =~ m/index\.php\/(.*?) HTTP/sg) {
-
+  
 		$pagename = $1;
 		print "INFO -Processing Package $pagename \n";
 		$i=0;
-		#while ($mypkg =~ m/\<tr\>\<td\>(.*?)\<\/td\>/g) {
-		while ($mypkg =~ m/\<tr\>(.*?)\<\/tr/sg) {
-			
+		
+		while ($mypkg =~ m/\<tr.*?\>(.*?)\<\/tr/sg) {
+			next if ($& =~ m/style=\"background-color\:/s);
 			$myfeat= $1;
 			$myfeat =~ s/\<\/td\>/\t/sg;
 			$myfeat =~ s/\<.*?\>//sg;
 			$myfeat =~ s/\n//sg;
 			
-			if ($myfeat =~ m/[A-z]/sg ) {
+			
+			if ($myfeat =~ m/[A-z]/sg and not $myfeat =~ m/\&lt\;etc/sg and 
+			not $myfeat =~ m/\&lt\;Feature/sg and not $myfeat =~ m/Item not available/sg) {
 				print outputfile "$pagename\t$myfeat\n";
 				$i++;
 			}
 			
 		}
 
-	print soutputfile "$pagename\t$i\n";
+	print soutputfile "$id\t$pagename\t$i\thttp://developer.symbian.org/wiki/index.php/$pagename\n";
 	
+
 	}
 
-
+	close (outputfile);
+	close (soutputfile);
 
 
 }
+
+
+
 
 #help print
 sub printhelp
 {
 
-	print "\n\n version 0.4 
-	\ngettd.pl -t=url -d=domain \nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
-	\n Optional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
-	\n\t-a setup authorisation by cookie follow instructions in http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies
-	\n\t -p adds support for package backlog analysis. just run gettd.pl -p";
+	print "\n\n version 0.5 
+	\ngettd.pl -t=url -d=domain \n\nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
+	\n\nOptional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
+	\n\t-a setup authorisation by cookie follow instructions \n\tin http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies
+	\n\t -p adds support for package backlog analysis. just run gettd.pl -p
+	\n\t -compare [f1] [f2] compares two package summary files for changes ignores order\n";
 	exit;
 }
+
+
+
+#compare bklogs
+sub compare_bklogs {
+	#arguments
+	(@bklogs)=@_;
+	
+	if (not $#bklogs == 1) { printhelp;}
+
+	
+	$cmd ="cut -f 2,3 ". $bklogs[0] . " | sort -u > tmp1.txt";
+	
+	system($cmd);
+	
+	$cmd ="cut -f 2,3 ". $bklogs[1] . " | sort -u > tmp2.txt";
+	system($cmd);
+	
+	exec ("diff tmp1.txt tmp2.txt | grep '[<|>]'");
+	system("rm temp*.txt");
+	
+	exit;
+
+}
+
+
 
 
 #process command line options
@@ -227,13 +262,21 @@ sub cmd_options
 {
 
   my $help;
+  my @compare;
 
 
-  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 'a' => \$authon , 'p' => \$ispackage);
+  GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 
+	'a' => \$authon , 'p' => \$ispackage, 'compare=s{2}' =>\@compare);
+
+  if (@compare) {
+	compare_bklogs @compare;
+	
+  }
 
   if ($help) {
     printhelp;
   }
+
 
  if ($ispackage) {
 
@@ -259,7 +302,14 @@ sub cmd_options
   
 
  if (not $csvfile) {
-	$csvfile="output.csv";
+	if (not $ispackage) { 
+		$csvfile="output.csv";
+		system ("rm output.csv");
+	} else {
+		$csvfile="output.txt";
+		system ("rm *output.txt");
+
+	}
  }
  print "\nINFO-output recorded in $csvfile \n";
 
@@ -288,7 +338,7 @@ if ($ispackage) {
 	$j=0;
 	foreach (@bklog) {
 		getpage("http://".$host1.$_, $host1, $auth, "pkg".$j.".txt");
-		parse_bklog ("pkg".$j.".txt",$csvfile);
+		parse_bklog ("pkg".$j.".txt",$csvfile, $j);
 		$j++;
 		
 	
