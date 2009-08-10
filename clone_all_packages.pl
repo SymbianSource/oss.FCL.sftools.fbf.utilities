@@ -307,7 +307,7 @@ my @other_repos = (
 # Utilities
 "oss/MCL/utilities",
 # QEMU
-"oss/MCL/interim/QEMU",
+"oss/FCL/interim/QEMU",
 );
 
 sub do_system(@)
