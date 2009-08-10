@@ -185,6 +185,7 @@ my @sf_packages = (
 "sfl/MCL/sf/mw/dlnasrv",
 "sfl/MCL/sf/mw/drm",
 "sfl/MCL/sf/mw/hapticsservices",
+"sfl/MCL/sf/mw/helix",
 "sfl/MCL/sf/mw/homescreensrv",
 "sfl/MCL/sf/mw/imghandling",
 "sfl/MCL/sf/mw/imsrv",
@@ -305,6 +306,8 @@ my @other_repos = (
 "oss/FCL/interim/fbf/projects/platforms",
 # Utilities
 "oss/MCL/utilities",
+# QEMU
+"oss/MCL/interim/QEMU",
 );
 
 sub do_system(@)
