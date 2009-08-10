@@ -310,6 +310,11 @@ my @other_repos = (
 "oss/FCL/interim/QEMU",
 );
 
+my %export_control_special_case = (
+  "oss/MCL/sf/os/security" => 1,
+  "oss/FCL/sf/os/security" => 1,
+  );
+
 sub do_system(@)
   {
   my (@cmd) = @_;
@@ -353,7 +358,7 @@ sub get_repo($)
 
   my $repo_url = "https://$username:$password\@$hostname/$package/";
   my $repo_push_url =$repo_url;
-  if ($license ne "sfl")
+  if ($license ne "sfl" && !$export_control_special_case{$package})
     {
     # user registration is not required for reading public package repositories
     $repo_url = "http://developer.symbian.org/$package/";
