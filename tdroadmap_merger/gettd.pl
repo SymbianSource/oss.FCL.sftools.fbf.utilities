@@ -12,7 +12,7 @@ my $csvfile; #output csv file name
 my $authon= '';	 #does it require authorisation? default is false
 
 my $ispackage;
-
+my $summaryheader="ID\tPackage\tFeatures\tFormat\tHttp\n" ;
 
 sub getpage
 {
@@ -178,6 +178,9 @@ sub parse_bklog {
 	#arguments
 	($infile,$outfile,$id)=@_;
 	$mypkg=loadfile $infile;
+	#list if the bklog has been ported to the new bugzilla based format
+  $headerformat= "wiki_format";
+	
 	open ( outputfile, ">>".$outfile);
 	open ( soutputfile, ">>"."summary_".$outfile);
 	
@@ -188,7 +191,11 @@ sub parse_bklog {
 		$i=0;
 		
 		while ($mypkg =~ m/\<tr.*?\>(.*?)\<\/tr/sg) {
-			next if ($& =~ m/style=\"background-color\:/s);
+			$myheader= $&;
+      if ($myheader =~ m/style=\"background-color\:/sg) {
+        if ($myheader =~ m/Bug ID/sg) { $headerformat="bugzilla_format";}
+        next;
+      }
 			$myfeat= $1;
 			$myfeat =~ s/\<\/td\>/\t/sg;
 			$myfeat =~ s/\<.*?\>//sg;
@@ -203,7 +210,7 @@ sub parse_bklog {
 			
 		}
 
-	print soutputfile "$id\t$pagename\t$i\thttp://developer.symbian.org/wiki/index.php/$pagename\n";
+	print soutputfile "$id\t$pagename\t$i\t$headerformat\thttp://developer.symbian.org/wiki/index.php/$pagename\n";
 	
 
 	}
@@ -221,12 +228,13 @@ sub parse_bklog {
 sub printhelp
 {
 
-	print "\n\n version 0.5 
+	print "\n\n version 0.5
 	\ngettd.pl -t=url -d=domain \n\nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
 	\n\nOptional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
 	\n\t-a setup authorisation by cookie follow instructions \n\tin http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies
 	\n\t -p adds support for package backlog analysis. just run gettd.pl -p
-	\n\t -compare [f1] [f2] compares two package summary files for changes ignores order\n";
+	\n\t -compare [f1] [f2] compares two package summary files for changes ignores order
+  \n\t recommend to run under cygwin environment\n";
 	exit;
 }
 
@@ -308,14 +316,12 @@ sub cmd_options
 	} else {
 		$csvfile="output.txt";
 		system ("rm *output.txt");
-
+	
 	}
  }
  print "\nINFO-output recorded in $csvfile \n";
 
-
-
-
+                                      
 
 }
 #main
@@ -336,6 +342,7 @@ if ($ispackage) {
 	getpage($target_url, $host1, $auth, "debug.txt");
 	@bklog = parse_category("debug.txt");
 	$j=0;
+	
 	foreach (@bklog) {
 		getpage("http://".$host1.$_, $host1, $auth, "pkg".$j.".txt");
 		parse_bklog ("pkg".$j.".txt",$csvfile, $j);
