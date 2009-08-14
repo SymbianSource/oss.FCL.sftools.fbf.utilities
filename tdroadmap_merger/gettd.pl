@@ -312,7 +312,7 @@ sub cmd_options
  if (not $csvfile) {
 	if (not $ispackage) { 
 		$csvfile="output.csv";
-		system ("rm output.csv");
+		
 	} else {
 		$csvfile="output.txt";
 		system ("rm *output.txt");
