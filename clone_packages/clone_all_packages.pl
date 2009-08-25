@@ -81,10 +81,14 @@ my $help = 0;
 my $exec = 0;
 my $filter = "";
 
-my $sf_pkg_list_file = "sf_mcl_packages.txt";
-my $sftools_pkg_list_file = "sftools_mcl_packages.txt";
-my $other_pkg_list_file = "other_packages.txt";
+# Extract the path location of the program and locate package list files
+my $program_path = $0;
+$program_path =~ s#(^.*\\)[^\\]+$#$1#;
+my $sf_pkg_list_file = $program_path."sf_mcl_packages.txt";
+my $sftools_pkg_list_file = $program_path."sftools_mcl_packages.txt";
+my $other_pkg_list_file = $program_path."other_packages.txt";
 
+# Analyse the rest of command-line parameters
 if (!GetOptions(
     "u|username=s" => \$username,
     "p|password=s" => \$password,
