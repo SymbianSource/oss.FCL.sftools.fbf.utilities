@@ -31,6 +31,11 @@ cloned repository. The script will prompt for your username and
 password, which will be needed to access the SFL repositories, or you can
 supply them with command line arguments.
 
+The list of packages can be supplied in a text file using the -packagelist
+option, which is capable of reading the build-info.xml files supplied with 
+Symbian PDKs. Supplying a build-info.xml file will cause the clone or update
+operation to use the exact revision for each of the relevant repositories.
+
 Important: 
   This script uses https access to the repositories, so the username and
   password will be stored as cleartext in the .hg/hgrc file for each repository.
@@ -44,6 +49,7 @@ Options:
 -username      username at the Symbian website
 -password      password to go with username
 -mirror        create a "mirror" of the Symbian repository tree
+-packagelist   file containing the URLs for the packages to be processed
 -retries       number of times to retry a failed operation (default 1)
 -verbose       print the underlying "hg" commands before executing them
 -n             do nothing - don't actually execute the commands
@@ -59,6 +65,7 @@ to repository-specific values, and "hg" is always expanded to "hg -R %REPO%"
 %WREPO%        relative path to repository, with Windows path separators
 %URL%          URL of the master repository
 %PUSHURL%      URL suitable for pushing (always includes username & password)
+%REV%          revision associated with the repository (defaults to "tip")
 
 It's often useful to use "--" to separate the exec command from the options
 to this script, e.g. "-exec -- hg update -C tip"
@@ -80,13 +87,9 @@ my $do_nothing = 0; # print the hg commands, don't actually do them
 my $help = 0;
 my $exec = 0;
 my $filter = "";
+my @packagelist_files = ();
 
-# Extract the path location of the program and locate package list files
 my $program_path = $0;
-$program_path =~ s#(^.*\\)[^\\]+$#$1#;
-my $sf_pkg_list_file = $program_path."sf_mcl_packages.txt";
-my $sftools_pkg_list_file = $program_path."sftools_mcl_packages.txt";
-my $other_pkg_list_file = $program_path."other_packages.txt";
 
 # Analyse the rest of command-line parameters
 if (!GetOptions(
@@ -99,6 +102,7 @@ if (!GetOptions(
     "h|help" => \$help,
     "e|exec" => \$exec,
     "f|filter=s" => \$filter,
+    "l|packagelist=s" => \@packagelist_files,
     ))
   {
   Usage("Invalid argument");
@@ -107,11 +111,6 @@ if (!GetOptions(
 Usage("Too many arguments") if (scalar @ARGV > 0 && !$exec);
 Usage("Too few arguments for -exec") if (scalar @ARGV == 0 && $exec);
 Usage("") if ($help);
-
-open  SF_PKG_LIST, "<$sf_pkg_list_file" or die "Can't open $sf_pkg_list_file\n";
-open  SFTOOLS_PKG_LIST, "<$sftools_pkg_list_file" or die "Can't open $sftools_pkg_list_file\n";
-open  OTHER_PKG_LIST, "<$other_pkg_list_file" or die "Can't open $other_pkg_list_file\n";
-
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
@@ -147,37 +146,6 @@ if ($needs_id && $password eq "" )
   chomp $password;
   }
 
-my @sf_packages;
-foreach my $pkg (<SF_PKG_LIST>)
-{
-	if ($pkg =~ s#^https://[^/]+/##)
-	{
-		chomp($pkg);
-		push @sf_packages, $pkg;
-	}
-}
-
-my @sftools_packages;
-foreach my $pkg (<SFTOOLS_PKG_LIST>)
-{
-	if ($pkg =~ s#^https://[^/]+/##)
-	{
-		chomp($pkg);
-		push @sftools_packages, $pkg;
-	}
-}
-
-my @other_repos;
-foreach my $pkg (<OTHER_PKG_LIST>)
-{
-	if ($pkg =~ s#^https://[^/]+/##)
-	{
-		chomp($pkg);
-		push @other_repos, $pkg;
-	}
-}
-
-
 my %export_control_special_case = (
   "oss/MCL/sf/os/security" => 1,
   "oss/FCL/sf/os/security" => 1,
@@ -196,7 +164,9 @@ sub do_system(@)
   return system(@cmd);
   }
 
-sub get_repo($)
+my %revisions;
+
+sub process_one_repo($)
   {
   my ($package) = @_;
   my @dirs = split /\//, $package;
@@ -232,6 +202,19 @@ sub get_repo($)
     $repo_url = "http://developer.symbian.org/$package/";
     }
   
+  my @rev_options = ();
+  my $revision = $revisions{$package};
+  if (defined($revision))
+    {
+    @rev_options = ("--rev", $revision);
+    }
+  else
+    {
+    $revision = "tip";
+    # and leave the rev_options list empty
+    }
+  
+  my $ret;
   if ($exec)
     {
     # iteration functionality - process the keywords
@@ -245,91 +228,98 @@ sub get_repo($)
       $cmd =~ s/%WREPO%/$wpath/;
       $cmd =~ s/%URL%/$repo_url/;
       $cmd =~ s/%PUSHURL%/$repo_push_url/;
+      $cmd =~ s/%REV%/$revision/;
       push @repo_cmd, $cmd;
       }
     print "Processing $path...\n";
-    return do_system(@repo_cmd);
+    $ret = do_system(@repo_cmd);
     }
   elsif (-d "$path/.hg")
     {
     # The repository already exists, so just do an update
     
     print "Updating $destdir from $package...\n";
-    return do_system("hg", "pull", @pull_options, "-R", $path, $repo_url);
+    $ret = do_system("hg", "pull", @pull_options, "-R", $path, $repo_url, @rev_options);
     }
   else
     {
     # Clone the repository
     
     print "Cloning $destdir from $package...\n";
-    return do_system("hg", "clone", @clone_options, $repo_url, $path);
+    $ret = do_system("hg", "clone", @clone_options, $repo_url, $path, @rev_options);
     }
   
+  $ret = $ret >> 8;   # extract the exit status
+  print "* Exit status $ret for $path\n\n" if ($verbose);
+  return $ret;
   }
 
-my @all_packages;
+if (scalar @packagelist_files == 0)
+  {
+  # Read the package list files alongside the script itself
+  
+  # Extract the path location of the program and locate package list files
+  $program_path =~ s/\\/\//g;
+  $program_path =~ s/(^.*\/)[^\/]+$/$1/;
+  foreach my $file ("sf_mcl_packages.txt", "sftools_mcl_packages.txt", "other_packages.txt")
+    {
+    push @packagelist_files, $program_path.$file;
+    }
+  }
 
-@all_packages = (@sf_packages, @sftools_packages, @other_repos);
+my @all_packages = ();
+
+foreach my $file (@packagelist_files)
+  {
+  print "* reading package information from $file...\n" if ($verbose);
+  open PKG_LIST, "<$file" or die "Can't open $file: $!\n";
+  foreach my $line (<PKG_LIST>)
+    {
+    chomp($line);
+    
+    my $revision; # set when processing build-info listings
+    
+    # build-info.xml format
+    # <baseline>//v800008/Builds01/mercurial_master_prod/sfl/MCL/sf/adaptation/stubs/#:e086c7f635d5</baseline>
+    if ($line =~ /<baseline>(.*)#:([0-9a-z]+)<\/baseline>/i)
+      {
+      $line = $1;   # discard the wrapping
+      $revision = $2;
+      }
+ 
+    # Look for the oss/MCL/ prefix to a path e.g.
+    # https://developer.symbian.org/oss/FCL/interim/contrib/WidgetExamples
+    if ($line =~ /((oss|sfl)\/(FCL|MCL)\/.*)\s*$/)
+      {
+      my $repo_path = $1;
+      $repo_path =~ s/\/$//;  # remove trailing slash, if any
+
+      push @all_packages, $repo_path;
+      $revisions{$repo_path} = $revision if (defined $revision);
+      next;
+      }
+    }
+  close PKG_LIST;
+  }
 
 if ($mirror)
   {
   push @clone_options, "--noupdate";
   
-  if (0)
+  # Assume that every MCL has a matching FCL
+  my @list_with_fcls = ();
+  foreach my $package (@all_packages)
     {
-    # Prototype code to scrape the repository list from the website
-    # Needs to have extra modules and executables installed to support https
-    # so this would only work for the oss packages at present...
-    
-    # Create a user agent object
-    use LWP::UserAgent;
-    use HTTP::Request::Common;
-    my $ua = LWP::UserAgent->new;
-    $ua->agent("clone_all_packages.pl ");
-  
-    # Request the oss package list
-    my $res = $ua->request(GET "http://$hostname/oss");
-  
-    # Check the outcome of the response
-    if (! $res->is_success) 
+    push @list_with_fcls, $package;
+    if ($package =~ /MCL/)
       {
-      print "Failed to read oss package list:\n\t", $res->status_line, "\n";
-      }
-    
-    my @oss_packages = ($res->content =~ m/<td><a href="\/(oss\/[^"]+)\/?">/g);  # umatched "
-    print join ("\n\t",@oss_packages), "\n";
-
-    # Request the sfl package list
-    $res = $ua->request(GET "https://$username:$password\@$hostname/sfl");
-  
-    # Check the outcome of the response
-    if (! $res->is_success) 
-      {
-      print "Failed to read sfl package list:\n\t", $res->status_line, "\n";
-      }
-    
-    my @sfl_packages = ($res->content =~ m/<td><a href="\/(sfl\/[^"]+)\/?">/g);  # umatched "
-    print join ("\n\t",@sfl_packages), "\n";
-    
-    @all_packages = (@sfl_packages, @oss_packages);
-    }
-  else
-    {
-    # Assume that every MCL has a matching FCL
-    my @list_with_fcls = ();
-    foreach my $package (@all_packages)
-      {
+      # If mirroring, get the matching FCLs as well as MCLs
+      $package =~ s/MCL/FCL/;
       push @list_with_fcls, $package;
-      if ($package =~ /MCL/)
-        {
-        # If mirroring, get the matching FCLs as well as MCLs
-        $package =~ s/MCL/FCL/;
-        push @list_with_fcls, $package;
-        }
       }
-    @all_packages = @list_with_fcls;
     }
-
+  @all_packages = @list_with_fcls;
+  
   }
 
 my @problem_packages = ();
@@ -341,9 +331,9 @@ foreach my $package (@all_packages)
     {
     next; # skip repos which don't match the filter
     }
-  my $err = get_repo($package);
+  my $err = process_one_repo($package);
   $total_packages++;
-  push @problem_packages, $package if ($err); 
+  push @problem_packages, $package if ($err < 0 || $err > 127); 
   }
   
 # retry problem packages
@@ -360,8 +350,8 @@ while ($attempt < $retries && scalar @problem_packages)
   @problem_packages = ();
   foreach my $package (@list)
     {
-    my $err = get_repo($package);
-    push @problem_packages, $package if ($err); 
+    my $err = process_one_repo($package);
+    push @problem_packages, $package if ($err < 0 || $err > 127); 
    }
   }
 
