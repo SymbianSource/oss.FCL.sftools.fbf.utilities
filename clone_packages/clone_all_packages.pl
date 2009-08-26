@@ -240,6 +240,10 @@ sub process_one_repo($)
     
     print "Updating $destdir from $package...\n";
     $ret = do_system("hg", "pull", @pull_options, "-R", $path, $repo_url, @rev_options);
+    if ($ret == 0 && ! $mirror)
+      {
+      $ret = do_system("hg", "update", "-R", $path, @rev_options)
+      }
     }
   else
     {
