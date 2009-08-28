@@ -1,3 +1,21 @@
+#
+# Copyright (c) 2009 Symbian Foundation.
+# All rights reserved.
+# This component and the accompanying materials are made available
+# under the terms of the License "Eclipse Public License v1.0"
+# which accompanies this distribution, and is available
+# at the URL "http://www.eclipse.org/legal/epl-v10.html".
+#
+# Initial Contributors:
+# Symbian Foundation - Initial contribution
+# 
+# Contributors:
+# {Name/Company} - {Description of contribution}
+# 
+# Description:
+# Mercurial hook to turn hg tags into package versions in Bugzilla
+# 
+
 '''Bugzilla integration for adding versions from tags
 
 The hook updates the Bugzilla database directly. Only Bugzilla installations
