@@ -1,0 +1,9 @@
+mv newui.txt old_newui.txt
+grep -i qt $1 >> newui.txt
+grep -i direct.*ui $1 >>newui.txt
+grep -i orbit $1 >>newui.txt
+grep -i touch $1 >>newui.txt
+sort -u newui.txt > tmp1.txt
+mv tmp1.txt newui.txt
+diff old_newui.txt newui.txt
+diff old_newui.txt newui.txt | grep '[<|>]' > diff_newui.txt
