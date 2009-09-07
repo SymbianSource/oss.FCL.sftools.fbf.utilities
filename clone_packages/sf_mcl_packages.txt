@@ -93,7 +93,7 @@ https://developer.symbian.org/sfl/MCL/sf/os/mm
 https://developer.symbian.org/sfl/MCL/sf/os/networkingsrv
 https://developer.symbian.org/sfl/MCL/sf/os/ossrv
 https://developer.symbian.org/sfl/MCL/sf/os/persistentdata
-https://developer.symbian.org/sfl/MCL/sf/os/security
+https://developer.symbian.org/oss/MCL/sf/os/security
 https://developer.symbian.org/sfl/MCL/sf/os/shortlinksrv
 https://developer.symbian.org/sfl/MCL/sf/os/textandloc
 https://developer.symbian.org/sfl/MCL/sf/os/unref
@@ -111,7 +111,6 @@ https://developer.symbian.org/oss/MCL/sf/app/webuis
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapifw
 https://developer.symbian.org/oss/MCL/sf/mw/web
-https://developer.symbian.org/oss/MCL/sf/os/security
  
   
 
