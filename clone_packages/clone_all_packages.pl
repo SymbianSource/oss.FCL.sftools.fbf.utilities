@@ -63,6 +63,8 @@ to repository-specific values, and "hg" is always expanded to "hg -R %REPO%"
 
 %REPO%         relative path to the repository
 %WREPO%        relative path to repository, with Windows path separators
+%HREPO%        path to the repository on the server
+%WHREPO%       path to the repository on the server, with Windows separators
 %URL%          URL of the master repository
 %PUSHURL%      URL suitable for pushing (always includes username & password)
 %REV%          revision associated with the repository (defaults to "tip")
@@ -219,13 +221,17 @@ sub process_one_repo($)
     {
     # iteration functionality - process the keywords
     my $wpath = $path;
+    my $wpackage = $package;
     $wpath =~ s/\//\\/g;  # win32 path separator
+    $wpackage =~ s/\//\\/g;  # win32 path separator
     my @repo_cmd = ();
     foreach my $origcmd (@exec_cmd)
       {
       my $cmd = $origcmd; # avoid altering the original
       $cmd =~ s/%REPO%/$path/;
       $cmd =~ s/%WREPO%/$wpath/;
+      $cmd =~ s/%HREPO%/$package/;
+      $cmd =~ s/%WHREPO%/$wpackage/;
       $cmd =~ s/%URL%/$repo_url/;
       $cmd =~ s/%PUSHURL%/$repo_push_url/;
       $cmd =~ s/%REV%/$revision/;
