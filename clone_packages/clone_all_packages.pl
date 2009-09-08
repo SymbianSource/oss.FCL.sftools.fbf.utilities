@@ -264,6 +264,7 @@ sub process_one_repo($)
   return $ret;
   }
 
+my $add_implied_FCL_repos = 0; 
 if (scalar @packagelist_files == 0)
   {
   # Read the package list files alongside the script itself
@@ -275,6 +276,7 @@ if (scalar @packagelist_files == 0)
     {
     push @packagelist_files, $program_path.$file;
     }
+  $add_implied_FCL_repos = 1;   # lists only contain the MCL repo locations
   }
 
 my @all_packages = ();
@@ -316,20 +318,22 @@ if ($mirror)
   {
   push @clone_options, "--noupdate";
   
-  # Assume that every MCL has a matching FCL
-  my @list_with_fcls = ();
-  foreach my $package (@all_packages)
+  if ($add_implied_FCL_repos)
     {
-    push @list_with_fcls, $package;
-    if ($package =~ /MCL/)
+    # Assume that every MCL has a matching FCL. As we are mirroring,
+    # we can process both without them overlapping in the local filesystem
+    my @list_with_fcls = ();
+    foreach my $package (@all_packages)
       {
-      # If mirroring, get the matching FCLs as well as MCLs
-      $package =~ s/MCL/FCL/;
       push @list_with_fcls, $package;
+      if ($package =~ /MCL/)
+        {
+        $package =~ s/MCL/FCL/;
+        push @list_with_fcls, $package;
+        }
       }
+    @all_packages = @list_with_fcls;
     }
-  @all_packages = @list_with_fcls;
-  
   }
 
 my @problem_packages = ();
