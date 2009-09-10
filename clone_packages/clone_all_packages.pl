@@ -293,7 +293,7 @@ foreach my $file (@packagelist_files)
     
     # build-info.xml format
     # <baseline>//v800008/Builds01/mercurial_master_prod/sfl/MCL/sf/adaptation/stubs/#:e086c7f635d5</baseline>
-    if ($line =~ /<baseline>(.*)#:([0-9a-z]+)<\/baseline>/i)
+    if ($line =~ /<baseline>(.*)#:?([0-9a-z]+)<\/baseline>/i)
       {
       $line = $1;   # discard the wrapping
       $revision = $2;
