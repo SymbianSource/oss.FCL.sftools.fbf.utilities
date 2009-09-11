@@ -292,11 +292,13 @@ foreach my $file (@packagelist_files)
     my $revision; # set when processing build-info listings
     
     # build-info.xml format
+    # <baseline>//v800008/Builds01/mercurial_master_prod/sfl/MCL/sf/adaptation/stubs/#7:e086c7f635d5</baseline>
     # <baseline>//v800008/Builds01/mercurial_master_prod/sfl/MCL/sf/adaptation/stubs/#:e086c7f635d5</baseline>
-    if ($line =~ /<baseline>(.*)#:?([0-9a-z]+)<\/baseline>/i)
+    # <baseline>//v800008/Builds01/mercurial_master_prod/sfl/MCL/sf/adaptation/stubs/#e086c7f635d5</baseline>
+    if ($line =~ /<baseline>(.*)#(\d*:)?([0-9a-fA-F]+)<\/baseline>/i)
       {
       $line = $1;   # discard the wrapping
-      $revision = $2;
+      $revision = $3;
       }
  
     # Look for the oss/MCL/ prefix to a path e.g.
