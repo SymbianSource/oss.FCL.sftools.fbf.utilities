@@ -56,6 +56,7 @@ Options:
 -help          print this help information
 -exec          execute command on each repository
 -filter <RE>   only process repository paths matching regular expression <RE>
+-dummyrun      Dummy Run, don't execute any Mercurial commands.
 
 The -exec option processes the rest of the command line, treating it as
 a command to apply to each repository in turn. Some keywords are expanded
@@ -105,6 +106,7 @@ if (!GetOptions(
     "e|exec" => \$exec,
     "f|filter=s" => \$filter,
     "l|packagelist=s" => \@packagelist_files,
+    "d|dummyrun" => \$do_nothing,
     ))
   {
   Usage("Invalid argument");
