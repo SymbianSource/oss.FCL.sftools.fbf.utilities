@@ -21,7 +21,6 @@ https://developer.symbian.org/sfl/MCL/sftools/dev/ide/carbidecppplugins
 https://developer.symbian.org/sfl/MCL/sftools/dev/iss
 https://developer.symbian.org/sfl/MCL/sftools/dev/ui
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout34
-https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout35
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/eclipse
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/compilationtoolchains
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/cpptoolsplat
