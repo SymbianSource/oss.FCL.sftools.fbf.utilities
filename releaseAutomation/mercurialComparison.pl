@@ -25,7 +25,7 @@ my $detailsTsvFilename = shift or die "Third argument must be filename to write 
 defined shift and die "No more than three arguments please\n";
 
 # Use external scripts to get the raw data and produce the CSV summary (to go into Excel, etc)
-system("perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -C --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2> nul: > $detailsTsvFilename");
+#system("perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -A --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2> nul: > $detailsTsvFilename");
 
 # The redirection above means that we discard STDERR from summarise_hg_status,
 # which lists packages for which it was unable to generate any data
@@ -60,14 +60,27 @@ close $fh;
 my %cookedData;
 foreach my $datum (@rawData)
 {
-	next if $datum->{Change} =~ m{^(same|M)$};
-	$cookedData{$datum->{Package}} += $datum->{Count};
+	# Accumulate the total number of files in the old revision of the pkg
+	$cookedData{$datum->{Package}}->{totalFiles} += $datum->{Count} unless $datum->{Change} eq "A";
+	$cookedData{$datum->{Package}}->{same} += $datum->{Count} if $datum->{Change} eq "same";
+	$cookedData{$datum->{Package}}->{addRemove} += $datum->{Count} if $datum->{Change} =~ m{^[AR]$};
 }
 
 # Cut-off for "interesting" packages
 foreach my $package (keys %cookedData)
 {
-	delete $cookedData{$package} unless $cookedData{$package} >= 350;
+	# Ensure items are defined
+	$cookedData{$package}->{totalFiles} |= 1;
+	$cookedData{$package}->{same} |= 0;
+	$cookedData{$package}->{addRemove} |= 0;
+	$cookedData{$package}->{percentChurn} = 100 * (1 - ($cookedData{$package}->{same} / $cookedData{$package}->{totalFiles}));
+	
+	# More than N files added + removed
+	next if $cookedData{$package}->{addRemove} >= 400;
+	# More than M% churn
+	next if $cookedData{$package}->{percentChurn} > 30;
+	# Nothing interesting about this package
+	delete $cookedData{$package};
 }
 
 # Output
@@ -87,7 +100,8 @@ foreach my $package (sort keys %cookedData)
 	print <<"EOT";
 === $package ===
 
-$cookedData{$package} files added/removed
+$cookedData{$package}->{addRemove} files added/removed
+$cookedData{$package}->{percentChurn}% churn
 
 * Cause1
 * etc
