@@ -25,7 +25,7 @@ my $detailsTsvFilename = shift or die "Third argument must be filename to write 
 defined shift and die "No more than three arguments please\n";
 
 # Use external scripts to get the raw data and produce the CSV summary (to go into Excel, etc)
-#system("perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -A --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2> nul: > $detailsTsvFilename");
+system("perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -A --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2> nul: > $detailsTsvFilename");
 
 # The redirection above means that we discard STDERR from summarise_hg_status,
 # which lists packages for which it was unable to generate any data
