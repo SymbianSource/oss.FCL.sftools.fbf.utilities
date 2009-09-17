@@ -23,6 +23,11 @@ my $churn_core = "$FindBin::Bin\\churn_core.pl";
 my $churn_output_temp = "$FindBin::Bin\\fbf_churn_output";
 mkdir $churn_output_temp;
 
+my $path = $FindBin::Bin;
+$path =~ s/\//\\/g;
+my $clone_packages = "$path\\..\\clone_packages\\clone_all_packages.pl";
+
+
 sub Usage($)
   {
   my ($msg) = @_;
@@ -142,7 +147,7 @@ $new_rev = "%REV%" if ($new_rev eq "");
 
 #TO_DO: Locate clone_all_packages relative to the location of this script.
 #TO_DO: Remove references to absolute paths, change to relative paths.
-do_system("clone_all_packages.pl",@verboseopt,"-mirror","-filter","$licence.*$codeline.*$filter",@packagelistopts,"-exec","--",
+do_system($clone_packages,@verboseopt,"-mirror","-filter","$licence.*$codeline.*$filter",@packagelistopts,"-exec","--",
    "hg","--config","\"extensions.hgext.extdiff=\"","extdiff","-p",$churn_core,"-o",$churn_output_temp,
    "-r","$old","-r","$new_rev");
 
