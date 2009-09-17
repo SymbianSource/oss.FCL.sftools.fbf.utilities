@@ -25,14 +25,14 @@ my $detailsTsvFilename = shift or die "Third argument must be filename to write 
 defined shift and die "No more than three arguments please\n";
 
 # Use external scripts to get the raw data and produce the CSV summary (to go into Excel, etc)
-system("perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -A --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2> nul: > $detailsTsvFilename");
+my @pkgErrors = `perl $FindBin::Bin\\..\\clone_packages\\clone_all_packages.pl -packagelist $bomInfoFile -exec -- hg status -A --rev $previousPdkLabel 2>&1 | perl $FindBin::Bin\\..\\williamr\\summarise_hg_status.pl 2>&1 > $detailsTsvFilename`;
 
-# The redirection above means that we discard STDERR from summarise_hg_status,
+# The redirection above means that we capture STDERR from summarise_hg_status,
 # which lists packages for which it was unable to generate any data
 # 
-# It's discarded because that happens either because it's a new package or has
+# It's captured because that happens either because it's a new package or has
 # moved from SFL -> EPL or we've reverted to using the MCL instead of the FCL
-# (in which cases it's dealt with in another part of the release notes) or it
+# (in which case it's dealt with in another part of the release notes) or it
 # just hasn't had any changes since the last release
 
 # Input from TSV file
@@ -65,8 +65,16 @@ foreach my $datum (@rawData)
 	$cookedData{$datum->{Package}}->{same} += $datum->{Count} if $datum->{Change} eq "same";
 	$cookedData{$datum->{Package}}->{addRemove} += $datum->{Count} if $datum->{Change} =~ m{^[AR]$};
 }
+# Add the "exception" packages
+foreach my $package (@pkgErrors)
+{
+	chomp $package;
+	$package =~ s{No valid comparison for }{};
+	$cookedData{$package}->{exception} = "Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
+}
 
 # Cut-off for "interesting" packages
+
 foreach my $package (keys %cookedData)
 {
 	# Ensure items are defined
@@ -74,11 +82,14 @@ foreach my $package (keys %cookedData)
 	$cookedData{$package}->{same} |= 0;
 	$cookedData{$package}->{addRemove} |= 0;
 	$cookedData{$package}->{percentChurn} = 100 * (1 - ($cookedData{$package}->{same} / $cookedData{$package}->{totalFiles}));
+	$cookedData{$package}->{exception} |= "";
 	
 	# More than N files added + removed
 	next if $cookedData{$package}->{addRemove} >= 400;
 	# More than M% churn
 	next if $cookedData{$package}->{percentChurn} > 30;
+	# Unable to compare at all
+	next if $cookedData{$package}->{exception};
 	# Nothing interesting about this package
 	delete $cookedData{$package};
 }
@@ -102,7 +113,7 @@ foreach my $package (sort keys %cookedData)
 
 $cookedData{$package}->{addRemove} files added/removed
 $cookedData{$package}->{percentChurn}% churn
-
+$cookedData{$package}->{exception}
 * Cause1
 * etc
 
