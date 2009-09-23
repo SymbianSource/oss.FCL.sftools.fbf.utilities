@@ -95,17 +95,6 @@ foreach my $package (keys %cookedData)
 }
 
 # Output
-print <<"EOT";
-== Mercurial Comparison with $previousPdkLabel ==
-
-The Mercurial changes from Nokia were delivered as a bulk update based on '''XXXXXXXXXXXXXXXXXXXXXX'''.
-
-List of the Mercurial changes (files added/removed/modified) between $previousPdkLabel and PDK '''XXXXX''' - [[Media:XXXX.txt]].
-
-A short study of the results which concentrated on the added and removed files has identified these significant package changes: 
-
-EOT
-
 foreach my $package (sort keys %cookedData)
 {
 	print <<"EOT";
