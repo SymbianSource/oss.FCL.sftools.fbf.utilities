@@ -70,7 +70,7 @@ foreach my $package (@pkgErrors)
 {
 	chomp $package;
 	$package =~ s{No valid comparison for }{};
-	$cookedData{$package}->{exception} = "Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
+	$cookedData{$package}->{exception} = "* Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
 }
 
 # Cut-off for "interesting" packages
@@ -111,11 +111,11 @@ foreach my $package (sort keys %cookedData)
 	print <<"EOT";
 === $package ===
 
-$cookedData{$package}->{addRemove} files added/removed
-$cookedData{$package}->{percentChurn}% churn
+* $cookedData{$package}->{addRemove} files added/removed
+* $cookedData{$package}->{percentChurn}% churn
 $cookedData{$package}->{exception}
-* Cause1
-* etc
+# Cause1
+# etc
 
 EOT
 }
