@@ -27,7 +27,20 @@ my $nb_arg_to_pass=2;
 print "nb_arg_to_pass=$nb_arg_to_pass\n";
 
 # Name of the file that contains the data we need to extract for this script
-my $name_zip_file_to_extract="build_BOM\.zip";
+my $build_bom_zip_file_to_extract="build_BOM\.zip";
+my $build_logs_zip_file_to_extract="build_logs\.zip";
+
+# Name of the file we need to work on to extract the data necessary for the Release Notes from build_BOM.zip
+my $name_of_file_to_compare="build-info\.xml";
+
+# File used to extract path and component name for a package from build_logs.zip
+my $pckg_extraction_data_file_name = "PkgComponentAnalysisSummary\.csv";
+
+
+# When using the script as part of the build system, we don't have access to the zip files yet, therefore we need to have a look for the file directly
+# This is working only when using pdkloc2 only. In any other cases we are not bothered!!!!!
+my $bom_dir="BOM";
+my $analysis_dir="analysis";
 
 # Pattern used to search for PDKs
 my $pdk_start_pattern="PDK_";
@@ -61,14 +74,12 @@ my $working_sub_directory="fcl_extraction";
 my $working_pdk1_directory="pdk1";
 my $working_pdk2_directory="pdk2";
 
-# Name of the file we need to work on to extract the data necessary for the Release Notes
-my $name_of_file_to_compare="build-info.xml";
-
 # Name of the file that we are creating to hold the information necessary for the Release Notes
-my $name_of_file_to_publish="fcl_info.txt";
+my $name_of_file_to_publish="sf.releasenotes.wiki.txt";
 #Location for that file
+# This values need to be overwritten!!!
 my $location_of_file_to_publish="c:\\temp";
-my $file_path="$location_of_file_to_publish\\$name_of_file_to_publish";
+my $path_to_file_to_publish="$location_of_file_to_publish\\$name_of_file_to_publish";
 
 #
 # End configuration data for the script
@@ -80,15 +91,16 @@ print "\n";
 my $nb_arg_passed = scalar(@ARGV);
 print "nb_arg_passed=$nb_arg_passed\n"; # Find out the number of arguement passed
 print "@ARGV\n\n";
-if ($nb_arg_passed != $nb_arg_to_pass)
-{
-	helpme();
-}
-
 # Needs to be done here, otherwise lost if try to recover them later on. Why?
 my $arg1_passed = $ARGV[0];
 my $arg2_passed = $ARGV[1];
 print "arg1_passed= $arg1_passed \t arg2_passed=$arg2_passed\n";
+
+# if enter help as unique argument, then we will launch the help becaue we only pass one argument.
+if ($nb_arg_passed != $nb_arg_to_pass)
+{
+	helpme();
+}
 
 # Modules necessary to run this script
 use Getopt::Long;
@@ -112,15 +124,16 @@ GetOptions((
 	'pdkname2=s' => \$pdkname2,
 	'pdkloc1=s' => \$pdkloc1,
 	'pdkloc2=s' => \$pdkloc2,
-	'help!' => \$help
+	'help!' => \$help	# Not working
 ));
 
-print "\$pdknb1=$pdknb1\n";
-print "\$pdknb2=$pdknb2\n";
-print "\$pdkname1=$pdkname1\n";
-print "\$pdkname2=$pdkname2\n";
-print "\$pdkloc1=$pdkloc1\n";
-print "\$pdkloc2=$pdkloc2\n";
+print "\pdknb1=$pdknb1\n";
+print "\pdknb2=$pdknb2\n";
+print "\pdkname1=$pdkname1\n";
+print "\pdkname2=$pdkname2\n";
+print "\pdkloc1=$pdkloc1\n";
+print "\pdkloc2=$pdkloc2\n";
+print "\help=$help\n";
 
 my $count_arg=0; # Caculate the number of arguments we need for the script to work and that we know are correct (help doesn't count)
 
@@ -144,8 +157,10 @@ my $pdk_values_to_search2=""; # Not necessary
 my $pdk_path2_exist=0;
 my $pdk_zip2_exist=0; # Not necessary
 my $pdk2_correct_name_to_use="";
-my $loc2_contains_the_zip_file_we_need=0;
-
+my $loc2_contains_the_zip_file_we_need=0;		# Used to indicate that we have found the build_BOM.zip file
+my $loc2_contains_the_xml_csv_files_we_need=0;	# Used to indicate that we have found the build-info.xml and PkgComponentAnalysisSummary.csv
+my $nb_of_xml_csv_files_we_need=2;	# Used to define the number of files we need to have a look at when we are not looking for zip files.
+my $nb_of_zip_files_we_need=2;	# Used to define the number of files we need to have a look at when we are looking for zip files.
 
 # Default directory management
 my @directories_list_default_location=();
@@ -186,7 +201,8 @@ my @new_fcl_table;				# Table containing the packages that are now on fcl in pdk
 my @no_more_fcl_table;			# Table containing the packages that are no more on fcl in pdk2 (means were fcl in pdk1 and are now mcl in pdk2)
 my @still_fcl_table;			# Table containing the packages that are still on fcl in pdk2 (means were fcl in pdk1 and are still fcl in pdk2)
 my @very_good_mcl_table;		# Table containing the packages that are very good on mcl in pdk1 and pdk2 (means were on mcl in pdk1 and are still mcl in pdk2)
-
+my %pckg_path_name_array;		# Table containing the path for each packages
+my %pckg_name_array;			# Table containing the real meaning name for each packages, not the name of the package in the directory structure
 
 # Check that we have only 2 values for the PDKs. If not 2, then not good!
 
@@ -228,14 +244,8 @@ if($pdkname1)
 	}
 	else
 	{
-		if(!$pdk_path2_now_in_use)
-		{
-			# Get data for first pdk used for the comparison
-			$pdk_path2 = $default_pdk_loc;	
-			$pdk_complete_path2=1;
-			$pdk_path2_now_in_use=1;
-			$pdk_values_to_search2=$pdkname1; # Not necessary
-		}
+		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb1 and pdkname1! Start again with the right parameters!\n";
+		exit(0);
 	}
 }
 if($pdkname2)
@@ -252,14 +262,8 @@ if($pdkname2)
 	}
 	else
 	{
-		if(!$pdk_path1_now_in_use)
-		{
-			# Get data for first pdk used for the comparison
-			$pdk_path1 = $default_pdk_loc;	
-			$pdk_complete_path1=1;	
-			$pdk_path1_now_in_use=1;
-			$pdk_values_to_search1=$pdkname2; # Not necessary
-		}
+		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb2 and pdkname2! Start again with the right parameters!\n";
+		exit(0);
 	}
 }
 if($pdkloc1)
@@ -274,12 +278,8 @@ if($pdkloc1)
 	}
 	else
 	{
-		if(!$pdk_path2_now_in_use)
-		{
-			# Get data for first pdk used for the comparison
-			$pdk_path2 = $pdkloc1;
-			$pdk_path2_now_in_use=1;
-		}
+		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb1 and pdkloc1! Start again with the right parameters!\n";
+		exit(0);
 	}
 }
 
@@ -295,12 +295,8 @@ if($pdkloc2)
 	}
 	else
 	{
-		if(!$pdk_path1_now_in_use)
-		{
-			# Get data for first pdk used for the comparison
-			$pdk_path1 = $pdkloc2;
-			$pdk_path1_now_in_use=1;
-		}
+		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb2 and pdkloc2! Start again with the right parameters!\n";
+		exit(0);
 	}
 }
 
@@ -492,8 +488,7 @@ if($pdkloc1)
 	
 	foreach $loc_var (@read_files_in_loc)
 	{
-		#if($loc_var =~ /$name_zip_file_to_extract[^.\w]/)
-		if($loc_var =~ /$name_zip_file_to_extract$/)
+		if($loc_var =~ /$build_bom_zip_file_to_extract$/)
 		{
 			print "We found the file: $loc_var\n";
 			
@@ -509,7 +504,7 @@ if($pdkloc1)
 	}
 	if(!$loc1_contains_the_zip_file_we_need)
 	{
-		print "We can't find the file $name_zip_file_to_extract in the location $pdkloc2 and therefore we can't go any further!!\n";
+		print "We can't find the file $build_bom_zip_file_to_extract in the location $pdkloc2 and therefore we can't go any further!!\n";
 		exit(0);
 	}
 }
@@ -517,39 +512,102 @@ print "\n";
 
 if($pdkloc2)
 {
-	# Get the list of file in the location choosen.
+	# Have a look at the zip files in the location choosen.
 	opendir(LOC2_DIR, $pdkloc2);
-	@read_files_in_loc = readdir(LOC2_DIR);
-	close(LOC2_DIR);
-	
-	#print "List of files in the directory: @read_files_in_loc\n";
+	@read_files_in_loc = readdir(LOC2_DIR);	# Need to have a look at the sub directories too!!!!!!
+	close(LOC2_DIR);	
+	print "List of files in the directory: @read_files_in_loc\n";
 	
 	foreach $loc_var (@read_files_in_loc)
 	{
-		#if($loc_var =~ /$name_zip_file_to_extract[^.\w]/)
-		if($loc_var =~ /$name_zip_file_to_extract$/)
+		# Have a look for build_bom.zip and build_logs.zip
+		if( ($loc_var =~ /$build_bom_zip_file_to_extract$/) || ($loc_var =~ /$build_logs_zip_file_to_extract$/) )
 		{
 			print "We found the file: $loc_var\n";
-			
-			$pdk2_correct_name_to_use = "PDK2";
-			$pdk_path2 = $pdkloc2;
-			
-			print "The PDK used is: $pdk2_correct_name_to_use\n";
-			print "pdk_path2 = $pdk_path2\n";
-			$loc2_contains_the_zip_file_we_need=1;
-			
-			# As we have found the file, we can probably break!
+			$loc2_contains_the_zip_file_we_need++;
 		}
 	}
-	if(!$loc2_contains_the_zip_file_we_need)
+	
+	if(!$loc2_contains_the_zip_file_we_need) # If we have the zip file, no need to have a look for the csv and xml files!
 	{
-		print "We can't find the file $name_zip_file_to_extract in the location $pdkloc2 and therefore we can't go any further!!\n";
+		my $local_var_path;
+		
+		print "We are checking for xml file\n";
+		$local_var_path = "$pdkloc2\\$bom_dir";
+		print "local_var_path = $local_var_path\n";
+		
+		opendir(LOCBOM_DIR, $local_var_path);
+		@read_files_in_loc = readdir(LOCBOM_DIR);
+		close(LOCBOM_DIR);
+		
+		print "List of files in the directory: @read_files_in_loc\n";
+		
+		foreach $loc_var (@read_files_in_loc)
+		{			
+			if($loc_var =~ /$name_of_file_to_compare$/)
+			{
+				print "We are in the case of the build and instead of looking for zip files, we need to have a look for $name_of_file_to_compare\n";
+				
+				print "We found the file: $loc_var\n";
+				
+				$loc2_contains_the_xml_csv_files_we_need++;
+			}
+		}
+
+		print "We are checking for csv file\n";
+		$local_var_path = "$pdkloc2\\$analysis_dir";
+		print "local_var_path = $local_var_path\n";
+		
+		opendir(LOCANALYSIS_DIR, $local_var_path);
+		@read_files_in_loc = readdir(LOCANALYSIS_DIR);
+		close(LOCANALYSIS_DIR);
+		
+		print "List of files in the directory: @read_files_in_loc\n";
+		
+		foreach $loc_var (@read_files_in_loc)
+		{
+			if($loc_var =~ /$pckg_extraction_data_file_name$/)
+			{
+				print "We are in the case of the build and instead of looking for zip files, we need to have a look for $pckg_extraction_data_file_name\n";
+				
+				print "We found the file: $loc_var\n";
+				
+				$loc2_contains_the_xml_csv_files_we_need++;
+			}
+		}
+	}
+	if(($loc2_contains_the_zip_file_we_need==$nb_of_zip_files_we_need) || ($loc2_contains_the_xml_csv_files_we_need==$nb_of_xml_csv_files_we_need))
+	{
+		$pdk2_correct_name_to_use = "PDK2";
+		$pdk_path2 = $pdkloc2;
+		
+		print "The PDK used is: $pdk2_correct_name_to_use\n";
+		print "pdk_path2 = $pdk_path2\n";
+		
+		if($loc2_contains_the_xml_csv_files_we_need==$nb_of_xml_csv_files_we_need)
+		{
+			$location_of_file_to_publish=$pdkloc2;
+			$path_to_file_to_publish="$location_of_file_to_publish\\$name_of_file_to_publish";
+			print "location_of_file_to_publish=$location_of_file_to_publish\n";
+			print "path_to_file_to_publish=$path_to_file_to_publish\n";
+		}
+	}
+	else
+	{
+		if($loc2_contains_the_xml_csv_files_we_need<=$nb_of_xml_csv_files_we_need)
+		{
+			print "We can't find the files $name_of_file_to_compare and\/or $pckg_extraction_data_file_name in the location $pdkloc2 and therefore we can't go any further!!\n";
+		}
+		else
+		{
+			print "We can't find the files $build_bom_zip_file_to_extract in the location $pdkloc2 and therefore we can't go any further!!\n";
+		}
 		exit(0);
 	}
 }
 
 print "\n";
-print "If we are here, this means that both $name_zip_file_to_extract have been found and we can start the real work to compare the 2 files to extract what we need!\n";
+print "If we are here, this means that both $build_bom_zip_file_to_extract have been found and we can start the real work to compare the 2 files to extract what we need!\n";
 print "This is the value for the path we are looking at for pdk_path1: $pdk_path1\n";
 print "This is the value for the path we are looking at for pdk_path2: $pdk_path2\n";
 
@@ -572,22 +630,65 @@ my $working_dir2="$working_drive\\$working_directory\\$working_sub_directory\\$w
 #
 # Where $working_sub_directory is the directory where we will be carry the work to be done for the script.
 # Where $working_pdk1_directory is the subdirectory destination for the PDK1
-# Where $name_zip_file_to_extract is the name of the zip file (in our case: build_BOM.zip)
+# Where $build_bom_zip_file_to_extract is the name of the zip file (in our case: build_BOM.zip)
 # Where $pdk_path1 is the place where the zip file to unzip is
 # where $name_of_file_to_compare is the name of the file we want to extract from the zip file (in our case: build-info.xml)
 # Example: 7z e -r -oc:\temp\fcl_extraction\pdk1 C:\temp\Task243Test\PDK_1\build_BOM.zip build-info.xml
 
 # Extract file from 1st PDK
-$system_cmd = "7z e -r -o$working_dir1 $pdk_path1\\$name_zip_file_to_extract $name_of_file_to_compare";
+$system_cmd = "7z e -r -o$working_dir1 $pdk_path1\\$build_bom_zip_file_to_extract $name_of_file_to_compare";
+print "Exec: $system_cmd\n";
+system($system_cmd);
+
+print "\n";
+
+# Extract the information contained in PkgComponentAnalysisSummary.csv for path a nd package name used by PDK1.
+$system_cmd = "7z e -r -o$working_dir1 $pdk_path1\\$build_logs_zip_file_to_extract $pckg_extraction_data_file_name";
 print "Exec: $system_cmd\n";
 system($system_cmd);
 
 print "\n";
 
 # Extract file from 2nd PDK
-$system_cmd = "7z e -r -o$working_dir2 $pdk_path2\\$name_zip_file_to_extract $name_of_file_to_compare";
-print "Exec: $system_cmd\n";
-system($system_cmd);
+if($loc2_contains_the_xml_csv_files_we_need==$nb_of_xml_csv_files_we_need)
+{
+	my $local_file_path;
+	print "We are copying the files $name_of_file_to_compare and $pckg_extraction_data_file_name from $pdk_path2 to $working_dir2\n";
+
+	print "Create directory $working_dir2\n";
+	$system_cmd = "mkdir $working_dir2";
+	print "Exec: $system_cmd\n";
+	system($system_cmd);
+	
+	print "We are going to copy $name_of_file_to_compare to $working_dir2\n";
+	$local_file_path = "$pdk_path2\\$bom_dir\\$name_of_file_to_compare";
+	$system_cmd = "xcopy $local_file_path $working_dir2 \/F";
+	print "Exec: $system_cmd\n";
+	system($system_cmd);
+
+	print "\n";
+	
+	# Extract the information contained in PkgComponentAnalysisSummary.csv for path and package name used by PDK1.
+	print "We are going to copy $pckg_extraction_data_file_name to $working_dir2\n";
+	$local_file_path = "$pdk_path2\\$analysis_dir\\$pckg_extraction_data_file_name";
+	$system_cmd = "xcopy $local_file_path $working_dir2 \/F";
+	print "Exec: $system_cmd\n";
+	system($system_cmd);
+}
+else
+{
+	print "We are looking for zip files, then we extract them\n";
+	$system_cmd = "7z e -r -o$working_dir2 $pdk_path2\\$build_bom_zip_file_to_extract $name_of_file_to_compare";
+	print "Exec: $system_cmd\n";
+	system($system_cmd);
+	
+	print "\n";
+	
+	# Extract the information contained in PkgComponentAnalysisSummary.csv for path and package name used by PDK1.
+	$system_cmd = "7z e -r -o$working_dir2 $pdk_path2\\$build_logs_zip_file_to_extract $pckg_extraction_data_file_name";
+	print "Exec: $system_cmd\n";
+	system($system_cmd);
+}
 
 # 2nd step is to extract the information we need from the 2 files build-info.xml
 
@@ -707,7 +808,6 @@ while (($tab_counter1 < $total_packages_pdk1) && ($tab_counter2 < $total_package
 				}
 			}
 		}
-		
 		$tab_counter1++;
 		$tab_counter2++;
 	}
@@ -728,6 +828,9 @@ while (($tab_counter1 < $total_packages_pdk1) && ($tab_counter2 < $total_package
 	}
 }
 
+# Build list of files path and name based on csv file generated by the build system (analysis part)
+extract_package_detail("$working_dir2\\$pckg_extraction_data_file_name");
+extract_package_detail("$working_dir1\\$pckg_extraction_data_file_name");
 
 print "\nPrint all the values related to our calculations\n";
 print "total_packages_pdk1=$total_packages_pdk1\n";
@@ -735,27 +838,27 @@ print "total_packages_pdk2=$total_packages_pdk2\n";
 print "\n";
 print "total_packages_added=$total_packages_added\n";
 print "packages_added_table=\n";
-display_array_one_line_at_the_time(@packages_added_table);
+#display_array_one_line_at_the_time(@packages_added_table);
 print "\n";
 print "total_packages_removed=$total_packages_removed\n";
 print "packages_removed_table=\n";
-display_array_one_line_at_the_time(@packages_removed_table);
+#display_array_one_line_at_the_time(@packages_removed_table);
 print "\n";
 print "total_new_fcl=$total_new_fcl\n";
 print "new_fcl_table=\n";
-display_array_one_line_at_the_time(@new_fcl_table);
+#display_array_one_line_at_the_time(@new_fcl_table);
 print "\n";
 print "total_no_more_fcl=$total_no_more_fcl\n";
 print "no_more_fcl_table=\n";
-display_array_one_line_at_the_time(@no_more_fcl_table);
+#display_array_one_line_at_the_time(@no_more_fcl_table);
 print "\n";
 print "total_still_fcl=$total_still_fcl\n";
 print "still_fcl_table=\n";
-display_array_one_line_at_the_time(@still_fcl_table);
+#display_array_one_line_at_the_time(@still_fcl_table);
 print "\n";
 print "total_very_good_mcl=$total_very_good_mcl\n";
 print "very_good_mcl_table=\n";
-display_array_one_line_at_the_time(@very_good_mcl_table);
+#display_array_one_line_at_the_time(@very_good_mcl_table);
 print "\n";
 # Checking that the packages have been assigned properly.
 # !!!! Need to verify the formula. Not sure that is correct!!!!!!
@@ -771,7 +874,7 @@ print "$total_packages_pdk2 = $total_very_good_mcl + $total_new_fcl + $total_no_
 print "\n";
 
 # 5th step is to create a txt file ready to be used for the release notes in a media wiki format.
-open(FCLCOMPARISONFILE, ">$file_path");	# !!!!! First time we are accessing the file, therefore create it or replace it, AFTR THAT WE NEED TO APPEND IT ONLY!!!!!
+open(FCLCOMPARISONFILE, ">$path_to_file_to_publish");	# !!!!! First time we are accessing the file, therefore create it or replace it, AFTR THAT WE NEED TO APPEND IT ONLY!!!!!
 
 my $val;
 
@@ -791,14 +894,28 @@ print FCLCOMPARISONFILE "=== Packages added ===\n\n";
 print FCLCOMPARISONFILE "\n Number total of packages added in $pdk2_correct_name_to_use is: '''$total_packages_added'''\n\n";
 foreach $val (@packages_added_table)
 {
-	print FCLCOMPARISONFILE "''' $val (sf/app/contacts) '''\n\n";
+	if($pckg_name_array{$val})
+	{
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n\n";
+	}
+	else
+	{
+		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n\n";
+	}
 }
 
 print FCLCOMPARISONFILE "=== Packages removed ===\n\n\n";
 print FCLCOMPARISONFILE "''' Number total of packages removed in $pdk2_correct_name_to_use is: $total_packages_removed'''\n\n";
 foreach $val (@packages_removed_table)
 {
-	print FCLCOMPARISONFILE "''' $val (sf/app/contacts) '''\n\n\n";
+	if($pckg_name_array{$val})
+	{
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n\n";
+	}
+	else
+	{
+		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n\n";
+	}
 }
 
 # Enter the beginning of the section for the FCL
@@ -815,39 +932,94 @@ EOT
 # Packages that were on MCL and that are now on FCL
 foreach $val (@new_fcl_table)
 {
-	print FCLCOMPARISONFILE "=== $val (sf/app/contacts) -- NEW ===\n\n\n";
-	# Needs to be recovered from Mercurial. How????
-	#[http://developer.symbian.org/bugs/show_bug.cgi?id=156 Bug 156]: Add a missing bld.inf, to renable compilation of the package
-	#[http://developer.symbian.org/bugs/show_bug.cgi?id=197 Bug 197]: PSAlgorithmInternalCRKeys.h is missing
-
+	if($pckg_name_array{$val})
+	{
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) -- NEW ===\n\n\n";
+		# TO DO!!!!
+		# Needs to be recovered from Mercurial. How????
+		#[http://developer.symbian.org/bugs/show_bug.cgi?id=156 Bug 156]: Add a missing bld.inf, to renable compilation of the package
+		#[http://developer.symbian.org/bugs/show_bug.cgi?id=197 Bug 197]: PSAlgorithmInternalCRKeys.h is missing
+	}
+	else
+	{
+		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) -- NEW ===\n\n\n";
+	}
 }
 
 # Packages that were on FCL and that are now on FCL
 foreach $val (@still_fcl_table)
 {
-	print FCLCOMPARISONFILE "=== $val (sf/app/contacts) ===\n\n\n";
+	if($pckg_name_array{$val})
+	{
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) ===\n\n\n";
+	}
+	else
+	{
+		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) ===\n\n\n";
+	}
 }
 
 print FCLCOMPARISONFILE "=== FCLs used in $pdk1_correct_name_to_use but not needed in $pdk2_correct_name_to_use ===\n";
 
 foreach $val (@no_more_fcl_table)
 {
-	print FCLCOMPARISONFILE "''' $val (sf/app/contacts) '''\n\n";
+	if($pckg_name_array{$val})
+	{
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
+	}
+	else
+	{
+		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
+	}
 }
 
 # Packages were on MCL and they are still on MCL.
 foreach $val (@very_good_mcl_table)
 {
-	#print FCLCOMPARISONFILE "=== $val (sf/app/contacts) -- VERY GOOD ===\n";
+	#print "Value for package $val is: $pckg_name_array{$val}\n";
+	if($pckg_name_array{$val})
+	{
+		#print "There is a real name for the package: ($pckg_name_array{$val})\n";
+		#print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) -- VERY GOOD ===\n";
+	}
+	else
+	{
+		#print "There is not a real name for the package: ($pckg_name_array{$val})\n";
+		#print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) -- VERY GOOD ===\n";
+	}
 }
 
-
 close(FCLCOMPARISONFILE);
+
+#print "Path for each packages:\n";
+#display_hash_array_one_line_at_the_time(%pckg_path_name_array);
+#print "\n";
+#print "Real name for each packages:\n";
+#display_hash_array_one_line_at_the_time(%pckg_name_array);
+#print "\n";
+#print "Branch type for each packages:\n";
+#display_hash_array_one_line_at_the_time(%build_info_xml2);
+#print "\n";
+
+# Used to verify the differences between build_info.xml and PkgComponentAnalysisSummary.csv because not the same number of packages.
+#print "Packages list from build-info.xml:\n";
+#my @local_array_key_extraction;
+#my @local_array_key_extraction_sorted;
+#@local_array_key_extraction = keys (%build_info_xml2);
+#@local_array_key_extraction_sorted = sort { lc($a) cmp lc($b) } @local_array_key_extraction;
+#display_array_one_line_at_the_time(@local_array_key_extraction_sorted);
+#print "\n";
+#print "Packages list from csv file:\n";
+#my @local_array_key_extraction;
+#my @local_array_key_extraction_sorted;
+#@local_array_key_extraction = keys (%pckg_name_array);
+#@local_array_key_extraction_sorted = sort { lc($a) cmp lc($b) } @local_array_key_extraction;
+#display_array_one_line_at_the_time(@local_array_key_extraction_sorted);
 
 
 # 6th step is to export that txt file the appropriate location.
 # That could be the location from where we launched the script!
-print "\nYou will find the file with all the informatin you need for the releases note, here: $file_path\n\n";
+print "\nYou will find the file with all the information you need for the releases note, here: $path_to_file_to_publish\n\n";
 
 # Cleanup the mess!!!
 #pause_script(); # Temporary until script is finished!!!!!!
@@ -876,12 +1048,18 @@ sub helpme
 	print "Usage: perl fcls4releasenotes.pl --input_data1=x --input_data2=y\n";
 	print "Where input_data1 and input_data2 could be pdknb1 or pdknb2 or pdkloc1 or pdkloc2 or pdkname1 or pdkname2\n";
 	print "Where pdknb is the PDK number, for example 2.0.e\n";
-	print "Where pdkloc is the root location where your file $name_zip_file_to_extract is. For ex: \\\\bishare\\releases\\PDK_2.0.e\\ or c:\\temp\\myPDK\\\n";
+	print "Where pdkloc is the root location where your file $build_bom_zip_file_to_extract is. For ex: \\\\bishare\\releases\\PDK_2.0.e\\ or c:\\temp\\myPDK\\\n";
 	print "Where pdkname is the full name of the PDK, like for ex PDK_candidate_2.0.d_flat\n";
+	print "\nNotes:\n";
+	print "\tParameter names with 1 at the end (pdknb1, pdkname1, pdkloc1) are set for the oldest PDK to use (PDK1)\n";
+	print "\tParameter names with 2 at the end (pdknb2, pdkname2, pdkloc2) are set for the newest PDK to use (PDK2)\n";
+	print "\tIf you try to use for example pdknb2 and pdkname2 or pdkloc1 and pdknb1 the result is not guaranted to be correct!!!! as one will be set as PDK1 and the other as PDK2, but which order????\n";
+	print "\tThe difference is done as follow PDK2 - PDK1\n";
+	print "\n";
 	print "\nTypical command lines from script location:\n";
-	print "\t<perl fcls4releasenotes.pl --pdknb1=2.0.e --pdkloc1=c:\\temp\\myPDK\\>\n";
-	print "\t<perl fcls4releasenotes.pl --pdkname1=PDK_2.0.e --pdknb1=2.0.e>\n";
-	print "\t<perl fcls4releasenotes.pl --pdknb1=2.0.d --pdknb2=2.0.e>\n";
+	print "\t<perl fcls4releasenotes.pl --pdknb1=2.0.e --pdkloc2=c:\\temp\\myPDK\\>\n";
+	print "\t<perl fcls4releasenotes.pl --pdkname1=PDK_2.0.e --pdknb2=2.0.e>\n";
+	print "\t<perl fcls4releasenotes.pl --pdknb2=2.0.d --pdknb1=2.0.e>\n";
 	print "\t<perl fcls4releasenotes.pl help>\n";
 	#print "\t<perl fcls4releasenotes.pl validpdks>\n";
 	
@@ -905,7 +1083,7 @@ sub list_pdks_at_default_location
 	extract_pdk_in_default_loc();
 	
 	# Extract all the PDKs that have the file build_BOM.zip
-	print "All available PDKS in the default location $default_pdk_loc that contains the zip file $name_zip_file_to_extract\n";
+	print "All available PDKS in the default location $default_pdk_loc that contains the zip file $build_bom_zip_file_to_extract\n";
 	extract_pdk_with_valid_zip_in_default_loc();
 	
 }
@@ -965,7 +1143,7 @@ sub extract_pdk_with_valid_zip_in_default_loc
 	
 	$nb_pdks_with_valid_zip_in_default_loc=0;
 	
-	print "name_zip_file_to_extract=$name_zip_file_to_extract\n";
+	print "build_bom_zip_file_to_extract=$build_bom_zip_file_to_extract\n";
 	
 	foreach $var1 (@pdk_dir_list_in_default_location)
 	{
@@ -981,20 +1159,20 @@ sub extract_pdk_with_valid_zip_in_default_loc
 	
 		foreach $var2 (@read_pdk_directory)
 		{
-			if($var2 =~ /$name_zip_file_to_extract$/)
+			if($var2 =~ /$build_bom_zip_file_to_extract$/)
 			{
 				#print "$var2\n";
 				$pdks_with_valid_zip_in_default_loc[$nb_pdks_with_valid_zip_in_default_loc++] = $var1;
 			}
 			#else
 			#{
-				#print "Doesn't contain $name_zip_file_to_extract!!!!\n";
+				#print "Doesn't contain $build_bom_zip_file_to_extract!!!!\n";
 			#}
 		}
 	}
-	print "There is $nb_pdks_with_valid_zip_in_default_loc PDKs with a valid $name_zip_file_to_extract zip in the default location $default_pdk_loc\n";	
+	print "There is $nb_pdks_with_valid_zip_in_default_loc PDKs with a valid $build_bom_zip_file_to_extract zip in the default location $default_pdk_loc\n";	
 	
-	print "This is the list of PDKs that have a zip file called $name_zip_file_to_extract in the default location $default_pdk_loc\n";
+	print "This is the list of PDKs that have a zip file called $build_bom_zip_file_to_extract in the default location $default_pdk_loc\n";
 	display_array_one_line_at_the_time(@pdks_with_valid_zip_in_default_loc);
 }
 
@@ -1020,7 +1198,7 @@ sub extract_packages_and_branch_type_from_file
 	print "$file_to_work_on\n";
 	
 	my %local_hash_array;
-	#my @hash_array_to_display;
+	#my @local_hash_array;
 	my $local_key;
 	
 	my $package="";
@@ -1038,7 +1216,8 @@ sub extract_packages_and_branch_type_from_file
 
 	# Close file
 	close(FILETOWORKON);
-	
+
+
 	my $extracted_line;
 	
 	# Go line by line
@@ -1077,8 +1256,9 @@ sub extract_packages_and_branch_type_from_file
 				{
 					$package=$1;					
 				}
-					#print "package is $package and type_of_branch is $type_of_branch\n";
-					$local_hash_array{$package}=$type_of_branch;
+				#print "package is $package and type_of_branch is $type_of_branch\n";
+				$local_hash_array{$package}=$type_of_branch;
+				
 			}
 			else
 			{
@@ -1103,6 +1283,109 @@ sub extract_packages_and_branch_type_from_file
 	return (%local_hash_array);
 }
 
+# Function used to extract all the data from the csv file about the different packages (name, path and real name)
+sub extract_package_detail
+{
+	# 1 Parameters passed, the path to the file to be viewed
+	my ($file_to_work_on) = @_;
+	
+	print "\nfct: extract_package_detail\n";
+	
+	print "$file_to_work_on\n";
+	
+	my @local_array;
+	
+	# Open file
+	open(FILETOWORKON , $file_to_work_on);
+
+	# Extract data from file
+	my @local_array = <FILETOWORKON>;
+	#print "build_bom_local_array= @build_bom_local_array\n";
+
+	# Close file
+	close(FILETOWORKON);
+
+	my $extracted_line;
+
+	# Create a table with the path for each package using a hash array
+	my $pckg_name_extraction_pattern = "^sf\/[\\w]*\/([\\w]*)";
+	my $pckg_path_extraction_pattern = "^(sf[\W\w]*[^,]+),";
+	my $pckg_real_name_extraction_pattern = ",[\\s]+([\\w\\s]*),[\\s]+[\\w\\s]*\$";
+	my $pckg_name="";
+	my $pckg_path="";
+	my $pckg_real_name="";
+	
+	#Typical lines to decode
+	#sf/app/helps,SFL,sf/app/helps/symhelp/helpmodel/group/bld.inf,OK, Help Apps, Help
+	#sf/app/java,SFL,sf/app/java/java_plat/group/bld.inf,OK, , 
+	#sf/app/helps,SFL,sf/app/helps/symhelp/helpmodel/group/bld.inf,OK, Help Apps, Help
+	#sf/app/helps,
+	#SFL,
+	#sf/app/helps/symhelp/helpmodel/group/bld.inf,
+	#OK,
+	# Help Apps,
+	# Help
+	
+	#sf/app/java,SFL,sf/app/java/java_plat/group/bld.inf,OK, , 
+	#sf/app/java,
+	#SFL,
+	#sf/app/java/java_plat/group/bld.inf,
+	#OK,
+	# ,
+	#
+	
+	# Go line by line
+		
+	foreach  $extracted_line (@local_array)
+	{
+		#print "\nextracted_line is: $extracted_line"; # no need to add \\n as it's part of the line displayed.
+		
+		if($extracted_line =~ m;$pckg_name_extraction_pattern;)
+		{
+			$pckg_name = $1;
+			#print "Pckg name is: $pckg_name\n";
+			
+			#print "Is $pckg_name already exist in the hash array?: $pckg_path_name_array{$pckg_name}\n";
+
+			if(!$pckg_path_name_array{$pckg_name})	# Check if package is not already in the table to avoid duplicates
+			{
+				#print "$pckg_name is not in the hash array, we need to add it\n";
+				if($extracted_line =~ m;$pckg_path_extraction_pattern;)
+				{
+					$pckg_path = $1;
+					#print "Pckg path is: $pckg_path\n";
+				}
+				if($extracted_line =~ m;$pckg_real_name_extraction_pattern;)
+				{
+					$pckg_real_name = $1;
+					#print "Pckg real name is: $pckg_real_name\n";
+				}
+				# fill the tables
+				$pckg_path_name_array{$pckg_name} = $pckg_path;
+				$pckg_name_array{$pckg_name} = $pckg_real_name;
+			}
+		}
+	}
+	
+	my $local_value="";
+	my @local_array_sorted;
+	
+	@local_array=keys (%pckg_path_name_array);
+	@local_array_sorted = sort { lc($a) cmp lc($b) } @local_array;
+
+#	print "\n";
+#	my $counter_to_remove=0;
+#	foreach $local_value (@local_array_sorted)
+#	{
+		#print "$counter_to_remove: The path for package $local_value is: $pckg_path_name_array{$local_value}\n";
+		#print "$counter_to_remove:The real name for package $local_value is: $pckg_name_array{$local_value}\n";
+		#print "$counter_to_remove: local_array_sorted[$counter_to_remove]:$local_array_sorted[$counter_to_remove]\n";
+		#print "$local_array_sorted[$counter_to_remove]\n";
+		#$counter_to_remove++;		
+#	}	
+}
+
+# Function used to display one line at the time for an array				
 sub display_array_one_line_at_the_time
 {
 	my (@table_to_display_one_line_at_the_time) = @_;
@@ -1114,6 +1397,27 @@ sub display_array_one_line_at_the_time
 	foreach $line_to_display (@table_to_display_one_line_at_the_time)
 	{
 		print "$line_to_display\n";
+	}
+}
+
+# Function used to display one line at the time for an hash array
+sub display_hash_array_one_line_at_the_time
+{
+	my (%hash_array_to_display_one_line_at_the_time) = @_;
+	
+	my @local_keys_array;
+	my @local_keys_array_sorted;
+	
+	#print "\nfct: display_hash_array_one_line_at_the_time\n"; # Not displayed because you could think that is part of the table. As well it's easier to copy the name of the table and the contain wihtout the need to remove something.
+	
+	my $line_to_display;
+	
+	@local_keys_array = keys (%hash_array_to_display_one_line_at_the_time);
+	@local_keys_array_sorted = sort { lc($a) cmp lc($b) } @local_keys_array;
+	
+	foreach $line_to_display (@local_keys_array_sorted)
+	{
+		print "$line_to_display = $hash_array_to_display_one_line_at_the_time{$line_to_display}\n";
 	}
 }
 
