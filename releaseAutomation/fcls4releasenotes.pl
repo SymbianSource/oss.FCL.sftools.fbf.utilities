@@ -75,7 +75,7 @@ my $working_pdk1_directory="pdk1";
 my $working_pdk2_directory="pdk2";
 
 # Name of the file that we are creating to hold the information necessary for the Release Notes
-my $name_of_file_to_publish="sf.releasenotes.wiki.txt";
+my $name_of_file_to_publish="releaseNotes.wiki.txt";
 #Location for that file
 # This values need to be overwritten!!!
 my $location_of_file_to_publish="c:\\temp";
@@ -882,39 +882,41 @@ my $val;
 print FCLCOMPARISONFILE <<"EOT";
 == Packages ==
 
-This sectin is about general information on the packages included in the platfrom.\n
+This section is about general information on the packages included in the platform.
+
 This is an analysis between '''$pdk2_correct_name_to_use''' and '''$pdk1_correct_name_to_use'''
+
 EOT
 
 
-print FCLCOMPARISONFILE "\n Number total of packages in $pdk1_correct_name_to_use is: '''$total_packages_pdk1'''\n";
-print FCLCOMPARISONFILE "\n Number total of packages in $pdk2_correct_name_to_use is: '''$total_packages_pdk2'''\n";
+print FCLCOMPARISONFILE "Number total of packages in $pdk1_correct_name_to_use is: '''$total_packages_pdk1'''\n\n";
+print FCLCOMPARISONFILE "Number total of packages in $pdk2_correct_name_to_use is: '''$total_packages_pdk2'''\n\n";
 
 print FCLCOMPARISONFILE "=== Packages added ===\n\n";
-print FCLCOMPARISONFILE "\n Number total of packages added in $pdk2_correct_name_to_use is: '''$total_packages_added'''\n\n";
+print FCLCOMPARISONFILE "Number total of packages added in $pdk2_correct_name_to_use is: '''$total_packages_added'''\n\n";
 foreach $val (@packages_added_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n\n";
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n\n";
+		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
 	}
 }
 
-print FCLCOMPARISONFILE "=== Packages removed ===\n\n\n";
+print FCLCOMPARISONFILE "=== Packages removed ===\n\n";
 print FCLCOMPARISONFILE "''' Number total of packages removed in $pdk2_correct_name_to_use is: $total_packages_removed'''\n\n";
 foreach $val (@packages_removed_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n\n";
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n\n";
+		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
 	}
 }
 
@@ -923,7 +925,8 @@ print FCLCOMPARISONFILE <<"EOT";
 == FCLs ==
 
 '''$pdk2_correct_name_to_use''' was built using the FCL versions of the packages listed below: for each one we list the changes in the FCL which are not in the MCL.
-The previous PDK also involved some FCLs, so we indicate which problems are now fixed in the MCL, and which FCLs are new to this build
+
+The previous PDK also involved some FCLs, so we indicate which problems are now fixed in the MCL, and which FCLs are new to this build.
 
 Cloning the source from Mercurial is made more awkward by using a mixture of MCLs and FCLs, but we provide a tool to help - see [[How_to_build_the_Platform#Automatic_Mercurial_Clone]] for details.
 
@@ -934,7 +937,7 @@ foreach $val (@new_fcl_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) -- NEW ===\n\n\n";
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) -- NEW ===\n\n";
 		# TO DO!!!!
 		# Needs to be recovered from Mercurial. How????
 		#[http://developer.symbian.org/bugs/show_bug.cgi?id=156 Bug 156]: Add a missing bld.inf, to renable compilation of the package
@@ -942,7 +945,7 @@ foreach $val (@new_fcl_table)
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) -- NEW ===\n\n\n";
+		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) -- NEW ===\n\n";
 	}
 }
 
@@ -951,15 +954,15 @@ foreach $val (@still_fcl_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) ===\n\n\n";
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) ===\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) ===\n\n\n";
+		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) ===\n\n";
 	}
 }
 
-print FCLCOMPARISONFILE "=== FCLs used in $pdk1_correct_name_to_use but not needed in $pdk2_correct_name_to_use ===\n";
+print FCLCOMPARISONFILE "=== FCLs used in $pdk1_correct_name_to_use but not needed in $pdk2_correct_name_to_use ===\n\n";
 
 foreach $val (@no_more_fcl_table)
 {
