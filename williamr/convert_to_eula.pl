@@ -26,7 +26,7 @@ my @oldtext = (
   'the URL "http://www.symbianfoundation.org/legal/sfl-v10.html"'
 );
 my @newtext = (
-  'terms of the License "Symbian Foundation License v1.0" to members and "Symbian Foundation End User License Agreement v1.0" to non-members',
+  'terms of the License "Symbian Foundation License v1.0" to Symbian Foundation members and "Symbian Foundation End User License Agreement v1.0" to non-members',
   'the URL "http://www.symbianfoundation.org/legal/licencesv10.html"'
 );
 
