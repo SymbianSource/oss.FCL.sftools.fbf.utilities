@@ -290,6 +290,7 @@ foreach my $file (@packagelist_files)
   foreach my $line (<PKG_LIST>)
     {
     chomp($line);
+
     $line =~ s/\015//g; # remove CR, in case we are processing Windows text files on Linux
     
     my $revision; # set when processing build-info listings
