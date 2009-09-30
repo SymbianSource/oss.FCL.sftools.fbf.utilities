@@ -13,6 +13,7 @@ my $authon= '';	 #does it require authorisation? default is false
 
 my $ispackage;
 my $summaryheader="ID\tPackage\tFeatures\tFormat\tHttp\n" ;
+my $newtdformat = 0;
 
 sub getpage
 {
@@ -54,6 +55,14 @@ sub prntfeatures
 
 	($release,$package,$features,$myfile,$domain)=@_;
 	
+  $release =~ s/\\//sg;	
+	
+ if ($newtdformat) {
+  $package =~ s/backlog//sgi;
+  print $myfile " $release, $domain, $package, $myfeat\n";
+  
+ } else {
+		
 	$features = $features."<dt";
 
 	
@@ -76,13 +85,13 @@ sub prntfeatures
 	$mysubfeat =~ s/\n//sg;
 	$mysubfeat =~ s/\<.*?\>//sg;
 	
-	$release =~ s/\\//sg;	
+
 	print $myfile " $release, $domain, $package, $myfeat, $mysubfeat\n";
 	
 	$mysubfeat = "";	
 	}
 		
-
+ }
 }
 	
 sub loadfile
@@ -110,11 +119,34 @@ sub td_roadmap
 	open ( outputfile, ">>".$outfile);
 
 
+  if ($newtdformat) {
+       print "Processing new TD roadmap format\n";
+         if ($roadmap =~ m /Contents\<\/h2\>.*?\<\/table/sg) { $roadmap =$';}
+         foreach (@releases) {
+          $exp=$_." Roadmap";
+		         
+           if ($roadmap =~ m /($exp)/sg) { 
+			     print "PASS - Found entry for $_ \n";
+			     $relroad =$';	
+			
+			     if ($roadmap =~ m /table\>(.*?)\<\/table/sg) { $relroad =$1;}
+			           
+           while ($relroad =~ m/title\=\"(.*?)\"\>(.*)/g) {
+                 $package=$1;
+                 $myfeat=$2;
+                 $myfeat=~ s/\<\/td\>\<td\>/-/sg;   #TODO change - to , when the old format is dead
+                 $myfeat=~ s/\<.*?\>//sg;
+                 prntfeatures($_,$package,$myfeat,outputfile,$domain);
+                
+                 }  		     
+         }
+        }
+  } else {
 
-	foreach (@releases) {
+	 foreach (@releases) {
 		
-		$exp="\\<h2\\>.*?\\>".$_;
-		
+	 	$exp="\\<h2\\>.*?\\>".$_;
+		  
 		if ($roadmap =~ m /($exp)/sg) { 
 			print "PASS - Found entry for $_ \n";
 			$relroad =$';	
@@ -138,7 +170,7 @@ sub td_roadmap
 			@pname ="";
 			undef ($features);
 		}
-			 	
+	}		 	
 
 	}
 	
@@ -228,13 +260,13 @@ sub parse_bklog {
 sub printhelp
 {
 
-	print "\n\n version 0.5
-	\ngettd.pl -t=url -d=domain \n\nrequired parameters:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
-	\n\nOptional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
-	\n\t-a setup authorisation by cookie follow instructions \n\tin http://developer.symbian.org/wiki/index.php/Roadmap_merger_script#Cookies
-	\n\t -p adds support for package backlog analysis. just run gettd.pl -p
-	\n\t -compare [f1] [f2] compares two package summary files for changes ignores order
-  \n\t recommend to run under cygwin environment\n";
+	print "\n\n version 0.6
+	\ngettd.pl -t=url -d=domain \n\nRequired parameters for Technology Roadmaps:\n\t -t url containing the technology domain roadmap\n\t -d the technology domain name
+	\n\nOptional Parmeters for Technology Roadmaps\n\t-new if the roadmap has the new wiki format
+  \n\nRequired Parameters for Package backlogs\n\t-p for package backlog analysis. just run gettd.pl -p
+  \n\nOptional Pararmeters for Package backlogs\n\t -compare [f1] [f2] compares two package summary files for changes ignores order
+  \n\nCommonOptional parameters\n\t-o filename ,the output is logged into the output.csv file by default\n\t-h for help
+	\n\t recommend to run under cygwin environment and perl version v5.10.0 \n";
 	exit;
 }
 
@@ -274,7 +306,7 @@ sub cmd_options
 
 
   GetOptions('h' => \$help,'t=s'=> \$target_url, 'd=s' => \$tdomain , 'o=s' => \$csvfile, 
-	'a' => \$authon , 'p' => \$ispackage, 'compare=s{2}' =>\@compare);
+	'a' => \$authon , 'p' => \$ispackage, 'compare=s{2}' =>\@compare, 'new' => \$isnewformat);
 
   if (@compare) {
 	compare_bklogs @compare;
@@ -292,7 +324,10 @@ sub cmd_options
 	$target_url = "http://developer.symbian.org/wiki/index.php/Category:Package_Backlog";
 	
  }  
+ if ($isnewformat){
+    $newtdformat = 1;
  
+ }
 
  if ( not $target_url) {
 
