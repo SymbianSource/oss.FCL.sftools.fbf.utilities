@@ -69,6 +69,7 @@ https://developer.symbian.org/sfl/MCL/sf/mw/netprotocols
 https://developer.symbian.org/sfl/MCL/sf/mw/networkingdm
 https://developer.symbian.org/sfl/MCL/sf/mw/opensrv
 https://developer.symbian.org/sfl/MCL/sf/mw/phonesrv
+https://developer.symbian.org/sfl/MCL/sf/mw/platformtools
 https://developer.symbian.org/sfl/MCL/sf/mw/remoteconn
 https://developer.symbian.org/sfl/MCL/sf/mw/remotemgmt
 https://developer.symbian.org/sfl/MCL/sf/mw/remotestorage
@@ -110,7 +111,6 @@ https://developer.symbian.org/sfl/MCL/sf/tools/build_s60
 https://developer.symbian.org/sfl/MCL/sf/tools/buildplatforms
 https://developer.symbian.org/sfl/MCL/sf/tools/homescreentools
 https://developer.symbian.org/sfl/MCL/sf/tools/makefile_templates
-https://developer.symbian.org/sfl/MCL/sf/tools/platformtools
 https://developer.symbian.org/sfl/MCL/sf/tools/swconfigtools
 https://developer.symbian.org/oss/MCL/sf/app/webuis
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapi
