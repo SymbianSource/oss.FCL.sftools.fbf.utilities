@@ -221,8 +221,9 @@ sub parse_bklog {
 		$pagename = $1;
 		print "INFO -Processing Package $pagename \n";
 		$i=0;
+		if ($mypkg =~m/class\=\"bugzilla sortable\"/sg ) { $headerformat="autobug_format"; }
 		
-		while ($mypkg =~ m/\<tr.*?\>(.*?)\<\/tr/sg) {
+		while ($mypkg =~ m/\<tr.*?\>(.*?)\<\/tr/sg) { 
 			$myheader= $&;
       if ($myheader =~ m/style=\"background-color\:/sg) {
         if ($myheader =~ m/Bug ID/sg) { $headerformat="bugzilla_format";}
