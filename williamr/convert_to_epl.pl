@@ -12,12 +12,39 @@
 # Contributors:
 #
 # Description:
-# Map the SFL license to the EULA license, keeping a copy of the original file
-# in a parallel tree for creation of a "repair" kit to reinstate the SFL
+# Map the SFL license to the EPL license, keeping a copy of the original file
+# in a parallel tree 
 
 use strict;
 use File::Copy;
 use File::Path;
+
+if (scalar @ARGV != 2)
+  {
+	print <<'EOF';
+Incorrect number of arguments
+
+Usage: perl convert_to_epl.pl workdir savedir
+
+Recursively processes workdir to examine all of the text files and convert
+all perfectly formed instances of the SFL copyright notice into EPL notices.
+
+If a file is modified, the original is first copied to the corresponding place
+under savedir. 
+
+It is safe to rerun this script if it stopped for any reason, as no converted 
+SFL notice will ever match on the second run through.
+EOF
+  exit 1;
+  }
+
+my $work_root = $ARGV[0];
+my $saved_root = $ARGV[1];
+
+$work_root =~ s/\\/\//g;    # convert to Unix separators please
+$saved_root =~ s/\\/\//g;
+
+print "* Processing $work_root, leaving the original of any modified file in $saved_root\n";
 
 my $debug = 0;
 
@@ -26,14 +53,14 @@ my @oldtext = (
   'the URL "http://www.symbianfoundation.org/legal/sfl-v10.html"'
 );
 my @newtext = (
-  'terms of the License "Symbian Foundation License v1.0" to Symbian Foundation members and "Symbian Foundation End User License Agreement v1.0" to non-members',
-  'the URL "http://www.symbianfoundation.org/legal/licencesv10.html"'
+  'terms of the License "Eclipse Public License v1.0"',
+  'the URL "http://www.eclipse.org/legal/epl-v10.html"'
 );
 
 my @errorfiles = ();
 my @multinoticefiles = ();
 
-sub map_eula($$$)
+sub map_epl($$$)
   {
   my ($file,$shadowdir,$name) = @_;
   
@@ -122,11 +149,11 @@ sub scan_directory($$)
       }
     next if (-B $newpath);  # ignore binary files
     
-    map_eula($newpath, $shadow, $file);
+    map_epl($newpath, $shadow, $file);
     }
   }
 
-scan_directory("/epoc32", "/sfl_epoc32");
+scan_directory($work_root, $saved_root);
 
 printf "%d problem files\n", scalar @errorfiles;
 print "\t", join("\n\t", @errorfiles), "\n";
