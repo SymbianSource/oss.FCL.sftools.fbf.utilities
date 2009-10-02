@@ -31,6 +31,7 @@ my @newtext = (
 );
 
 my @errorfiles = ();
+my @multinoticefiles = ();
 
 sub map_eula($$$)
   {
@@ -42,25 +43,23 @@ sub map_eula($$$)
   
   my $updated = 0;
   my @newlines = ();
-  my $index = 1;
   while (my $line = shift @lines)
     { 
-	if (index($line,$newtext[0]) >= 0)
-    {
-      # file already converted - nothing to do
-	  push @newlines, $line;
-	  next;
-	  #last;
-    }
     # under the terms of the License "Symbian Foundation License v1.0"
     # which accompanies this distribution, and is available
     # at the URL "http://www.symbianfoundation.org/legal/sfl-v10.html".
     my $pos1 = index $line, $oldtext[0];
     if ($pos1 >= 0)
       {
+      # be careful - oldtext is a prefix of newtext!
+      if (index($line, $newtext[0]) >= 0)
+        {
+        # line already converted - nothing to do
+        push @newlines, $line;
+        next;
+        }
       my $midline = shift @lines;
       my $urlline = shift @lines;
-	  $index+=2;
       my $pos2 = index $urlline, $oldtext[1];
       if ($pos2 >= 0)
         {
@@ -68,25 +67,30 @@ sub map_eula($$$)
         substr $line, $pos1, length($oldtext[0]), $newtext[0];
         substr $urlline, $pos2, length($oldtext[1]), $newtext[1];
         push @newlines, $line, $midline, $urlline;
-        $updated = 1;
+        $updated += 1;
         next;
-        #last;
         }
       else
         {
-			if(!$updated)
-			{
-				print STDERR "Problem in $file at $index: incorrectly formatted >\n$line$midline$urlline\n";
-				push @errorfiles, $file;
-			}	
+        if(!$updated)
+          {
+          my $lineno = 1 + (scalar @newlines);
+          print STDERR "Problem in $file at $lineno: incorrectly formatted >\n$line$midline$urlline\n";
+          push @errorfiles, $file;
+          }	
         last;
         }
       }
     push @newlines, $line;
-	$index+=1;
     }
 
   return if (!$updated);
+  
+  if ($updated > 1)
+    {
+    push @multinoticefiles, $file;
+    print "! found $updated SFL notices in $file\n";
+    }
  
   mkpath($shadowdir, {verbose=>0});
   move($file, "$shadowdir/$name") or die("Cannot move $file to $shadowdir/$name: $!\n");
@@ -126,4 +130,7 @@ scan_directory("/epoc32", "/sfl_epoc32");
 
 printf "%d problem files\n", scalar @errorfiles;
 print "\t", join("\n\t", @errorfiles), "\n";
+
+printf "%d files with multiple notices\n", scalar @multinoticefiles;
+print "\t", join("\n\t", @multinoticefiles), "\n";
 
