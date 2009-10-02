@@ -6,7 +6,7 @@ perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Device_
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Location -d=Location
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Multimedia -d=Multimedia
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Multimedia_Apps -d=Multimedia_Apps
-perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Personal_Communications -d=Personal_Communications
+perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_and_Strategy_for_Personal_Communications -d=Personal_Communications -new
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Productivity -d=Productivity
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_Runtimes -d=Runtimes
 perl gettd.pl -t=http://developer.symbian.org/wiki/index.php/Roadmap_for_UI -d=UI
