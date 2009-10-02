@@ -98,6 +98,7 @@ https://developer.symbian.org/sfl/MCL/sf/os/kernelhwsrv
 https://developer.symbian.org/sfl/MCL/sf/os/lbs
 https://developer.symbian.org/sfl/MCL/sf/os/mm
 https://developer.symbian.org/sfl/MCL/sf/os/networkingsrv
+https://developer.symbian.org/sfl/MCL/sf/os/osrndtools
 https://developer.symbian.org/sfl/MCL/sf/os/ossrv
 https://developer.symbian.org/sfl/MCL/sf/os/persistentdata
 https://developer.symbian.org/sfl/MCL/sf/os/shortlinksrv
