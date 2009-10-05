@@ -104,7 +104,7 @@ https://developer.symbian.org/sfl/FCL/sf/os/security
 https://developer.symbian.org/sfl/FCL/sf/os/shortlinksrv
 https://developer.symbian.org/sfl/FCL/sf/os/textandloc
 https://developer.symbian.org/sfl/FCL/sf/os/unref
-https://developer.symbian.org/sfl/FCL/sf/os/usb 
+https://developer.symbian.org/sfl/FCL/sf/os/usb
 https://developer.symbian.org/sfl/FCL/sf/os/wlan
 https://developer.symbian.org/sfl/FCL/sf/os/xmlsrv
 https://developer.symbian.org/sfl/FCL/sf/ostools/osrndtools
@@ -132,5 +132,4 @@ https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/w
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/webuis
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
-
 
