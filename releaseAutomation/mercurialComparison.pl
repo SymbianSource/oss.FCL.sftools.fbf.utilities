@@ -70,7 +70,7 @@ foreach my $package (@pkgErrors)
 {
 	chomp $package;
 	$package =~ s{No valid comparison for }{};
-	$cookedData{$package}->{exception} = "Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
+	$cookedData{$package}->{exception} = "* Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
 }
 
 # Cut-off for "interesting" packages
@@ -95,27 +95,16 @@ foreach my $package (keys %cookedData)
 }
 
 # Output
-print <<"EOT";
-== Mercurial Comparison with $previousPdkLabel ==
-
-The Mercurial changes from Nokia were delivered as a bulk update based on '''XXXXXXXXXXXXXXXXXXXXXX'''.
-
-List of the Mercurial changes (files added/removed/modified) between $previousPdkLabel and PDK '''XXXXX''' - [[Media:XXXX.txt]].
-
-A short study of the results which concentrated on the added and removed files has identified these significant package changes: 
-
-EOT
-
 foreach my $package (sort keys %cookedData)
 {
 	print <<"EOT";
 === $package ===
 
-$cookedData{$package}->{addRemove} files added/removed
-$cookedData{$package}->{percentChurn}% churn
+* $cookedData{$package}->{addRemove} files added/removed
+* $cookedData{$package}->{percentChurn}% churn
 $cookedData{$package}->{exception}
-* Cause1
-* etc
+# Cause1
+# etc
 
 EOT
 }
