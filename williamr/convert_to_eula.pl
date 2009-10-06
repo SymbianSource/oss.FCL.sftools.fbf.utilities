@@ -58,15 +58,28 @@ sub map_eula($$$)
         push @newlines, $line;
         next;
         }
-      my $midline = shift @lines;
-      my $urlline = shift @lines;
+	  my @midlines = ();
+      my $nextline;
+	  my $midlinecount = 1;
+	  while ($nextline = shift @lines)
+		{
+		if ($nextline !~ /^\s$/)
+		  {
+		  # non-blank line
+		  last if ($midlinecount == 0);
+		  $midlinecount -= 1;
+		  # keep going
+		  }
+		push @midlines, $nextline;
+		}
+      my $urlline = $nextline;
       my $pos2 = index $urlline, $oldtext[1];
       if ($pos2 >= 0)
         {
         # Found it - assume that there's only one instance
         substr $line, $pos1, length($oldtext[0]), $newtext[0];
         substr $urlline, $pos2, length($oldtext[1]), $newtext[1];
-        push @newlines, $line, $midline, $urlline;
+        push @newlines, $line, @midlines, $urlline;
         $updated += 1;
         next;
         }
@@ -75,7 +88,7 @@ sub map_eula($$$)
         if(!$updated)
           {
           my $lineno = 1 + (scalar @newlines);
-          print STDERR "Problem in $file at $lineno: incorrectly formatted >\n$line$midline$urlline\n";
+          print STDERR "Problem in $file at $lineno: incorrectly formatted >\n$line", join("",@midlines), "$urlline\n";
           push @errorfiles, $file;
           }	
         last;
