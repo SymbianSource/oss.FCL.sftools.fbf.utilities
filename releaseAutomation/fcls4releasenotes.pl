@@ -393,13 +393,12 @@ if ($pdk_complete_path1)
 		else
 		{
 			print "There is $nb_of_pdk_for_corresponding_name1 PDKs with the same name, please select one in the list above and run the perl script again with the right PDK name\n";
-			exit(0);
 		}
 		
 		#extract PDK name if only one
-		$pdk1_correct_name_to_use = $find_pdk_for_corresponding_name1[0];
-		$pdk_path1 .= @find_pdk_for_corresponding_name1[0];
 		print "pdkname1 = $pdkname1\n";
+		$pdk1_correct_name_to_use = $pdkname1;
+		$pdk_path1 .= $pdkname1;
 	}
 	print "The PDK used is: $pdk1_correct_name_to_use\n";
 	print "pdk_path1 = $pdk_path1\n";
@@ -462,13 +461,12 @@ if ($pdk_complete_path2)
 		else
 		{
 			print "There is $nb_of_pdk_for_corresponding_name2 PDKs with the same name, please select one in the list above and run the perl script again with the right PDK name\n";
-			exit(0);
 		}
 		
 		#extract PDK name if only one
-		$pdk2_correct_name_to_use = $find_pdk_for_corresponding_name2[0];
-		$pdk_path2 .= @find_pdk_for_corresponding_name2[0];
 		print "pdkname2 = $pdkname2\n";		
+		$pdk2_correct_name_to_use = $pdkname2;
+		$pdk_path2 .= $pdkname2;
 	}
 	print "The PDK used is: $pdk2_correct_name_to_use\n";
 	print "pdk_path2 = $pdk_path2\n";
@@ -874,6 +872,8 @@ print "$total_packages_pdk2 = $total_very_good_mcl + $total_new_fcl + $total_no_
 print "\n";
 
 # 5th step is to create a txt file ready to be used for the release notes in a media wiki format.
+#$path_to_file_to_publish = "c:\\temp\\releaseNotes\.wiki\.txt";
+$path_to_file_to_publish = "\\\\Lon-engbuild87\\d\$\\fbf_job\\symbian3_FCL\.split\.117\\output\\logs\\releaseNotes\.wiki\.txt";
 open(FCLCOMPARISONFILE, ">$path_to_file_to_publish");	# !!!!! First time we are accessing the file, therefore create it or replace it, AFTR THAT WE NEED TO APPEND IT ONLY!!!!!
 
 my $val;
@@ -1031,6 +1031,7 @@ $system_cmd = "rmdir /S /Q $working_dir";
 print "Exec: $system_cmd\n";
 system($system_cmd);
 
+exit(0);
 ##
 ### End of the program!!!
 ##
