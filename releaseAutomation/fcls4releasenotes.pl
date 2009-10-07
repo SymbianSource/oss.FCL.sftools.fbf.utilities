@@ -872,8 +872,6 @@ print "$total_packages_pdk2 = $total_very_good_mcl + $total_new_fcl + $total_no_
 print "\n";
 
 # 5th step is to create a txt file ready to be used for the release notes in a media wiki format.
-#$path_to_file_to_publish = "c:\\temp\\releaseNotes\.wiki\.txt";
-$path_to_file_to_publish = "\\\\Lon-engbuild87\\d\$\\fbf_job\\symbian3_FCL\.split\.117\\output\\logs\\releaseNotes\.wiki\.txt";
 open(FCLCOMPARISONFILE, ">$path_to_file_to_publish");	# !!!!! First time we are accessing the file, therefore create it or replace it, AFTR THAT WE NEED TO APPEND IT ONLY!!!!!
 
 my $val;
