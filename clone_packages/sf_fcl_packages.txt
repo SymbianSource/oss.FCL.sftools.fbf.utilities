@@ -132,4 +132,5 @@ https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/w
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/webuis
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
+https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
 
