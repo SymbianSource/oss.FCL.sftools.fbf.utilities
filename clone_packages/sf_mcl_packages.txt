@@ -113,6 +113,7 @@ https://developer.symbian.org/sfl/MCL/sf/tools/buildplatforms
 https://developer.symbian.org/sfl/MCL/sf/tools/homescreentools
 https://developer.symbian.org/sfl/MCL/sf/tools/makefile_templates
 https://developer.symbian.org/sfl/MCL/sf/tools/swconfigtools
+https://developer.symbian.org/oss/MCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/MCL/sf/app/webuis
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapifw
