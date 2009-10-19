@@ -247,7 +247,7 @@ sub process_one_repo($)
     # The repository already exists, so just do an update
     
     print "Updating $destdir from $package...\n";
-    $ret = do_system("hg", "pull", @pull_options, "-R", $path, $repo_url, @rev_options);
+    $ret = do_system("hg", "pull", @pull_options, @rev_options, "-R", $path, $repo_url);
     if ($ret == 0 && ! $mirror)
       {
       $ret = do_system("hg", "update", "-R", $path, @rev_options)
@@ -258,7 +258,7 @@ sub process_one_repo($)
     # Clone the repository
     
     print "Cloning $destdir from $package...\n";
-    $ret = do_system("hg", "clone", @clone_options, $repo_url, $path, @rev_options);
+    $ret = do_system("hg", "clone", @clone_options, @rev_options, $repo_url, $path);
     }
   
   $ret = $ret >> 8;   # extract the exit status
