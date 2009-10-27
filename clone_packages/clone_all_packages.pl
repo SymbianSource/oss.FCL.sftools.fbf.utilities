@@ -57,6 +57,7 @@ Options:
 -exec          execute command on each repository
 -filter <RE>   only process repository paths matching regular expression <RE>
 -dummyrun      Dummy Run, don't execute any Mercurial commands.
+-webhost       Web Mercurial host (defaults to developer.symbian.org)
 
 The -exec option processes the rest of the command line, treating it as
 a command to apply to each repository in turn. Some keywords are expanded
@@ -107,6 +108,7 @@ if (!GetOptions(
     "f|filter=s" => \$filter,
     "l|packagelist=s" => \@packagelist_files,
     "d|dummyrun" => \$do_nothing,
+    "w|webhost=s" => \$hostname,
     ))
   {
   Usage("Invalid argument");
@@ -203,7 +205,7 @@ sub process_one_repo($)
   if ($license ne "sfl" && !$export_control_special_case{$package})
     {
     # user registration is not required for reading public package repositories
-    $repo_url = "http://developer.symbian.org/$package/";
+    $repo_url = "http://$hostname/$package/";
     }
   
   my @rev_options = ();
