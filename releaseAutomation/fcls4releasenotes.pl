@@ -1,3 +1,4 @@
+#!perl -w
 # Copyright (c) 2009 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
 # under the terms of the License "Eclipse Public License v1.0"
@@ -15,23 +16,24 @@
 
 # Here is the location for the naming convention for the PDKs: http://developer.symbian.org/wiki/index.php/Build_and_Integration
 
+use strict;
+use Getopt::Long;
+
 #
 # Configuration data and constants for the script
 #
-print "\n";
-my $default_pdk_loc='\\\\bishare\\releases\\';
+my $default_pdk_loc='//bishare/releases/';
 print "default_pdk_loc=$default_pdk_loc\n";
 
 # Nb of arguments to be passed to the script to work. If that need to change, just modify nb_arg_to_pass!
 my $nb_arg_to_pass=2;
-print "nb_arg_to_pass=$nb_arg_to_pass\n";
 
 # Name of the file that contains the data we need to extract for this script
-my $build_bom_zip_file_to_extract="build_BOM\.zip";
-my $build_logs_zip_file_to_extract="build_logs\.zip";
+my $build_bom_zip_file_to_extract="build_BOM.zip";
+my $build_logs_zip_file_to_extract="build_logs.zip";
 
 # Name of the file we need to work on to extract the data necessary for the Release Notes from build_BOM.zip
-my $name_of_file_to_compare="build-info\.xml";
+my $name_of_file_to_compare="build-info.xml";
 
 # File used to extract path and component name for a package from build_logs.zip
 my $pckg_extraction_data_file_name = "PkgComponentAnalysisSummary.csv";
@@ -83,47 +85,53 @@ my $location_of_file_to_publish="c:\\temp";
 # End configuration data for the script
 #
 
-
-# Get parameters passed to the script. Save only the 2 first parameters as we need only 2 parameters for the script
-print "\n";
-my $nb_arg_passed = scalar(@ARGV);
-print "nb_arg_passed=$nb_arg_passed\n"; # Find out the number of arguement passed
-print "@ARGV\n\n";
-# Needs to be done here, otherwise lost if try to recover them later on. Why?
-my $arg1_passed = $ARGV[0];
-my $arg2_passed = $ARGV[1];
-print "arg1_passed= $arg1_passed \t arg2_passed=$arg2_passed\n";
-
-# if enter help as unique argument, then we will launch the help becaue we only pass one argument.
-if ($nb_arg_passed != $nb_arg_to_pass)
-{
-	helpme();
-}
-
-# Modules necessary to run this script
-use Getopt::Long;
-use strict;
-
-
 # Arguments / Data used for the script
-my $pdknb1 = '';
-my $pdknb2 = '';
-my $pdkloc1 = '';
-my $pdkloc2 = '';
-my $pdkname1 = '';
-my $pdkname2 = '';
-
 my $help = 0;
+my $publishDir;
+
+my @PDK = ({}, {});
 
 GetOptions((
-	'pdknb1=s' => \$pdknb1,
-	'pdknb2=s' => \$pdknb2,
-	'pdkname1=s' => \$pdkname1,
-	'pdkname2=s' => \$pdkname2,
-	'pdkloc1=s' => \$pdkloc1,
-	'pdkloc2=s' => \$pdkloc2,
-	'help!' => \$help	# Not working
+	'pdknb1=s' => \$PDK[0]->{number},
+	'pdknb2=s' => \$PDK[1]->{number},
+	'pdkname1=s' => \$PDK[0]->{name},
+	'pdkname2=s' => \$PDK[1]->{name},
+	'pdkloc1=s' => \$PDK[0]->{loc},
+	'pdkloc2=s' => \$PDK[1]->{loc},
+	'publish=s' => \$publishDir,
+	'help!' => \$help,
 ));
+
+if ($help)
+{
+	helpme();
+	exit(0);
+}
+
+foreach my $pdkCount (0 .. $#PDK)
+{
+	if (scalar (grep {defined} keys %{$PDK[$pdkCount]}) == 0)
+	{
+		print "No data provided to identify PDK", $pdkCount + 1, "\n";
+		helpme();
+		exit (1);
+	}
+	if (scalar (grep { defined $_ } values %{$PDK[$pdkCount]}) > 1)
+	{
+		print "Multiple data provided to identify PDK", $pdkCount + 1, "\n";
+		print values %{$PDK[$pdkCount]};
+		helpme();
+		exit (1);
+	}
+}
+
+my $pdknb1 = $PDK[0]->{number} || "";
+my $pdkname1 = $PDK[0]->{name} || "";
+my $pdkloc1 = $PDK[0]->{loc} || "";
+
+my $pdknb2 = $PDK[1]->{number} || "";
+my $pdkname2 = $PDK[1]->{name} || "";
+my $pdkloc2 = $PDK[1]->{loc} || "";
 
 print "pdknb1=$pdknb1\n";
 print "pdknb2=$pdknb2\n";
@@ -133,14 +141,14 @@ print "pdkloc1=$pdkloc1\n";
 print "pdkloc2=$pdkloc2\n";
 print "help=$help\n";
 
-my $count_arg=0; # Caculate the number of arguments we need for the script to work and that we know are correct (help doesn't count)
+# Use the specified release location if supplied
+$default_pdk_loc = $publishDir || $default_pdk_loc;
+$default_pdk_loc =~ s{([^/\\])$}{$1\\};
 
 # First PDK to check
 my $pdk_path1="";
 my $pdk_complete_name1=0;
 my $pdk_complete_path1=0;
-my $pdk_path1_now_in_use=0;
-my $pdk_values_to_search1=""; # Not necessary
 my $pdk_path1_exist=0;
 my $pdk_zip1_exit=0; # Not necessary
 my $pdk1_correct_name_to_use="";
@@ -150,8 +158,6 @@ my $loc1_contains_the_zip_file_we_need=0;
 my $pdk_path2="";
 my $pdk_complete_name2=0;
 my $pdk_complete_path2=0;
-my $pdk_path2_now_in_use=0;
-my $pdk_values_to_search2=""; # Not necessary
 my $pdk_path2_exist=0;
 my $pdk_zip2_exist=0; # Not necessary
 my $pdk2_correct_name_to_use="";
@@ -164,7 +170,6 @@ my $nb_of_zip_files_we_need=2;	# Used to define the number of files we need to h
 my @directories_list_default_location=();
 my $nb_dir_in_default_loc;
 my @pdk_dir_list_in_default_location=();
-my $nb_pdks_in_default_loc=0;
 my @pdks_with_valid_zip_in_default_loc=();
 my $nb_pdks_with_valid_zip_in_default_loc=0;
 my @find_pdk_for_corresponding_nb1=();
@@ -202,113 +207,36 @@ my @very_good_mcl_table;		# Table containing the packages that are very good on 
 my %pckg_path_name_array;		# Table containing the path for each packages
 my %pckg_name_array;			# Table containing the real meaning name for each packages, not the name of the package in the directory structure
 
-# Check that we have only 2 values for the PDKs. If not 2, then not good!
-
-
-# Script code start here!
 if($pdknb1)
 {
-	$count_arg++;
-	
-	# Get data for first pdk used for the comparison
 	$pdk_path1 = $default_pdk_loc;
 	$pdk_complete_name1=1;
 	$pdk_complete_path1=1;
-	$pdk_path1_now_in_use=1;
-	$pdk_values_to_search1=$pdknb1; # Not necessary
 }
 if($pdknb2)
 {
-	$count_arg++;
-	
-	# Get data for first pdk used for the comparison
 	$pdk_path2 = $default_pdk_loc;
 	$pdk_complete_name2=1;
 	$pdk_complete_path2=1;
-	$pdk_path2_now_in_use=1;
-	$pdk_values_to_search2=$pdknb2; # Not necessary
 }
 if($pdkname1)
 {
-	$count_arg++;
-	
-	if(!$pdk_path1_now_in_use)
-	{
-		# Get data for first pdk used for the comparison
-		$pdk_path1 = $default_pdk_loc;	
-		$pdk_complete_path1=1;	
-		$pdk_path1_now_in_use=1;
-		$pdk_values_to_search1=$pdkname1; # Not necessary
-	}
-	else
-	{
-		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb1 and pdkname1! Start again with the right parameters!\n";
-		exit(0);
-	}
+	$pdk_path1 = $default_pdk_loc;	
+	$pdk_complete_path1=1;	
 }
 if($pdkname2)
 {
-	$count_arg++;
-
-	if(!$pdk_path2_now_in_use)
-	{
-		# Get data for first pdk used for the comparison
-		$pdk_path2 = $default_pdk_loc;	
-		$pdk_complete_path2=1;
-		$pdk_path2_now_in_use=1;
-		$pdk_values_to_search2=$pdkname2; # Not necessary
-	}
-	else
-	{
-		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb2 and pdkname2! Start again with the right parameters!\n";
-		exit(0);
-	}
+	$pdk_path2 = $default_pdk_loc;	
+	$pdk_complete_path2=1;
 }
 if($pdkloc1)
 {
-	$count_arg++;
-	
-	if(!$pdk_path1_now_in_use)
-	{
-		# Get data for first pdk used for the comparison
-		$pdk_path1 = $pdkloc1;
-		$pdk_path1_now_in_use=1;
-	}
-	else
-	{
-		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb1 and pdkloc1! Start again with the right parameters!\n";
-		exit(0);
-	}
+	$pdk_path1 = $pdkloc1;
 }
-
 if($pdkloc2)
 {
-	$count_arg++;
-
-	if(!$pdk_path2_now_in_use)
-	{
-		# Get data for first pdk used for the comparison
-		$pdk_path2 = $pdkloc2;
-		$pdk_path2_now_in_use=1;
-	}
-	else
-	{
-		print "You are a bad boy!!!!, you can't enter 2 parameters ending with the same number like pdknb2 and pdkloc2! Start again with the right parameters!\n";
-		exit(0);
-	}
+	$pdk_path2 = $pdkloc2;
 }
-
-print "count_arg=$count_arg\n";
-
-
-# If no parameters entered or help selected, display help
-if ($count_arg != $nb_arg_to_pass)
-{
-	#$help = 1;
-	helpme();
-	print"\nThe script accepts $nb_arg_to_pass parameters only!\n\n";
-}
-
 
 #
 # If we reach this point, this means that we have the right numbers of arguments passed to the script.
@@ -318,12 +246,10 @@ print "\nWe are on the right path!!!!\n";
 print "pdk_path1=$pdk_path1\n";
 print "pdk_complete_name1=$pdk_complete_name1\n";
 print "pdk_complete_path1=$pdk_complete_path1\n";
-print "pdk_values_to_search1=$pdk_values_to_search1\n"; # Not necessary
 print "\n";
 print "pdk_path2=$pdk_path2\n";
 print "pdk_complete_name2=$pdk_complete_name2\n";
 print "pdk_complete_path2=$pdk_complete_path2\n";
-print "pdk_values_to_search2=$pdk_values_to_search2\n"; # Not necessary
 print "\n\n";
 
 # Get directory listing of all directories in the default location $default_pdk_loc
@@ -388,7 +314,6 @@ if ($pdk_complete_path2)
 		# Have a look in the default directory if there is a PDK with that number. If none or more than one with the same id, returns the list of PDKs with that same number
 		foreach $find_val (@pdks_with_valid_zip_in_default_loc)
 		{
-			#print $find_val, "\n";
 			if($find_val =~ /$pdknb2/i)
 			{
 				$find_pdk_for_corresponding_nb2[$nb_of_pdk_for_corresponding_nb2++]=$find_val;
@@ -789,9 +714,9 @@ my $val;
 print FCLCOMPARISONFILE <<"EOT";
 == Packages ==
 
-This section is about general information on the packages included in the platform.
+This section provides general information on the packages included in the platform.
 
-This is an analysis between '''$pdk2_correct_name_to_use''' and '''$pdk1_correct_name_to_use'''
+This is an analysis of '''$pdk2_correct_name_to_use''' compared to the baseline of '''$pdk1_correct_name_to_use'''.
 
 EOT
 
@@ -814,7 +739,7 @@ foreach $val (@packages_added_table)
 }
 
 print FCLCOMPARISONFILE "=== Packages removed ===\n\n";
-print FCLCOMPARISONFILE "''' Number total of packages removed in $pdk2_correct_name_to_use is: $total_packages_removed'''\n\n";
+print FCLCOMPARISONFILE "Number total of packages removed in $pdk2_correct_name_to_use is: '''$total_packages_removed'''\n\n";
 foreach $val (@packages_removed_table)
 {
 	if($pckg_name_array{$val})
@@ -964,29 +889,24 @@ sub extract_pdk_in_default_loc
 {
 	print "\nfct: extract_pdk_in_default_loc\n";
 	
-	my $var;
-	$nb_pdks_in_default_loc=0;
+	my $nb_pdks_in_default_loc=0;
 	print "pdk_start_pattern = $pdk_start_pattern\n";
 	
-	foreach $var (@directories_list_default_location)
+	foreach my $var (@directories_list_default_location)
 	{
 		if($var =~ /^$pdk_start_pattern+/)
 		{
 			$pdk_dir_list_in_default_location[$nb_pdks_in_default_loc++] = $var;
 		}
 	}
-	print "There is $nb_pdks_in_default_loc PDKs in the default location $default_pdk_loc\n";	
-	
-	print "This is the list of PDKs that are in the default location $default_pdk_loc\n";
+	print "There are $nb_pdks_in_default_loc PDKs in the default location $default_pdk_loc\n";	
 }
 
 # Establish the list of PDK directories with a valid zip file to do the test
 sub extract_pdk_with_valid_zip_in_default_loc
 {
 	print "\nfct: extract_pdk_with_valid_zip_in_default_loc\n";
-	
-	my $var1;
-	my $var2;
+
 	my $path_to_find_zip = "";
 	my @read_pdk_directory=();
 	
@@ -994,7 +914,7 @@ sub extract_pdk_with_valid_zip_in_default_loc
 	
 	print "build_bom_zip_file_to_extract=$build_bom_zip_file_to_extract\n";
 	
-	foreach $var1 (@pdk_dir_list_in_default_location)
+	foreach my $var1 (@pdk_dir_list_in_default_location)
 	{
 		$path_to_find_zip=$default_pdk_loc;
 		
@@ -1005,7 +925,7 @@ sub extract_pdk_with_valid_zip_in_default_loc
 		@read_pdk_directory = readdir(PDK_DIR);
 		close(PDK_DIR);
 	
-		foreach $var2 (@read_pdk_directory)
+		foreach my $var2 (@read_pdk_directory)
 		{
 			if($var2 =~ /$build_bom_zip_file_to_extract$/)
 			{
@@ -1013,7 +933,7 @@ sub extract_pdk_with_valid_zip_in_default_loc
 			}
 		}
 	}
-	print "There is $nb_pdks_with_valid_zip_in_default_loc PDKs with a valid $build_bom_zip_file_to_extract zip in the default location $default_pdk_loc\n";	
+	print "There are $nb_pdks_with_valid_zip_in_default_loc PDKs with a valid $build_bom_zip_file_to_extract zip in the default location $default_pdk_loc\n";	
 	
 	print "This is the list of PDKs that have a zip file called $build_bom_zip_file_to_extract in the default location $default_pdk_loc\n";
 	display_array_one_line_at_the_time(@pdks_with_valid_zip_in_default_loc);
@@ -1096,26 +1016,15 @@ sub extract_package_detail
 	
 	print "$file_to_work_on\n";
 	
-	my @local_array;
-	
 	# Open file
 	open(FILETOWORKON , $file_to_work_on);
-
-	# Extract data from file
 	my @local_array = <FILETOWORKON>;
-
-	# Close file
 	close(FILETOWORKON);
-
-	my $extracted_line;
 
 	# Create a table with the path for each package using a hash array
 	my $pckg_name_extraction_pattern = "^sf\/[\\w]*\/([\\w]*)";
-	my $pckg_path_extraction_pattern = "^(sf[\W\w]*[^,]+),";
+	my $pckg_path_extraction_pattern = "^([^,]+),";
 	my $pckg_real_name_extraction_pattern = ",[\\s]+([\\w\\s]*),[\\s]+[\\w\\s]*\$";
-	my $pckg_name="";
-	my $pckg_path="";
-	my $pckg_real_name="";
 	
 	#Typical lines to decode
 	#sf/app/helps,SFL,sf/app/helps/symhelp/helpmodel/group/bld.inf,OK, Help Apps, Help
@@ -1137,15 +1046,17 @@ sub extract_package_detail
 	#
 	
 	# Go line by line
-		
-	foreach  $extracted_line (@local_array)
+	foreach my $extracted_line (sort @local_array)
 	{
 		if($extracted_line =~ m;$pckg_name_extraction_pattern;)
 		{
-			$pckg_name = $1;
+			my $pckg_name = $1;
 
 			if(!$pckg_path_name_array{$pckg_name})	# Check if package is not already in the table to avoid duplicates
 			{
+				my $pckg_path="''nonstandard path''";
+				my $pckg_real_name="";
+
 				if($extracted_line =~ m;$pckg_path_extraction_pattern;)
 				{
 					$pckg_path = $1;
@@ -1161,7 +1072,6 @@ sub extract_package_detail
 		}
 	}
 	
-	my $local_value="";
 	my @local_array_sorted;
 	
 	@local_array=keys (%pckg_path_name_array);
