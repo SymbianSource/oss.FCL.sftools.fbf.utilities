@@ -110,7 +110,7 @@ if ($help)
 
 foreach my $pdkCount (0 .. $#PDK)
 {
-	if (scalar (grep {defined} keys %{$PDK[$pdkCount]}) == 0)
+	if (0 == scalar (grep { defined $_ } values %{$PDK[$pdkCount]}))
 	{
 		print "No data provided to identify PDK", $pdkCount + 1, "\n";
 		helpme();
@@ -237,11 +237,6 @@ if($pdkloc2)
 {
 	$pdk_path2 = $pdkloc2;
 }
-
-#
-# If we reach this point, this means that we have the right numbers of arguments passed to the script.
-#
-print "\nWe are on the right path!!!!\n";
 
 print "pdk_path1=$pdk_path1\n";
 print "pdk_complete_name1=$pdk_complete_name1\n";
