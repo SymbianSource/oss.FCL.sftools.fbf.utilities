@@ -52,6 +52,7 @@ my $ending_pattern_for_xml_extraction="</project>";
 # Pattern to extract data from the line in the file
 # Branch type. If not a branch type, we are not interested
 my $branch_type_extraction_pattern="(MCL|FCL)";
+my $license_type_extraction_pattern="(SFL|OSS)";
 
 my $mcl_cste="MCL";
 my $fcl_cste="FCL";
@@ -206,6 +207,8 @@ my @still_fcl_table;			# Table containing the packages that are still on fcl in 
 my @very_good_mcl_table;		# Table containing the packages that are very good on mcl in pdk1 and pdk2 (means were on mcl in pdk1 and are still mcl in pdk2)
 my %pckg_path_name_array;		# Table containing the path for each packages
 my %pckg_name_array;			# Table containing the real meaning name for each packages, not the name of the package in the directory structure
+my %pckg_license_array;			# Table containing the type of license (oss or sfl) for each packages
+my %pckg_branch_array;			# Table containing the type of branch (MCL or FCL) for each packages
 
 if($pdknb1)
 {
@@ -653,6 +656,10 @@ while (($tab_counter1 < $total_packages_pdk1) && ($tab_counter2 < $total_package
 				}
 			}
 		}
+		# Build up the list of branch for each package to be used to regenerate links at the end
+		$pckg_branch_array{$pdk2_sorting_table[$tab_counter2]} = $value_package_pdk2; # copy the value from 2 script parameters at it should be the newest version
+		#print "package & branch: $pdk2_sorting_table[$tab_counter2] is $value_package_pdk2\n";
+
 		$tab_counter1++;
 		$tab_counter2++;
 	}
@@ -661,10 +668,16 @@ while (($tab_counter1 < $total_packages_pdk1) && ($tab_counter2 < $total_package
 		# The values are not the same, therefore it must be an added or deleted package
 		if($compare_2_tables<0)	# If $compare_2_tables=-1, then pdk1 is smaller than pdk2, which means that it has been deleted from pdk2
 		{
+			# Build up the list of branch for each package to be used to regenerate links at the end
+			$pckg_branch_array{$pdk1_sorting_table[$tab_counter1]} = $value_package_pdk1; # copy the value from 2 script parameters at it should be the newest version
+
 			$packages_removed_table[$total_packages_removed++]=$pdk1_sorting_table[$tab_counter1++];
 		}
 		else
 		{
+			# Build up the list of branch for each package to be used to regenerate links at the end
+			$pckg_branch_array{$pdk2_sorting_table[$tab_counter2]} = $value_package_pdk2; # copy the value from 2 script parameters at it should be the newest version
+
 			# If $compare_2_tables=1, then pdk1 is bigger than pdk2, which means that it has been added to pdk2
 			$packages_added_table[$total_packages_added++]=$pdk2_sorting_table[$tab_counter2++];
 		}
@@ -685,6 +698,12 @@ print "total_new_fcl=$total_new_fcl\n";
 print "total_no_more_fcl=$total_no_more_fcl\n";
 print "total_still_fcl=$total_still_fcl\n";
 print "total_very_good_mcl=$total_very_good_mcl\n";
+print "\n";
+print "Licence type for a package=\n";
+#display_hash_array_one_line_at_the_time(%pckg_license_array);
+print "\n";
+print "Branch type for a package=\n";
+#display_hash_array_one_line_at_the_time(%pckg_branch_array);
 print "\n";
 # Checking that the packages have been assigned properly.
 # !!!! Need to verify the formula. Not sure that is correct!!!!!!
@@ -725,11 +744,11 @@ foreach $val (@packages_added_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $val ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";
 	}
 }
 
@@ -739,11 +758,11 @@ foreach $val (@packages_removed_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $val ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";
 	}
 }
 
@@ -755,7 +774,7 @@ print FCLCOMPARISONFILE <<"EOT";
 
 The previous PDK also involved some FCLs, so we indicate which problems are now fixed in the MCL, and which FCLs are new to this build.
 
-Cloning the source from Mercurial is made more awkward by using a mixture of MCLs and FCLs, but we provide a tool to help - see [[How to build the Platform#Automatic Mercurial Clone]] for details.
+Cloning the source from Mercurial is made more awkward by using a mixture of MCLs and FCLs, but we provide a tool to help - see [[How to build the Platform]] for details.
 
 EOT
 
@@ -764,7 +783,7 @@ foreach $val (@new_fcl_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) -- NEW ===\n\n";
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) -- NEW ===\n\n";
 		# TO DO!!!!
 		# Needs to be recovered from Mercurial. How????
 		#[http://developer.symbian.org/bugs/show_bug.cgi?id=156 Bug 156]: Add a missing bld.inf, to renable compilation of the package
@@ -772,7 +791,7 @@ foreach $val (@new_fcl_table)
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) -- NEW ===\n\n";
+		print FCLCOMPARISONFILE "=== $val ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) -- NEW ===\n\n";
 	}
 }
 
@@ -781,11 +800,11 @@ foreach $val (@still_fcl_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ($pckg_path_name_array{$val}) ===\n\n";
+		print FCLCOMPARISONFILE "=== $pckg_name_array{$val} ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) ===\n\n";
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "=== $val ($pckg_path_name_array{$val}) ===\n\n";
+		print FCLCOMPARISONFILE "=== $val ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) ===\n\n";
 	}
 }
 
@@ -795,11 +814,11 @@ foreach $val (@no_more_fcl_table)
 {
 	if($pckg_name_array{$val})
 	{
-		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $pckg_name_array{$val} ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";		
 	}
 	else
 	{
-		print FCLCOMPARISONFILE "''' $val ($pckg_path_name_array{$val}) '''\n\n";
+		print FCLCOMPARISONFILE "''' $val ([https://developer.symbian.org/$pckg_license_array{$val}/$pckg_branch_array{$val}/$pckg_path_name_array{$val}/graph  $pckg_path_name_array{$val}]) '''\n\n";
 	}
 }
 
@@ -1051,6 +1070,7 @@ sub extract_package_detail
 			{
 				my $pckg_path="''nonstandard path''";
 				my $pckg_real_name="";
+				my $pckg_license_type="";
 
 				if($extracted_line =~ m;$pckg_path_extraction_pattern;)
 				{
@@ -1060,9 +1080,15 @@ sub extract_package_detail
 				{
 					$pckg_real_name = $1;
 				}
+				if($extracted_line =~ m;$license_type_extraction_pattern;)	# Extract data about the type of license OSS or SFL
+				{
+					$pckg_license_type = $1;
+				}
 				# fill the tables
 				$pckg_path_name_array{$pckg_name} = $pckg_path;
 				$pckg_name_array{$pckg_name} = $pckg_real_name;
+				$pckg_license_type =~ tr/A-Z/a-z/; # Convert from uppercase to lowercase otherwise don't work to access the website.
+				$pckg_license_array{$pckg_name} = $pckg_license_type;
 			}
 		}
 	}
