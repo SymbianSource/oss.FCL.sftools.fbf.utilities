@@ -22,7 +22,7 @@ use Getopt::Long;
 #
 # Configuration data and constants for the script
 #
-my $default_pdk_loc='//bishare/releases/';
+my $default_pdk_loc='//v800020/Publish/Releases/';
 print "default_pdk_loc=$default_pdk_loc\n";
 
 # Nb of arguments to be passed to the script to work. If that need to change, just modify nb_arg_to_pass!
