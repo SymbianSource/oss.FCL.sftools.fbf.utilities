@@ -16,11 +16,38 @@
 
 use strict;
 use XML::Parser;
+use Getopt::Long;
 
-my $sourcesCsv = shift or die "First argument must be sources.csv file for build being built/released\n";
-my $sysDef = shift or die  "Second argument must be system definition file\n";
-my $previousPdkLabel = shift or die "Third argument must be hg tag to compare against\n";
-defined shift and die "No more than three arguments please\n";
+my $sourcesCsv;		# sources.csv file for this build
+my $sysDef;		# system definition file for this build
+my $previousPdkLabel;	# hg tag to compare against
+my $prevSourcesCsv;	# sources.csv file for baseline build, if different to this build
+my $prevSysDef;		# system definition file for baseline build, if different to this build
+
+GetOptions((
+	'sources=s' => \$sourcesCsv,
+	'sysdef=s' => \$sysDef,
+	'baseline=s' => \$previousPdkLabel,
+	'prevSources=s' => \$prevSourcesCsv,
+	'prevSysdef=s' => \$prevSysDef,
+));
+
+if (!$sourcesCsv || !$sysDef || !$previousPdkLabel)
+{
+	warn "Necessary argument(s) not supplied\n\n";
+	usage();
+	exit (1);
+}
+
+if (@ARGV)
+{
+	warn "Don't know what to do with these arguments: @ARGV\n\n";
+	usage();
+	exit (1);
+}
+
+$prevSourcesCsv ||= $sourcesCsv;
+$prevSysDef ||= $sysDef;
 
 my $packages = { current => {}, previous => {} };
 
@@ -31,7 +58,7 @@ close $manifest;
 populate($packages->{current}, @manifest);
 
 # Load prev manifest
-@manifest = `hg cat -r $previousPdkLabel $sourcesCsv`;
+@manifest = `hg cat -r $previousPdkLabel $prevSourcesCsv`;
 populate($packages->{previous}, @manifest);
 
 my $xml = XML::Parser->new(Style => "Objects") or die;
@@ -39,7 +66,7 @@ my $xml = XML::Parser->new(Style => "Objects") or die;
 my $tree = $xml->parsefile($sysDef);
 populateNames($packages->{current}, $tree);
 # Load previous names from previous system definition
-eval { $tree = $xml->parsestring(scalar `hg cat -r $previousPdkLabel $sysDef`) } or die $!;
+eval { $tree = $xml->parsestring(scalar `hg cat -r $previousPdkLabel $prevSysDef`) } or die $!;
 populateNames($packages->{previous}, $tree);
 
 # Output release note info...
@@ -205,4 +232,12 @@ sub packageSort
 	$details->{$a}->{sortKey} cmp $details->{$b}->{sortKey};
 }
 
+sub usage
+{
+	warn <<EOT;
+Generates release notes detail about packages and FCLs used.
 
+packageComparison.pl -sources=<SOURCES.CSV> -sysdef=<SYSTEM_DEFINITION.XML> -baseline=<PDK RELEASE LABEL> [-prevSources=<PREV SOURCES.CSV>] [-prevSysdef=<PREV>]
+
+EOT
+}
