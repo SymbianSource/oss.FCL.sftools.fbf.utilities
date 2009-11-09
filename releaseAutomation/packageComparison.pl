@@ -63,11 +63,9 @@ populate($packages->{previous}, @manifest);
 
 my $xml = XML::Parser->new(Style => "Objects") or die;
 # Load current names from current system definition
-my $tree = $xml->parsefile($sysDef);
-populateNames($packages->{current}, $tree);
+eval { populateNames($packages->{current}, $xml->parsefile($sysDef) ) };
 # Load previous names from previous system definition
-eval { $tree = $xml->parsestring(scalar `hg cat -r $previousPdkLabel $prevSysDef`) } or die $!;
-populateNames($packages->{previous}, $tree);
+eval { populateNames($packages->{previous}, $xml->parsestring(scalar `hg cat -r $previousPdkLabel $prevSysDef`) ) };
 
 # Output release note info...
 
@@ -164,7 +162,7 @@ foreach (sort { packageSort($packages->{current}) } grep {inPrev($_) && $package
 	print "==== $packages->{current}->{$_}->{name} ([$packages->{current}->{$_}->{url} $packages->{current}->{$_}->{path}]) ====\n";
 }
 
-print "\n=== FCLs used in PDK_2.0.0 but no longer needed ===\n\n";
+print "\n=== FCLs used in $previousPdkLabel but no longer needed ===\n\n";
 my @revertedToMCL = sort { packageSort($packages->{current}) } grep { inPrev($_) && $packages->{previous}->{$_}->{codeline} eq "FCL" && $packages->{current}->{$_}->{codeline} eq "MCL" } keys %{$packages->{current}};
 print "(none)\n" unless @revertedToMCL;
 foreach (@revertedToMCL)
