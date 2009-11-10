@@ -19,20 +19,20 @@ use XML::Parser;
 use Getopt::Long;
 
 my $sourcesCsv;		# sources.csv file for this build
-my $sysDef;		# system definition file for this build
+my @sysDef;		# system definition files to look in for this build
 my $previousPdkLabel;	# hg tag to compare against
 my $prevSourcesCsv;	# sources.csv file for baseline build, if different to this build
 my $prevSysDef;		# system definition file for baseline build, if different to this build
 
 GetOptions((
 	'sources=s' => \$sourcesCsv,
-	'sysdef=s' => \$sysDef,
+	'sysdef=s' => \@sysDef,
 	'baseline=s' => \$previousPdkLabel,
 	'prevSources=s' => \$prevSourcesCsv,
 	'prevSysdef=s' => \$prevSysDef,
 ));
 
-if (!$sourcesCsv || !$sysDef || !$previousPdkLabel)
+if (!$sourcesCsv || !@sysDef || !$previousPdkLabel)
 {
 	warn "Necessary argument(s) not supplied\n\n";
 	usage();
@@ -47,12 +47,11 @@ if (@ARGV)
 }
 
 $prevSourcesCsv ||= $sourcesCsv;
-$prevSysDef ||= $sysDef;
 
 my $packages = { current => {}, previous => {} };
 
 # Load current manifest
-open(my $manifest, "<", $sourcesCsv) or die;
+open(my $manifest, "<", $sourcesCsv) or die "Unable to open $sourcesCsv";
 my @manifest = <$manifest>;
 close $manifest;
 populate($packages->{current}, @manifest);
@@ -62,10 +61,16 @@ populate($packages->{current}, @manifest);
 populate($packages->{previous}, @manifest);
 
 my $xml = XML::Parser->new(Style => "Objects") or die;
-# Load current names from current system definition
-eval { populateNames($packages->{current}, $xml->parsefile($sysDef) ) };
-# Load previous names from previous system definition
-eval { populateNames($packages->{previous}, $xml->parsestring(scalar `hg cat -r $previousPdkLabel $prevSysDef`) ) };
+foreach my $sysDef (@sysDef)
+{
+	# Load current names from current system definition (fails silently)
+	eval { populateNames($packages->{current}, $xml->parsefile($sysDef) ) };
+	# Load previous names from current system definition at earlier revision (fails silently)
+	eval { populateNames($packages->{previous}, $xml->parsestring(scalar `hg cat -r $previousPdkLabel $sysDef 2> nul:`) ) };
+}
+
+# Load previous names from previous system definition, if supplied
+populateNames($packages->{previous}, $xml->parsestring(scalar `hg cat -r $previousPdkLabel $prevSysDef`) ) if $prevSysDef;
 
 # Output release note info...
 
@@ -202,9 +207,9 @@ sub populateNames
 	{
 		if (ref $_)
 		{
-			if (ref $_ eq "main::block" || ref $_ eq "main::package")
+			if (ref $_ eq "main::block" || ref $_ eq "main::package" || ref $_ eq "main::module")
 			{
-				if (exists $packages->{$_->{name}})
+				if (exists $packages->{$_->{name}} && exists $_->{"long-name"})
 				{
 					$packages->{$_->{name}}->{name} = $_->{"long-name"};
 					$packages->{$_->{name}}->{sortKey} = lc $_->{"long-name"};
