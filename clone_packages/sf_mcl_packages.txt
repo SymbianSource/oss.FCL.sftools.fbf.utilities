@@ -94,7 +94,7 @@ https://developer.symbian.org/sfl/MCL/sf/os/deviceplatformrelease
 https://developer.symbian.org/sfl/MCL/sf/os/devicesrv
 https://developer.symbian.org/sfl/MCL/sf/os/graphics
 https://developer.symbian.org/sfl/MCL/sf/os/imagingext
-https://developer.symbian.org/sfl/MCL/sf/os/kernelhwsrv
+https://developer.symbian.org/oss/MCL/sf/os/kernelhwsrv
 https://developer.symbian.org/sfl/MCL/sf/os/lbs
 https://developer.symbian.org/sfl/MCL/sf/os/mm
 https://developer.symbian.org/sfl/MCL/sf/os/networkingsrv

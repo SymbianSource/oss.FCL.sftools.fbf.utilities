@@ -14,7 +14,7 @@ https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/configtools
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/swmgnttoolsguides
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/sysmodeltools
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigmdw
-https://developer.symbian.org/sfl/FCL/sftools/dev/build
+https://developer.symbian.org/oss/FCL/sftools/dev/build
 https://developer.symbian.org/sfl/FCL/sftools/dev/dbgsrvsmdw
 https://developer.symbian.org/sfl/FCL/sftools/dev/devicedbgsrvs
 https://developer.symbian.org/sfl/FCL/sftools/dev/ide/carbidecppplugins
