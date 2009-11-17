@@ -382,4 +382,10 @@ printf "\n------------\nProcessed %d packages, of which %d reported errors\n",
 if (scalar @problem_packages)
   {
   print join("\n", @problem_packages, "");
+  exit(1);
   }
+  else
+  {
+  exit(0);
+  }
+  
