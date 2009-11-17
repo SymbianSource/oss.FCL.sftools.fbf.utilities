@@ -119,6 +119,8 @@ sub scan_directory($$)
   {
   my ($path, $shadow) = @_;
   
+  return if lc $path eq "/epoc32/build";
+
   opendir DIR, $path;
   my @files = grep !/^\.\.?$/, readdir DIR;
   closedir DIR;
