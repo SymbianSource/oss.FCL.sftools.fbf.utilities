@@ -65,16 +65,7 @@ foreach my $datum (@rawData)
 	$cookedData{$datum->{Package}}->{same} += $datum->{Count} if $datum->{Change} eq "same";
 	$cookedData{$datum->{Package}}->{addRemove} += $datum->{Count} if $datum->{Change} =~ m{^[AR]$};
 }
-# Add the "exception" packages
-foreach my $package (@pkgErrors)
-{
-	chomp $package;
-	$package =~ s{No valid comparison for }{};
-	$cookedData{$package}->{exception} = "* Package is brand new, or converted from SFL -> EPL, or has transitioned from FCL back to MCL (not covered in this section)\n";
-}
-
 # Cut-off for "interesting" packages
-
 foreach my $package (keys %cookedData)
 {
 	# Ensure items are defined
@@ -82,14 +73,11 @@ foreach my $package (keys %cookedData)
 	$cookedData{$package}->{same} |= 0;
 	$cookedData{$package}->{addRemove} |= 0;
 	$cookedData{$package}->{percentChurn} = 100 * (1 - ($cookedData{$package}->{same} / $cookedData{$package}->{totalFiles}));
-	$cookedData{$package}->{exception} |= "";
 	
 	# More than N files added + removed
 	next if $cookedData{$package}->{addRemove} >= 400;
 	# More than M% churn
 	next if $cookedData{$package}->{percentChurn} > 30;
-	# Unable to compare at all
-	next if $cookedData{$package}->{exception};
 	# Nothing interesting about this package
 	delete $cookedData{$package};
 }
@@ -102,7 +90,7 @@ foreach my $package (sort keys %cookedData)
 
 * $cookedData{$package}->{addRemove} files added/removed
 * $cookedData{$package}->{percentChurn}% churn
-$cookedData{$package}->{exception}
+
 # Cause1
 # etc
 

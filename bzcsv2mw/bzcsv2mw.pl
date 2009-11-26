@@ -40,6 +40,7 @@ EOF
 
 my $file = "";
 my $help = 0;
+my $count_nb_total_bugs=0;
 
 if (!GetOptions(
     "csv=s" => \$file,
@@ -88,7 +89,8 @@ while (<CSV>) {
 			foreach (@columns) 
 			{
 				print MWTXT "|$_\n";
-			}		
+			}
+			$count_nb_total_bugs++;
 		}
 	} 
 	else 
@@ -103,3 +105,4 @@ while (<CSV>) {
 close CSV;
 print MWTXT "|}\n";
 close MWTXT;
+print "\nThe number of bugs is: $count_nb_total_bugs\n";

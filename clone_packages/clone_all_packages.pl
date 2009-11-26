@@ -57,6 +57,7 @@ Options:
 -exec          execute command on each repository
 -filter <RE>   only process repository paths matching regular expression <RE>
 -dummyrun      Dummy Run, don't execute any Mercurial commands.
+-webhost       Web Mercurial host (defaults to developer.symbian.org)
 
 The -exec option processes the rest of the command line, treating it as
 a command to apply to each repository in turn. Some keywords are expanded
@@ -107,6 +108,7 @@ if (!GetOptions(
     "f|filter=s" => \$filter,
     "l|packagelist=s" => \@packagelist_files,
     "d|dummyrun" => \$do_nothing,
+    "w|webhost=s" => \$hostname,
     ))
   {
   Usage("Invalid argument");
@@ -203,7 +205,7 @@ sub process_one_repo($)
   if ($license ne "sfl" && !$export_control_special_case{$package})
     {
     # user registration is not required for reading public package repositories
-    $repo_url = "http://developer.symbian.org/$package/";
+    $repo_url = "http://$hostname/$package/";
     }
   
   my @rev_options = ();
@@ -247,7 +249,7 @@ sub process_one_repo($)
     # The repository already exists, so just do an update
     
     print "Updating $destdir from $package...\n";
-    $ret = do_system("hg", "pull", @pull_options, "-R", $path, $repo_url, @rev_options);
+    $ret = do_system("hg", "pull", @pull_options, @rev_options, "-R", $path, $repo_url);
     if ($ret == 0 && ! $mirror)
       {
       $ret = do_system("hg", "update", "-R", $path, @rev_options)
@@ -258,7 +260,7 @@ sub process_one_repo($)
     # Clone the repository
     
     print "Cloning $destdir from $package...\n";
-    $ret = do_system("hg", "clone", @clone_options, $repo_url, $path, @rev_options);
+    $ret = do_system("hg", "clone", @clone_options, @rev_options, $repo_url, $path);
     }
   
   $ret = $ret >> 8;   # extract the exit status
@@ -380,4 +382,10 @@ printf "\n------------\nProcessed %d packages, of which %d reported errors\n",
 if (scalar @problem_packages)
   {
   print join("\n", @problem_packages, "");
+  exit(1);
   }
+  else
+  {
+  exit(0);
+  }
+  

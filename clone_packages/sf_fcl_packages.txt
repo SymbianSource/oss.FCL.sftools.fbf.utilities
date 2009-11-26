@@ -94,7 +94,7 @@ https://developer.symbian.org/sfl/FCL/sf/os/deviceplatformrelease
 https://developer.symbian.org/sfl/FCL/sf/os/devicesrv
 https://developer.symbian.org/sfl/FCL/sf/os/graphics
 https://developer.symbian.org/sfl/FCL/sf/os/imagingext
-https://developer.symbian.org/sfl/FCL/sf/os/kernelhwsrv
+https://developer.symbian.org/oss/FCL/sf/os/kernelhwsrv
 https://developer.symbian.org/sfl/FCL/sf/os/lbs
 https://developer.symbian.org/sfl/FCL/sf/os/mm
 https://developer.symbian.org/sfl/FCL/sf/os/networkingsrv
@@ -132,4 +132,5 @@ https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/w
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/webuis
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
+https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
 
