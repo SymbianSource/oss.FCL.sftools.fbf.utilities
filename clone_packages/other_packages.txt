@@ -11,9 +11,5 @@ https://developer.symbian.org/oss/FCL/interim/contrib/WidgetExamples
 https://developer.symbian.org/oss/FCL/interim/fbf/bootstrap
 https://developer.symbian.org/oss/FCL/interim/fbf/configs/default
 https://developer.symbian.org/oss/FCL/interim/fbf/configs/pkgbuild
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/serviceapi
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/serviceapifw
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/web
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/deprecated/packages/webuis
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
