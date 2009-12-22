@@ -171,7 +171,7 @@ def downloadkit(version):
 			print "URL Error:",e.reason , downloadurl
 
 		# unzip the file (if desired)
-		if re.match(r"(bin|epoc).*\.zip", filename):
+		if re.match(r"(bin|tools).*\.zip", filename):
 			unzipthread = unzipfile(filename, 1, 0)   # unzip once, don't delete
 			threadlist.append(unzipthread)
 			unzipthread.start()
