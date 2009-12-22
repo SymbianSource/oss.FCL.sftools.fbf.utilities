@@ -157,7 +157,7 @@ def downloadkit(version):
 				if first_chunk and chunk.find('<div id="sign_in_box">') != -1:
 					# our urllib2 cookies have gone awol - login again
 					login(False)
-					req = urllib2.Request(downloadurl)
+					req = urllib2.Request(downloadurl, None, headers)
 					response = urllib2.urlopen(req)
 					chunk = response.read(CHUNK)	  
 				fp.write(chunk)
