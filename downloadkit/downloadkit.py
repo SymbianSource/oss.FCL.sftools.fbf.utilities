@@ -113,6 +113,7 @@ class unzipfile(Thread):
 		self.status = self.unzip(self.filename, self.levels, self.deletelevels)
 
 def downloadkit(version):
+	headers = { 'User-Agent' : user_agent }
 	urlbase = 'http://developer.symbian.org/main/tools_and_kits/downloads/'
 
 	viewid = 5   # default to Symbian^3
@@ -122,7 +123,7 @@ def downloadkit(version):
 		viewid= 5  # Symbian^3
 	url = urlbase + ('view.php?id=%d'% viewid) + 'vId=' + version
 
-	req = urllib2.Request(url)
+	req = urllib2.Request(url, None, headers)
 	response = urllib2.urlopen(req)
 	doc=response.read()
 	
@@ -143,7 +144,7 @@ def downloadkit(version):
 		downloadurl = urlbase + result['href']
 		filename = result['title']
 		print 'Downloading ' + filename
-		req = urllib2.Request(downloadurl)
+		req = urllib2.Request(downloadurl, None, headers)
 		
 		try:
 			response = urllib2.urlopen(req)
