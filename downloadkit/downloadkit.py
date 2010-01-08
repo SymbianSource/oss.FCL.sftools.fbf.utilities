@@ -112,6 +112,29 @@ class unzipfile(Thread):
 	def run(self):
 		self.status = self.unzip(self.filename, self.levels, self.deletelevels)
 
+def orderResults(x,y) :
+	def ranking(name) :
+		# 1st = release_metadata, build_BOM.zip (both small things!)
+		if re.match(r"(build_BOM|release_metadata)", name):
+			return 1000;
+		# 2nd = tools, binaries (required for execution and compilation)
+		elif re.match(r"(binaries_|tools_)", name):
+			return 2000;
+		# 3rd = rnd binaries, binary patches
+		elif re.match(r"(bin_)", name):
+			return 3000;
+		# 4th = sources
+		elif re.match(r"(src_sfl|src_oss)", name):
+			return 4000;
+		# 5rd = rnd sources, source patches (not sure we'd ever have those)
+		elif re.match(r"(src_)", name):
+			return 5000;
+		# Last, anything else
+		return 10000;
+	xtitle = x['title']
+	ytitle = y['title']
+	return cmp(ranking(xtitle)+cmp(xtitle,ytitle), ranking(ytitle))
+
 def downloadkit(version):
 	headers = { 'User-Agent' : user_agent }
 	urlbase = 'http://developer.symbian.org/main/tools_and_kits/downloads/'
@@ -140,6 +163,7 @@ def downloadkit(version):
 
 	soup=BeautifulSoup(doc)
 	results=soup.findAll('a', href=re.compile("^download"), title=re.compile("\.(zip|xml)$"))
+	results.sort(orderResults)
 	for result in results:
 		downloadurl = urlbase + result['href']
 		filename = result['title']
