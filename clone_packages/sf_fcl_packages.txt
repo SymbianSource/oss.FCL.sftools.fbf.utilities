@@ -116,6 +116,7 @@ https://developer.symbian.org/sfl/FCL/sf/tools/platformtools
 https://developer.symbian.org/sfl/FCL/sf/tools/rndtools
 https://developer.symbian.org/sfl/FCL/sf/tools/swconfigtools
 https://developer.symbian.org/oss/FCL/sf/app/webuis
+https://developer.symbian.org/oss/FCL/sf/mw/gstreamer
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapifw
 https://developer.symbian.org/oss/FCL/sf/mw/web
