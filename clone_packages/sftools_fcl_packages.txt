@@ -22,6 +22,7 @@ https://developer.symbian.org/sfl/FCL/sftools/dev/iss
 https://developer.symbian.org/sfl/FCL/sftools/dev/ui
 https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/buildlayout34
 https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/eclipse
+https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/wrttools/
 https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/compilationtoolchains
 https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/cpptoolsplat
 https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/dist
