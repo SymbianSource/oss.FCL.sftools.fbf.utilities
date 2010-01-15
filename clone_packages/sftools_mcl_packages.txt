@@ -14,14 +14,17 @@ https://developer.symbian.org/sfl/MCL/sftools/depl/swconfigapps/configtools
 https://developer.symbian.org/sfl/MCL/sftools/depl/swconfigapps/swmgnttoolsguides
 https://developer.symbian.org/sfl/MCL/sftools/depl/swconfigapps/sysmodeltools
 https://developer.symbian.org/sfl/MCL/sftools/depl/swconfigmdw
-https://developer.symbian.org/oss/MCL/sftools/dev/build
 https://developer.symbian.org/sfl/MCL/sftools/dev/dbgsrvsmdw
 https://developer.symbian.org/sfl/MCL/sftools/dev/devicedbgsrvs
-https://developer.symbian.org/sfl/MCL/sftools/dev/ide/carbidecppplugins
 https://developer.symbian.org/sfl/MCL/sftools/dev/iss
 https://developer.symbian.org/sfl/MCL/sftools/dev/ui
+https://developer.symbian.org/oss/MCL/sftools/depl/docscontent/
+https://developer.symbian.org/oss/MCL/sftools/depl/docstools
+https://developer.symbian.org/oss/MCL/sftools/dev/build
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout34
+https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout35
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/eclipse
+https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/wrttools
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/compilationtoolchains
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/cpptoolsplat
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/dist
@@ -29,3 +32,4 @@ https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/javatoolsplat
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/makeng
 https://developer.symbian.org/oss/MCL/sftools/dev/hostenv/pythontoolsplat
 https://developer.symbian.org/oss/MCL/sftools/dev/ide/carbidecpp
+https://developer.symbian.org/oss/MCL/sftools/dev/ide/carbidecppplugins
