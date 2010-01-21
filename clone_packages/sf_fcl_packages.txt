@@ -129,5 +129,6 @@ https://developer.symbian.org/oss/FCL/interim/fbf/configs/default
 https://developer.symbian.org/oss/FCL/interim/fbf/configs/pkgbuild
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
 https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
+http://developer.symbian.org/oss/FCL/interim/sf-test/platform/smoketest
 https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
 
