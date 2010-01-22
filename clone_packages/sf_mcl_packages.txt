@@ -1,4 +1,4 @@
-https://developer.symbian.org/sfl/MCL/sf/adaptation/stubs
+https://developer.symbian.org/oss/MCL/sf/adaptation/stubs
 https://developer.symbian.org/sfl/MCL/sf/app/camera
 https://developer.symbian.org/sfl/MCL/sf/app/commonemail
 https://developer.symbian.org/sfl/MCL/sf/app/conntools

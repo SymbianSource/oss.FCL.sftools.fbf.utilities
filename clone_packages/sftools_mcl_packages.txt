@@ -18,8 +18,8 @@ https://developer.symbian.org/sfl/MCL/sftools/dev/dbgsrvsmdw
 https://developer.symbian.org/sfl/MCL/sftools/dev/devicedbgsrvs
 https://developer.symbian.org/sfl/MCL/sftools/dev/iss
 https://developer.symbian.org/sfl/MCL/sftools/dev/ui
-https://developer.symbian.org/oss/MCL/sftools/depl/docscontent/
-https://developer.symbian.org/oss/MCL/sftools/depl/docstools
+https://developer.symbian.org/oss/MCL/sftools/depl/docscontent
+https://developer.symbian.org/oss/MCL/sftools/depl/doctools
 https://developer.symbian.org/oss/MCL/sftools/dev/build
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout34
 https://developer.symbian.org/oss/MCL/sftools/dev/eclipseenv/buildlayout35
