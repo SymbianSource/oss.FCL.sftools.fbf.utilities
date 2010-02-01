@@ -20,10 +20,13 @@ import sys
 import getpass
 import re
 from BeautifulSoup import BeautifulSoup
+from optparse import OptionParser
 
 user_agent = 'downloadkit.py script'
 headers = { 'User-Agent' : user_agent }
 top_level_url = "http://developer.symbian.org"
+download_list = []
+unzip_list = []
 
 username = ''
 password = ''
@@ -112,6 +115,34 @@ class unzipfile(Thread):
 	def run(self):
 		self.status = self.unzip(self.filename, self.levels, self.deletelevels)
 
+threadlist = []
+def schedule_unzip(filename, unziplevel, deletelevel):
+	global options
+	if options.dryrun :
+		global unzip_list
+		if unziplevel > 0:
+			unzip_list.append("7z x -y %s" % filename)
+			if unziplevel > 1:
+				unzip_list.append("# unzip recursively %d more times" % unziplevel-1)
+		if deletelevel > 0:
+			unzip_list.append("# delete %s" % filename)
+			if deletelevel > 1:
+				unzip_list.append("# delete zip files recursively %d more times" % deletelevel-1)
+		return
+		
+	unzipthread = unzipfile(filename, unziplevels, deletelevels)
+	global threadlist
+	threadlist.append(unzipthread)
+	unzipthread.start()
+
+def complete_outstanding_unzips():
+	global options
+	if options.dryrun:
+		return
+	print "Waiting for outstanding commands to finish..."
+	for thread in threadlist:
+		thread.join()  
+	
 def orderResults(x,y) :
 	def ranking(name) :
 		# 1st = release_metadata, build_BOM.zip (both small things!)
@@ -135,8 +166,48 @@ def orderResults(x,y) :
 	ytitle = y['title']
 	return cmp(ranking(xtitle)+cmp(xtitle,ytitle), ranking(ytitle))
 
-def downloadkit(version):
-	headers = { 'User-Agent' : user_agent }
+def download_file(filename,url):
+	global options
+	if options.dryrun :
+		global download_list
+		download_info = "download %s %s" % (filename, url)
+		download_list.append(download_info)
+		return True
+	
+	print 'Downloading ' + filename
+	global headers
+	req = urllib2.Request(url, None, headers)
+	
+	try:
+		response = urllib2.urlopen(req)
+		CHUNK = 128 * 1024
+		first_chunk = True
+		fp = open(filename, 'wb')
+		while True:
+			chunk = response.read(CHUNK)
+			if not chunk: break
+			if first_chunk and chunk.find('<div id="sign_in_box">') != -1:
+				# our urllib2 cookies have gone awol - login again
+				login(False)
+				req = urllib2.Request(url, None, headers)
+				response = urllib2.urlopen(req)
+				chunk = response.read(CHUNK)	  
+			fp.write(chunk)
+			first_chunk = False
+		fp.close()
+
+	#handle errors
+	except urllib2.HTTPError, e:
+		print "HTTP Error:",e.code , downloadurl
+		return False
+	except urllib2.URLError, e:
+		print "URL Error:",e.reason , downloadurl
+		return False
+	return True
+
+def downloadkit(version):	
+	global headers
+	global options
 	urlbase = 'http://developer.symbian.org/main/tools_and_kits/downloads/'
 
 	viewid = 5   # default to Symbian^3
@@ -167,54 +238,47 @@ def downloadkit(version):
 	for result in results:
 		downloadurl = urlbase + result['href']
 		filename = result['title']
-		print 'Downloading ' + filename
-		req = urllib2.Request(downloadurl, None, headers)
-		
-		try:
-			response = urllib2.urlopen(req)
-			CHUNK = 128 * 1024
-			first_chunk = True
-			fp = open(filename, 'wb')
-			while True:
-				chunk = response.read(CHUNK)
-				if not chunk: break
-				if first_chunk and chunk.find('<div id="sign_in_box">') != -1:
-					# our urllib2 cookies have gone awol - login again
-					login(False)
-					req = urllib2.Request(downloadurl, None, headers)
-					response = urllib2.urlopen(req)
-					chunk = response.read(CHUNK)	  
-				fp.write(chunk)
-				first_chunk = False
-			fp.close()
 
-		#handle errors
-		except urllib2.HTTPError, e:
-			print "HTTP Error:",e.code , downloadurl
-		except urllib2.URLError, e:
-			print "URL Error:",e.reason , downloadurl
+		if options.nosrc and re.match(r"(src_sfl|src_oss)", filename) :
+			continue 	# no snapshots of Mercurial source thanks...
+
+		if download_file(filename, downloadurl) != True :
+			continue # download failed
 
 		# unzip the file (if desired)
+		if re.match(r"patch", filename):
+			complete_outstanding_unzips()	# ensure that the thing we are patching is completed first
+			
 		if re.match(r"(bin|tools).*\.zip", filename):
-			unzipthread = unzipfile(filename, 1, 0)   # unzip once, don't delete
-			threadlist.append(unzipthread)
-			unzipthread.start()
+			schedule_unzip(filename, 1, 0)   # unzip once, don't delete
 		elif re.match(r"src_.*\.zip", filename):
-			unzipthread = unzipfile(filename, 1, 1)   # zip of zips, delete top level
-			threadlist.append(unzipthread)
-			unzipthread.start()
+			schedule_unzip(filename, 1, 1)   # zip of zips, delete top level
 		elif re.match(r"build_BOM.zip", filename):
-			unzipthread = unzipfile(filename, 1, 1)   # unpack then delete zip as it's not needed again
-			threadlist.append(unzipthread)
-			unzipthread.start()
+			schedule_unzip(filename, 1, 1)   # unpack then delete zip as it's not needed again
 
 	# wait for the unzipping threads to complete
-	print "Waiting for unzipping to finish..."
-	for thread in threadlist:
-		thread.join()  
+	complete_outstanding_unzips()  
 
 	return 1
 
+parser = OptionParser(usage="Usage: %prog [options] version", version="%prog 0.3")
+parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
+	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
+parser.add_option("--nosrc", action="store_true", dest="nosrc",
+	help="Don't download any of the source code available directly from Mercurial")
+parser.set_defaults(dryrun=False, nosrc=False)
+
+(options, args) = parser.parse_args()
+if len(args) != 1:
+	parser.error("Must supply a PDK version, e.g. 3.0.e")
 
 login(True)
-downloadkit(sys.argv[1])
+downloadkit(args[0])
+
+if options.dryrun:
+	print "# instructions for downloading kit " + args[0]
+	for download in download_list:
+		print download
+	for command in unzip_list:
+		print command
+
