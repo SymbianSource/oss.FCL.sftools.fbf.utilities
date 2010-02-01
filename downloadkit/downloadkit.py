@@ -118,6 +118,8 @@ class unzipfile(Thread):
 threadlist = []
 def schedule_unzip(filename, unziplevel, deletelevel):
 	global options
+	if options.nounzip :
+		return
 	if options.dryrun :
 		global unzip_list
 		if unziplevel > 0:
@@ -137,7 +139,7 @@ def schedule_unzip(filename, unziplevel, deletelevel):
 
 def complete_outstanding_unzips():
 	global options
-	if options.dryrun:
+	if options.dryrun or options.nounzip:
 		return
 	print "Waiting for outstanding commands to finish..."
 	for thread in threadlist:
@@ -261,12 +263,14 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(usage="Usage: %prog [options] version", version="%prog 0.3")
+parser = OptionParser(usage="Usage: %prog [options] version", version="%prog 0.4")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
 	help="Don't download any of the source code available directly from Mercurial")
-parser.set_defaults(dryrun=False, nosrc=False)
+parser.add_option("--nounzip", action="store_true", dest="nounzip",
+	help="Just download, don't unzip or delete any files")
+parser.set_defaults(dryrun=False, nosrc=False, nounzip=False)
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
