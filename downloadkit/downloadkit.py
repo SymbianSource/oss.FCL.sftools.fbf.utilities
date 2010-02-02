@@ -19,6 +19,7 @@ import cookielib
 import sys
 import getpass
 import re
+import time
 from BeautifulSoup import BeautifulSoup
 from optparse import OptionParser
 
@@ -132,7 +133,7 @@ def schedule_unzip(filename, unziplevel, deletelevel):
 				unzip_list.append("# delete zip files recursively %d more times" % deletelevel-1)
 		return
 		
-	unzipthread = unzipfile(filename, unziplevels, deletelevels)
+	unzipthread = unzipfile(filename, unziplevel, deletelevel)
 	global threadlist
 	threadlist.append(unzipthread)
 	unzipthread.start()
@@ -183,19 +184,26 @@ def download_file(filename,url):
 	try:
 		response = urllib2.urlopen(req)
 		CHUNK = 128 * 1024
-		first_chunk = True
+		size = 0
+		last_time = time.time()
+		last_size = size
 		fp = open(filename, 'wb')
 		while True:
 			chunk = response.read(CHUNK)
 			if not chunk: break
-			if first_chunk and chunk.find('<div id="sign_in_box">') != -1:
+			if size == 0 and chunk.find('<div id="sign_in_box">') != -1:
 				# our urllib2 cookies have gone awol - login again
 				login(False)
 				req = urllib2.Request(url, None, headers)
 				response = urllib2.urlopen(req)
 				chunk = response.read(CHUNK)	  
 			fp.write(chunk)
-			first_chunk = False
+			size += len(chunk)
+			now = time.time()
+			if options.progress and now-last_time > 20:
+				print "- %d Kb (%d Kb/s)" % (size/1024, ((size-last_size)/1024/(now-last_time))+0.5)
+				last_time = now
+				last_size = size
 		fp.close()
 
 	#handle errors
@@ -263,14 +271,16 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(usage="Usage: %prog [options] version", version="%prog 0.4")
+parser = OptionParser(version="%prog 0.5", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
 	help="Don't download any of the source code available directly from Mercurial")
 parser.add_option("--nounzip", action="store_true", dest="nounzip",
 	help="Just download, don't unzip or delete any files")
-parser.set_defaults(dryrun=False, nosrc=False, nounzip=False)
+parser.add_option("--progress", action="store_true", dest="progress",
+	help="Report download progress")
+parser.set_defaults(dryrun=False, nosrc=False, nounzip=False, progress=False)
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
