@@ -89,7 +89,7 @@ foreach my $package (sort keys %cookedData)
 === $package ===
 
 * $cookedData{$package}->{addRemove} files added/removed
-* $cookedData{$package}->{percentChurn}% churn
+* $cookedData{$package}->{percentChurn}% of files churned
 
 # Cause1
 # etc
