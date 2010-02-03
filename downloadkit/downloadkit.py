@@ -185,6 +185,7 @@ def download_file(filename,url):
 		response = urllib2.urlopen(req)
 		CHUNK = 128 * 1024
 		size = 0
+		filesize = -1
 		last_time = time.time()
 		last_size = size
 		fp = open(filename, 'wb')
@@ -196,15 +197,29 @@ def download_file(filename,url):
 				login(False)
 				req = urllib2.Request(url, None, headers)
 				response = urllib2.urlopen(req)
-				chunk = response.read(CHUNK)	  
+				chunk = response.read(CHUNK)
+			if size == 0:
+				filesize = int(response.info()['Content-Length'])  
 			fp.write(chunk)
 			size += len(chunk)
 			now = time.time()
 			if options.progress and now-last_time > 20:
-				print "- %d Kb (%d Kb/s)" % (size/1024, ((size-last_size)/1024/(now-last_time))+0.5)
+				rate = (size-last_size)/(now-last_time)
+				estimate = ""
+				if filesize > 0 and rate > 0:
+					remaining_seconds = (filesize-size)/rate
+					if remaining_seconds > 110:
+						remaining = "%d minutes" % (remaining_seconds/60)
+					else:
+						remaining = "%d seconds" % remaining_seconds
+					estimate = "- %d%% est. %s" % ((100*size/filesize), remaining)
+				print "- %d Kb (%d Kb/s) %s" % (size/1024, (rate/1024)+0.5, estimate)
 				last_time = now
 				last_size = size
 		fp.close()
+		if options.progress:
+			now = time.time()
+			print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-last_time)
 
 	#handle errors
 	except urllib2.HTTPError, e:
@@ -271,7 +286,7 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.5", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.5.1", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
