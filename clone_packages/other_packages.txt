@@ -1,15 +1,9 @@
 https://developer.symbian.org/oss/API_REF/SHAI/
-https://developer.symbian.org/sfl/API_REF/Public_API/epoc32/
+https://developer.symbian.org/oss/FCL/examples/app/NPR/
 https://developer.symbian.org/oss/MCL/utilities
+https://developer.symbian.org/sfl/API_REF/Public_API/epoc32/
 https://developer.symbian.org/sfl/FCL/interim/auxiliary_tools/AgileBrowser
 https://developer.symbian.org/sfl/FCL/interim/auxiliary_tools/EUserHL
 https://developer.symbian.org/sfl/FCL/interim/auxiliary_tools/route_generator
 https://developer.symbian.org/sfl/FCL/interim/auxiliary_tools/simulation_PSY
 https://developer.symbian.org/sfl/FCL/interim/desktopsw
-https://developer.symbian.org/oss/FCL/interim/QEMU
-https://developer.symbian.org/oss/FCL/interim/contrib/WidgetExamples
-https://developer.symbian.org/oss/FCL/interim/fbf/bootstrap
-https://developer.symbian.org/oss/FCL/interim/fbf/configs/default
-https://developer.symbian.org/oss/FCL/interim/fbf/configs/pkgbuild
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
