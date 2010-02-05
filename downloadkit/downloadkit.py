@@ -121,6 +121,8 @@ def schedule_unzip(filename, unziplevel, deletelevel):
 	global options
 	if options.nounzip :
 		return
+	if options.nodelete :
+		deletelevel = 0
 	if options.dryrun :
 		global unzip_list
 		if unziplevel > 0:
@@ -145,7 +147,19 @@ def complete_outstanding_unzips():
 	print "Waiting for outstanding commands to finish..."
 	for thread in threadlist:
 		thread.join()  
-	
+
+def check_unzip_environment():
+	global options
+	if options.nounzip:
+		return True		# if we aren't unzipping, no need to have 7z installed
+	help = os.popen("7z -h")
+	for line in help.readlines():
+		if re.match('7-Zip', line) :
+			help.close()
+			return True
+	help.close()
+	return False
+
 def orderResults(x,y) :
 	def ranking(name) :
 		# 1st = release_metadata, build_BOM.zip (both small things!)
@@ -198,8 +212,18 @@ def download_file(filename,url):
 				req = urllib2.Request(url, None, headers)
 				response = urllib2.urlopen(req)
 				chunk = response.read(CHUNK)
+				if chunk.find('<div id="sign_in_box">') != -1:
+					# still broken - give up on this one
+					print "*** ERROR trying to download %s" % (filename)
+					break;
 			if size == 0:
-				filesize = int(response.info()['Content-Length'])  
+				info = response.info()
+				if 'Content-Length' in info:
+					filesize = int(info['Content-Length'])
+				else:
+					print "*** HTTP response did not contain 'Content-Length' when expected"
+					print info
+					break
 			fp.write(chunk)
 			size += len(chunk)
 			now = time.time()
@@ -286,20 +310,24 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.5.1", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.6", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
 	help="Don't download any of the source code available directly from Mercurial")
 parser.add_option("--nounzip", action="store_true", dest="nounzip",
 	help="Just download, don't unzip or delete any files")
+parser.add_option("--nodelete", action="store_true", dest="nodelete",
+	help="Do not delete files after unzipping")
 parser.add_option("--progress", action="store_true", dest="progress",
 	help="Report download progress")
-parser.set_defaults(dryrun=False, nosrc=False, nounzip=False, progress=False)
+parser.set_defaults(dryrun=False, nosrc=False, nounzip=False, nodelete=False, progress=False)
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
-	parser.error("Must supply a PDK version, e.g. 3.0.e")
+	parser.error("Must supply a PDK version, e.g. 3.0.f")
+if not check_unzip_environment() :
+	parser.error("Unable to execute 7z command")
 
 login(True)
 downloadkit(args[0])
