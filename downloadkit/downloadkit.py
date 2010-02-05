@@ -247,10 +247,10 @@ def download_file(filename,url):
 
 	#handle errors
 	except urllib2.HTTPError, e:
-		print "HTTP Error:",e.code , downloadurl
+		print "HTTP Error:",e.code , url
 		return False
 	except urllib2.URLError, e:
-		print "URL Error:",e.reason , downloadurl
+		print "URL Error:",e.reason , url
 		return False
 	return True
 
@@ -310,7 +310,7 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.6", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.6.1", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
