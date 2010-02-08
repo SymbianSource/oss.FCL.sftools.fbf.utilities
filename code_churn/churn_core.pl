@@ -42,7 +42,8 @@ if (! -d $Logs_Dir)
     die("$Logs_Dir does not exist \n");
 }
 
-$dir_left =~ m/^(\w+)\.[0-9a-fA-F]+/;
+#$dir_left =~ m/^(\w+)\.[0-9a-fA-F]+/;
+$dir_right =~ m/^(\w+)\.[0-9a-fA-F]+/;
 my $package_name = $1;
 
 $dir_left =~ m/^\w+\.([0-9a-fA-F]+)/;

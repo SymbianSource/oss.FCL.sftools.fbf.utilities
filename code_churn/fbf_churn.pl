@@ -96,6 +96,7 @@ my $package = "";
 my $licence = "";
 my $packagelist = "";
 my $verbose = 0;
+my $mirror = 0;
 my $help = 0;
 
 sub do_system
@@ -142,12 +143,15 @@ my @packagelistopts = ();
 my @verboseopt = ();
 @verboseopt = "-v" if ($verbose);
 
+my @mirroropt = ();
+@mirroropt = "-mirror" if ($mirror);
+
 my $new_rev = $new;
 $new_rev = "%REV%" if ($new_rev eq "");
 
 #TO_DO: Locate clone_all_packages relative to the location of this script.
 #TO_DO: Remove references to absolute paths, change to relative paths.
-do_system($clone_packages,@verboseopt,"-mirror","-filter","$licence.*$codeline.*$filter",@packagelistopts,"-exec","--",
+do_system($clone_packages,@verboseopt,@mirroropt,"-filter","$licence.*$codeline.*$filter",@packagelistopts,"-exec","--",
    "hg","--config","\"extensions.hgext.extdiff=\"","extdiff","-p",$churn_core,"-o",$churn_output_temp,
    "-r","$old","-r","$new_rev");
 
