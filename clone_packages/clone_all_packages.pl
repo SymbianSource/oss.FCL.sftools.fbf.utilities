@@ -16,6 +16,7 @@
 
 use strict;
 use Getopt::Long;
+use File::Basename;
 
 sub Usage($)
   {
@@ -92,8 +93,6 @@ my $help = 0;
 my $exec = 0;
 my $filter = "";
 my @packagelist_files = ();
-
-my $program_path = $0;
 
 # Analyse the rest of command-line parameters
 if (!GetOptions(
@@ -274,10 +273,15 @@ if (scalar @packagelist_files == 0)
   # Read the package list files alongside the script itself
   
   # Extract the path location of the program and locate package list files
-  $program_path =~ s/\\/\//g;
-  $program_path =~ s/(^.*\/)[^\/]+$/$1/;
+  my ($program_name,$program_path) = &File::Basename::fileparse($0);
+  
   foreach my $file ("sf_mcl_packages.txt", "sftools_mcl_packages.txt", "other_packages.txt")
     {
+    if (! -e $program_path.$file)
+    	{
+    	print "Cannot find implied packagelist $program_path$file\n";
+    	next;
+			}
     push @packagelist_files, $program_path.$file;
     }
   $add_implied_FCL_repos = 1;   # lists only contain the MCL repo locations
