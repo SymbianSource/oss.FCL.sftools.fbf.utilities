@@ -9,6 +9,8 @@ https://developer.symbian.org/sfl/FCL/sftools/ana/staticanamdw
 https://developer.symbian.org/sfl/FCL/sftools/ana/testcreationandmgmt
 https://developer.symbian.org/sfl/FCL/sftools/ana/testexec
 https://developer.symbian.org/sfl/FCL/sftools/ana/testfw
+https://developer.symbian.org/oss/FCL/sftools/depl/docscontent
+https://developer.symbian.org/oss/FCL/sftools/depl/doctools
 https://developer.symbian.org/sfl/FCL/sftools/depl/sdkcreationmdw/packaging
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/configtools
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/swmgnttoolsguides

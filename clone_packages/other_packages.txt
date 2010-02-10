@@ -6,4 +6,4 @@ https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/AgileBrowser
 https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/EUserHL
 https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/route_generator
 https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/simulation_PSY
-https://developer.symbian.org/oss/FCL/interim/desktopsw
+https://developer.symbian.org/sfl/FCL/interim/desktopsw

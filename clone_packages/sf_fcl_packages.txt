@@ -74,6 +74,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/networkingdm
 https://developer.symbian.org/oss/FCL/sf/mw/opensrv
 https://developer.symbian.org/oss/FCL/sf/mw/phonesrv
 https://developer.symbian.org/oss/FCL/sf/mw/platformtools
+https://developer.symbian.org/oss/FCL/sf/mw/qt
 https://developer.symbian.org/oss/FCL/sf/mw/remoteconn
 https://developer.symbian.org/oss/FCL/sf/mw/remotemgmt
 https://developer.symbian.org/oss/FCL/sf/mw/remotestorage
