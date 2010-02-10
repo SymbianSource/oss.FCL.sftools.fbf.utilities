@@ -31,22 +31,10 @@ top_level_url = "http://developer.symbian.org"
 download_list = []
 unzip_list = []
 
-username = ''
-password = ''
-
-COOKIEFILE = 'cookies.lwp'
-# the path and filename to save your cookies in
-
-# importing cookielib worked
 urlopen = urllib2.urlopen
 Request = urllib2.Request
 cj = cookielib.LWPCookieJar()
 
-# This is a subclass of FileCookieJar
-# that has useful load and save methods
-if os.path.isfile(COOKIEFILE):
-	cj.load(COOKIEFILE)
-	
 # Now we need to get our Cookie Jar
 # installed in the opener;
 # for fetching URLs
@@ -54,17 +42,18 @@ opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 urllib2.install_opener(opener)
 
 def login(prompt):
-	global username
-	global password
+	global options
 	loginurl = 'https://developer.symbian.org/main/user_profile/login.php'
 	
 	if prompt:
-		print >> sys.stderr, 'username: ',
-		username=sys.stdin.readline().strip()
-		password=getpass.getpass()
+		if options.username == '':
+			print >> sys.stderr, 'username: ',
+			options.username=sys.stdin.readline().strip()
+		if options.password == '':
+			options.password=getpass.getpass()
 	
-	values = {'username' : username,
-	          'password' : password,
+	values = {'username' : options.username,
+	          'password' : options.password,
 	          'submit': 'Login'}
 	          
 	headers = { 'User-Agent' : user_agent }
@@ -79,8 +68,6 @@ def login(prompt):
 	if doc.find('Please try again') != -1:
 		print >> sys.stderr, 'Login failed'
 		return False
-	
-	cj.save(COOKIEFILE) 
 	return True
 
 from threading import Thread
@@ -264,11 +251,12 @@ def download_file(filename,url):
 			print info
 			return False
 
-	except urllib2.HTTPError, e:
-		print "HTTP Error:",e.code , url
-		return False
 	except urllib2.URLError, e:
-		print "URL Error:",e.reason , url
+		print '- ERROR: Failed to start downloading ' + filename
+		if hasattr(e, 'reason'):
+			print 'Reason: ', e.reason
+		elif hasattr(e, 'code'):
+			print 'Error code: ', e.code
 		return False
 
 	# we are now up and running, and chunk contains the start of the download
@@ -303,11 +291,12 @@ def download_file(filename,url):
 			print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-start_time)
 
 	#handle errors
-	except urllib2.HTTPError, e:
-		print "HTTP Error:",e.code , url
-		return False
 	except urllib2.URLError, e:
-		print "URL Error:",e.reason , url
+		print '- ERROR: Failed while downloading ' + filename
+		if hasattr(e, 'reason'):
+			print 'Reason: ', e.reason
+		elif hasattr(e, 'code'):
+			print 'Error code: ', e.code
 		return False
 
 	if filename in checksums:
@@ -375,7 +364,7 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.7", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.8", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
@@ -386,7 +375,19 @@ parser.add_option("--nodelete", action="store_true", dest="nodelete",
 	help="Do not delete files after unzipping")
 parser.add_option("--progress", action="store_true", dest="progress",
 	help="Report download progress")
-parser.set_defaults(dryrun=False, nosrc=False, nounzip=False, nodelete=False, progress=False)
+parser.add_option("-u", "--username", dest="username", metavar="USER",
+	help="login to website as USER")
+parser.add_option("-p", "--password", dest="password", metavar="PWD",
+	help="specify the account password")
+parser.set_defaults(
+	dryrun=False, 
+	nosrc=False, 
+	nounzip=False, 
+	nodelete=False, 
+	progress=False,
+	username='',
+	password=''
+	)
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
