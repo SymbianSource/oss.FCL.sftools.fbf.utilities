@@ -22,6 +22,8 @@ import re
 import time
 from BeautifulSoup import BeautifulSoup
 from optparse import OptionParser
+import hashlib
+import xml.etree.ElementTree as ET 
 
 user_agent = 'downloadkit.py script'
 headers = { 'User-Agent' : user_agent }
@@ -162,8 +164,11 @@ def check_unzip_environment():
 
 def orderResults(x,y) :
 	def ranking(name) :
+		# 0th = release_metadata
+		if re.match(r"release_metadata", name):
+			return 0000;
 		# 1st = release_metadata, build_BOM.zip (both small things!)
-		if re.match(r"(build_BOM|release_metadata)", name):
+		if re.match(r"build_BOM", name):
 			return 1000;
 		# 2nd = tools, binaries (required for execution and compilation)
 		elif re.match(r"(binaries_|tools_)", name):
@@ -183,48 +188,97 @@ def orderResults(x,y) :
 	ytitle = y['title']
 	return cmp(ranking(xtitle)+cmp(xtitle,ytitle), ranking(ytitle))
 
+def md5_checksum(filename):
+	MD5_BLOCK_SIZE = 128 * 1024
+	md5 = hashlib.md5()
+	try:
+		file = open(filename,"rb")
+	except IOError:
+		print "Terminating script: Unable to open %S" % filename
+		sys.exit()
+	while True:
+		data = file.read(MD5_BLOCK_SIZE)
+		if not data:
+			break
+		md5.update(data)
+	file.close()
+	return md5.hexdigest().upper()
+
+checksums = {}
+def parse_release_metadata(filename):
+	if os.path.exists(filename):
+		tree = ET.parse(filename)
+		iter = tree.getiterator('package')
+		for element in iter:
+			if element.keys():
+				file = element.get("name")
+				md5 = element.get("md5checksum")
+				checksums[file] = md5.upper()
+
 def download_file(filename,url):
 	global options
-	if options.dryrun :
+	global checksums
+	if os.path.exists(filename):
+		if filename in checksums:
+			print 'Checking existing ' + filename
+			file_checksum = md5_checksum(filename)
+			if file_checksum == checksums[filename]:
+				if options.progress:
+					print '- OK ' + filename
+				return True
+
+	if options.dryrun and not re.match(r"release_metadata", filename):
 		global download_list
 		download_info = "download %s %s" % (filename, url)
 		download_list.append(download_info)
 		return True
-	
+
 	print 'Downloading ' + filename
 	global headers
 	req = urllib2.Request(url, None, headers)
 	
+	CHUNK = 128 * 1024
+	size = 0
+	filesize = -1
+	start_time = time.time()
+	last_time = start_time
+	last_size = size
 	try:
 		response = urllib2.urlopen(req)
-		CHUNK = 128 * 1024
-		size = 0
-		filesize = -1
-		last_time = time.time()
-		last_size = size
-		fp = open(filename, 'wb')
-		while True:
+		chunk = response.read(CHUNK)
+		if chunk.find('<div id="sign_in_box">') != -1:
+			# our urllib2 cookies have gone awol - login again
+			login(False)
+			req = urllib2.Request(url, None, headers)
+			response = urllib2.urlopen(req)
 			chunk = response.read(CHUNK)
-			if not chunk: break
-			if size == 0 and chunk.find('<div id="sign_in_box">') != -1:
-				# our urllib2 cookies have gone awol - login again
-				login(False)
-				req = urllib2.Request(url, None, headers)
-				response = urllib2.urlopen(req)
-				chunk = response.read(CHUNK)
-				if chunk.find('<div id="sign_in_box">') != -1:
-					# still broken - give up on this one
-					print "*** ERROR trying to download %s" % (filename)
-					break;
-			if size == 0:
-				info = response.info()
-				if 'Content-Length' in info:
-					filesize = int(info['Content-Length'])
-				else:
-					print "*** HTTP response did not contain 'Content-Length' when expected"
-					print info
-					break
+			if chunk.find('<div id="sign_in_box">') != -1:
+				# still broken - give up on this one
+				print "*** ERROR trying to download %s" % (filename)
+				return False
+		info = response.info()
+		if 'Content-Length' in info:
+			filesize = int(info['Content-Length'])
+		else:
+			print "*** HTTP response did not contain 'Content-Length' when expected"
+			print info
+			return False
+
+	except urllib2.HTTPError, e:
+		print "HTTP Error:",e.code , url
+		return False
+	except urllib2.URLError, e:
+		print "URL Error:",e.reason , url
+		return False
+
+	# we are now up and running, and chunk contains the start of the download
+	
+	try:
+		fp = open(filename, 'wb')
+		md5 = hashlib.md5()
+		while True:
 			fp.write(chunk)
+			md5.update(chunk)
 			size += len(chunk)
 			now = time.time()
 			if options.progress and now-last_time > 20:
@@ -240,10 +294,13 @@ def download_file(filename,url):
 				print "- %d Kb (%d Kb/s) %s" % (size/1024, (rate/1024)+0.5, estimate)
 				last_time = now
 				last_size = size
+			chunk = response.read(CHUNK)
+			if not chunk: break
+
 		fp.close()
 		if options.progress:
 			now = time.time()
-			print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-last_time)
+			print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-start_time)
 
 	#handle errors
 	except urllib2.HTTPError, e:
@@ -252,6 +309,12 @@ def download_file(filename,url):
 	except urllib2.URLError, e:
 		print "URL Error:",e.reason , url
 		return False
+
+	if filename in checksums:
+		download_checksum = md5.hexdigest().upper()
+		if download_checksum != checksums[filename]:
+			print '- WARNING: %s checksum does not match' % filename
+
 	return True
 
 def downloadkit(version):	
@@ -298,7 +361,9 @@ def downloadkit(version):
 		if re.match(r"patch", filename):
 			complete_outstanding_unzips()	# ensure that the thing we are patching is completed first
 			
-		if re.match(r"(bin|tools).*\.zip", filename):
+		if re.match(r"release_metadata", filename):
+			parse_release_metadata(filename)	# read the md5 checksums etc
+		elif re.match(r"(bin|tools).*\.zip", filename):
 			schedule_unzip(filename, 1, 0)   # unzip once, don't delete
 		elif re.match(r"src_.*\.zip", filename):
 			schedule_unzip(filename, 1, 1)   # zip of zips, delete top level
@@ -310,7 +375,7 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.6.1", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.7", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
