@@ -9,8 +9,6 @@ https://developer.symbian.org/sfl/FCL/sftools/ana/staticanamdw
 https://developer.symbian.org/sfl/FCL/sftools/ana/testcreationandmgmt
 https://developer.symbian.org/sfl/FCL/sftools/ana/testexec
 https://developer.symbian.org/sfl/FCL/sftools/ana/testfw
-https://developer.symbian.org/sfl/FCL/sftools/depl/docscontent
-https://developer.symbian.org/sfl/FCL/sftools/depl/doctools
 https://developer.symbian.org/sfl/FCL/sftools/depl/sdkcreationmdw/packaging
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/configtools
 https://developer.symbian.org/sfl/FCL/sftools/depl/swconfigapps/swmgnttoolsguides
@@ -22,14 +20,3 @@ https://developer.symbian.org/sfl/FCL/sftools/dev/devicedbgsrvs
 https://developer.symbian.org/sfl/FCL/sftools/dev/ide/carbidecppplugins
 https://developer.symbian.org/sfl/FCL/sftools/dev/iss
 https://developer.symbian.org/sfl/FCL/sftools/dev/ui
-https://developer.symbian.org/sfl/FCL/sftools/dev/eclipseenv/buildlayout34
-https://developer.symbian.org/sfl/FCL/sftools/dev/eclipseenv/buildlayout35
-https://developer.symbian.org/sfl/FCL/sftools/dev/eclipseenv/eclipse
-https://developer.symbian.org/sfl/FCL/sftools/dev/eclipseenv/wrttools
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/compilationtoolchains
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/cpptoolsplat
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/dist
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/javatoolsplat
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/makeng
-https://developer.symbian.org/sfl/FCL/sftools/dev/hostenv/pythontoolsplat
-https://developer.symbian.org/sfl/FCL/sftools/dev/ide/carbidecpp
