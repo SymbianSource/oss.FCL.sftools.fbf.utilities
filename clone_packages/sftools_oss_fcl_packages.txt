@@ -1,0 +1,17 @@
+https://developer.symbian.org/oss/FCL/sftools/ana/compatanaapps
+https://developer.symbian.org/oss/FCL/sftools/ana/compatanamdw
+https://developer.symbian.org/oss/FCL/sftools/ana/staticanaapps
+https://developer.symbian.org/oss/FCL/sftools/ana/staticanamdw
+https://developer.symbian.org/oss/FCL/sftools/depl/docscontent
+https://developer.symbian.org/oss/FCL/sftools/depl/doctools
+https://developer.symbian.org/oss/FCL/sftools/dev/build
+https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/buildlayout34
+https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/eclipse
+https://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/wrttools/
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/compilationtoolchains
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/cpptoolsplat
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/dist
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/javatoolsplat
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/makeng
+https://developer.symbian.org/oss/FCL/sftools/dev/hostenv/pythontoolsplat
+https://developer.symbian.org/oss/FCL/sftools/dev/ide/carbidecpp
