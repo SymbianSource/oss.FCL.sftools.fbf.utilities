@@ -1,5 +1,3 @@
-https://developer.symbian.org/sfl/MCL/sf/adaptation/beagleboard
-https://developer.symbian.org/sfl/MCL/sf/adaptation/qemu
 https://developer.symbian.org/sfl/MCL/sf/adaptation/stubs
 https://developer.symbian.org/sfl/MCL/sf/app/camera
 https://developer.symbian.org/sfl/MCL/sf/app/commonemail
@@ -17,7 +15,6 @@ https://developer.symbian.org/sfl/MCL/sf/app/homescreentools
 https://developer.symbian.org/sfl/MCL/sf/app/im
 https://developer.symbian.org/sfl/MCL/sf/app/imgeditor
 https://developer.symbian.org/sfl/MCL/sf/app/iptelephony
-https://developer.symbian.org/sfl/MCL/sf/app/jrt
 https://developer.symbian.org/sfl/MCL/sf/app/location
 https://developer.symbian.org/sfl/MCL/sf/app/messaging
 https://developer.symbian.org/sfl/MCL/sf/app/mmsharinguis
@@ -38,7 +35,6 @@ https://developer.symbian.org/sfl/MCL/sf/app/videoeditor
 https://developer.symbian.org/sfl/MCL/sf/app/videoplayer
 https://developer.symbian.org/sfl/MCL/sf/app/videotelephony
 https://developer.symbian.org/sfl/MCL/sf/app/voicerec
-https://developer.symbian.org/sfl/MCL/sf/app/webuis
 https://developer.symbian.org/sfl/MCL/sf/mw/accesssec
 https://developer.symbian.org/sfl/MCL/sf/mw/appinstall
 https://developer.symbian.org/sfl/MCL/sf/mw/appsupport
@@ -48,7 +44,6 @@ https://developer.symbian.org/sfl/MCL/sf/mw/classicui
 https://developer.symbian.org/sfl/MCL/sf/mw/dlnasrv
 https://developer.symbian.org/sfl/MCL/sf/mw/drm
 https://developer.symbian.org/sfl/MCL/sf/mw/gsprofilesrv
-https://developer.symbian.org/sfl/MCL/sf/mw/gstreamer
 https://developer.symbian.org/sfl/MCL/sf/mw/hapticsservices
 https://developer.symbian.org/sfl/MCL/sf/mw/helix
 https://developer.symbian.org/sfl/MCL/sf/mw/homescreensrv
@@ -71,13 +66,10 @@ https://developer.symbian.org/sfl/MCL/sf/mw/networkingdm
 https://developer.symbian.org/sfl/MCL/sf/mw/opensrv
 https://developer.symbian.org/sfl/MCL/sf/mw/phonesrv
 https://developer.symbian.org/sfl/MCL/sf/mw/platformtools
-https://developer.symbian.org/sfl/MCL/sf/mw/qt
 https://developer.symbian.org/sfl/MCL/sf/mw/remoteconn
 https://developer.symbian.org/sfl/MCL/sf/mw/remotemgmt
 https://developer.symbian.org/sfl/MCL/sf/mw/remotestorage
 https://developer.symbian.org/sfl/MCL/sf/mw/securitysrv
-https://developer.symbian.org/sfl/MCL/sf/mw/serviceapi
-https://developer.symbian.org/sfl/MCL/sf/mw/serviceapifw
 https://developer.symbian.org/sfl/MCL/sf/mw/shortlinkconn
 https://developer.symbian.org/sfl/MCL/sf/mw/srvdiscovery
 https://developer.symbian.org/sfl/MCL/sf/mw/svgt
@@ -87,7 +79,6 @@ https://developer.symbian.org/sfl/MCL/sf/mw/uitools
 https://developer.symbian.org/sfl/MCL/sf/mw/usbservices
 https://developer.symbian.org/sfl/MCL/sf/mw/videoutils
 https://developer.symbian.org/sfl/MCL/sf/mw/vpnclient
-https://developer.symbian.org/sfl/MCL/sf/mw/web
 https://developer.symbian.org/sfl/MCL/sf/mw/websrv
 https://developer.symbian.org/sfl/MCL/sf/mw/wirelessacc
 https://developer.symbian.org/sfl/MCL/sf/os/boardsupport
