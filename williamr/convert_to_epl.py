@@ -27,6 +27,7 @@ newtext = [
   'the URL "http://www.eclipse.org/legal/epl-v10.html"'
 ]
 
+modifiedfiles = []
 errorfiles = []
 multinoticefiles = []
 shadowroot = 'shadow_epoc32'
@@ -43,7 +44,7 @@ def file_type(file) :
 		return None	# zero byte implies binary file
 	return 'text'
 	
-def map_eula(dir, name, encoded) :
+def map_epl(dir, name, encoded) :
 	global oldtext0
 	global newtext1
 	global newtext
@@ -124,13 +125,16 @@ def map_eula(dir, name, encoded) :
 			f = codecs.open(file, 'w', encoding=encoded)
 		f.writelines(newlines)
 		f.close()
+		modifiedfiles.append(file)
 	print "* updated %s (encoding %s)" % (file, encoded)
 	return 1
 
-parser = OptionParser(version="%prog 0.2", usage="Usage: %prog [options]")
+parser = OptionParser(version="%prog 0.3", usage="Usage: %prog [options]")
 parser.add_option("-n", "--check", action="store_true", dest="dryrun",
 	help="report the files which would be updated, but don't change anything")
-parser.set_defaults(dryrun=False)
+parser.add_option("--nozip", action="store_false", dest="zip",
+	help="disable the attempt to generate a zip of the updated files")
+parser.set_defaults(dryrun=False,zip=True)
 
 (options, args) = parser.parse_args()
 if len(args) != 0:
@@ -145,7 +149,7 @@ for root, dirs, files in os.walk('.', topdown=True):
 	for name in files:
 		encoding = file_type(os.path.join(root, name))
 		if encoding:
-			update_count += map_eula(root, name, encoding)
+			update_count += map_epl(root, name, encoding)
 	
 print '%d problem files' % len(errorfiles)
 print errorfiles
@@ -156,5 +160,14 @@ print multinoticefiles
 if options.dryrun and update_count > 0:
 	print "%d files need updating" % update_count
 	sys.exit(1)
+
+if options.zip and len(modifiedfiles):
+	zip = os.popen('zip fixed_files.zip -@', 'w')
+	for file in modifiedfiles:
+		print >> zip, file
+	zip.close()
+	print "%d files written to fixed_files.zip" % len(modifiedfiles)
+
+
 	
 	
