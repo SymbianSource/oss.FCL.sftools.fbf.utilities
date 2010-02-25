@@ -31,15 +31,33 @@ top_level_url = "http://developer.symbian.org"
 download_list = []
 unzip_list = []
 
+def build_opener(debug=False):
+    # Create a HTTP and HTTPS handler with the appropriate debug
+    # level.  We intentionally create a new one because the
+    # OpenerDirector class in urllib2 is smart enough to replace
+    # its internal versions with ours if we pass them into the
+    # urllib2.build_opener method.  This is much easier than trying
+    # to introspect into the OpenerDirector to find the existing
+    # handlers.
+    http_handler = urllib2.HTTPHandler(debuglevel=debug)
+    https_handler = urllib2.HTTPSHandler(debuglevel=debug)
+
+    # We want to process cookies, but only in memory so just use
+    # a basic memory-only cookie jar instance
+    cookie_jar = cookielib.LWPCookieJar()
+    cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
+
+    handlers = [http_handler, https_handler, cookie_handler]
+    opener = urllib2.build_opener(*handlers)
+
+    # Save the cookie jar with the opener just in case it's needed
+    # later on
+    opener.cookie_jar = cookie_jar
+
+    return opener
+
 urlopen = urllib2.urlopen
 Request = urllib2.Request
-cj = cookielib.LWPCookieJar()
-
-# Now we need to get our Cookie Jar
-# installed in the opener;
-# for fetching URLs
-opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-urllib2.install_opener(opener)
 
 def login(prompt):
 	global options
@@ -364,7 +382,7 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.8", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog 0.9", usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
@@ -379,6 +397,8 @@ parser.add_option("-u", "--username", dest="username", metavar="USER",
 	help="login to website as USER")
 parser.add_option("-p", "--password", dest="password", metavar="PWD",
 	help="specify the account password")
+parser.add_option("--debug", action="store_true", dest="debug", 
+	help="debug HTML traffic (not recommended!)")
 parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
@@ -386,7 +406,8 @@ parser.set_defaults(
 	nodelete=False, 
 	progress=False,
 	username='',
-	password=''
+	password='',
+	debug=False
 	)
 
 (options, args) = parser.parse_args()
@@ -394,6 +415,9 @@ if len(args) != 1:
 	parser.error("Must supply a PDK version, e.g. 3.0.f")
 if not check_unzip_environment() :
 	parser.error("Unable to execute 7z command")
+
+opener = build_opener(options.debug)
+urllib2.install_opener(opener)
 
 login(True)
 downloadkit(args[0])
