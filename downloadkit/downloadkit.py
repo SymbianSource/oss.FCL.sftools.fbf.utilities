@@ -25,7 +25,8 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-user_agent = 'downloadkit.py script'
+version = '0.10'
+user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "http://developer.symbian.org"
 download_list = []
@@ -360,6 +361,8 @@ def downloadkit(version):
 
 		if options.nosrc and re.match(r"(src_sfl|src_oss)", filename) :
 			continue 	# no snapshots of Mercurial source thanks...
+		if options.nowinscw and re.search(r"winscw", filename) :
+			continue 	# no winscw emulator...
 
 		if download_file(filename, downloadurl) != True :
 			continue # download failed
@@ -382,11 +385,13 @@ def downloadkit(version):
 
 	return 1
 
-parser = OptionParser(version="%prog 0.9", usage="Usage: %prog [options] version")
+parser = OptionParser(version="%prog "+version, usage="Usage: %prog [options] version")
 parser.add_option("-n", "--dryrun", action="store_true", dest="dryrun",
 	help="print the files to be downloaded, the 7z commands, and the recommended deletions")
 parser.add_option("--nosrc", action="store_true", dest="nosrc",
 	help="Don't download any of the source code available directly from Mercurial")
+parser.add_option("--nowinscw", action="store_true", dest="nowinscw",
+	help="Don't download the winscw emulator")
 parser.add_option("--nounzip", action="store_true", dest="nounzip",
 	help="Just download, don't unzip or delete any files")
 parser.add_option("--nodelete", action="store_true", dest="nodelete",
@@ -402,6 +407,7 @@ parser.add_option("--debug", action="store_true", dest="debug",
 parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
+	nowinscw=False, 
 	nounzip=False, 
 	nodelete=False, 
 	progress=False,
