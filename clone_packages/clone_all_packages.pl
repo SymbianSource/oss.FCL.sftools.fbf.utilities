@@ -275,7 +275,7 @@ if (scalar @packagelist_files == 0)
   # Extract the path location of the program and locate package list files
   my ($program_name,$program_path) = &File::Basename::fileparse($0);
   
-  foreach my $file ("sf_mcl_packages.txt", "sftools_mcl_packages.txt", "other_packages.txt")
+  foreach my $file ("sf_oss_mcl_packages.txt", "sftools_oss_mcl_packages.txt", "other_packages.txt")
     {
     if (! -e $program_path.$file)
     	{
