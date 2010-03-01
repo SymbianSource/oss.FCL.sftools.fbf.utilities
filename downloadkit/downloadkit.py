@@ -12,6 +12,7 @@
 # Description:
 # Script to download and unpack a Symbian PDK - assumes "7z" installed to unzip the files
 
+import socket
 import urllib2
 import urllib
 import os.path
@@ -25,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.10'
+version = '0.11'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "http://developer.symbian.org"
@@ -59,6 +60,31 @@ def build_opener(debug=False):
 
 urlopen = urllib2.urlopen
 Request = urllib2.Request
+
+def quick_networking_check():
+	global options
+	defaulttimeout = socket.getdefaulttimeout()
+	socket.setdefaulttimeout(15)
+	probesite = 'https://developer.symbian.org'
+	probeurl = probesite + '/main/user_profile/login.php'
+	headers = { 'User-Agent' : user_agent }
+
+	req = urllib2.Request(probeurl, None, headers)
+
+	try:
+		response = urllib2.urlopen(req)
+		doc=response.read()
+	except urllib2.URLError, e:
+		print '*** Problem accessing ' + probesite
+		if hasattr(e, 'reason'):
+			print '*** Reason: ', e.reason
+		elif hasattr(e, 'code'):
+			print '*** Error code: ', e.code
+		print "Do you need to use a proxy server to access the developer.symbian.org website?"
+		sys.exit(1)
+	socket.setdefaulttimeout(defaulttimeout)	# restore the default timeout
+	if options.progress:
+		print "Confirmed that we can access " + probesite
 
 def login(prompt):
 	global options
@@ -425,6 +451,7 @@ if not check_unzip_environment() :
 opener = build_opener(options.debug)
 urllib2.install_opener(opener)
 
+quick_networking_check()
 login(True)
 downloadkit(args[0])
 
