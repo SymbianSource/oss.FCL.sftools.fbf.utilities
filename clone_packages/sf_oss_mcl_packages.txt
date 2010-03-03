@@ -114,7 +114,6 @@ https://developer.symbian.org/oss/MCL/sf/os/xmlsrv
 https://developer.symbian.org/oss/MCL/sf/ostools/osrndtools
 https://developer.symbian.org/oss/MCL/sf/tools/build_s60
 https://developer.symbian.org/oss/MCL/sf/tools/buildplatforms
-https://developer.symbian.org/oss/MCL/sf/tools/homescreentools
 https://developer.symbian.org/oss/MCL/sf/tools/makefile_templates
 https://developer.symbian.org/oss/MCL/sf/tools/platformtools
 https://developer.symbian.org/oss/MCL/sf/tools/rndtools
