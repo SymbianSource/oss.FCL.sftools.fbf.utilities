@@ -42,6 +42,7 @@ my $characters = '';
 
 my $CATEGORY_RAPTORWARNING = 'raptor_warning';
 my $CATEGORY_RAPTORWARNING_MISSINGFLAGABIV2 = 'missing_enable_abiv2_mode';
+my $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND = 'while_searching_for_deffile_file_not_found';
 
 sub process
 {
@@ -55,6 +56,12 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORWARNING_MISSINGFLAGABIV2;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,While Searching for a SPECIFIED DEFFILE: file not found: .*,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MINOR;
+		my $subcategory = $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
 	}
 	else # log everything by default
