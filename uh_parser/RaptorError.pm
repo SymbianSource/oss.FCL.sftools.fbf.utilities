@@ -71,7 +71,7 @@ sub process
 	}
 	elsif ($text =~ m,Can't find mmp file,)
 	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		$subcategory = $CATEGORY_RAPTORERROR_CANTFINDMMPFILE;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
 	}
