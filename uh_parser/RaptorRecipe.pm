@@ -60,6 +60,10 @@ my $CATEGORY_RECIPEFAILURE_ARMCC_MODIFIERNOTALLOWED = 'armcc_modifier_not_allowe
 my $CATEGORY_RECIPEFAILURE_ARMCC_GENERICWARNINGSERRORS = 'armcc_generic_warnings_errors';
 my $CATEGORY_RECIPEFAILURE_ELF2E32_SYMBOLMISSINGFROMELFFILE = 'elf2e32_symbol_missing_from_elf_file';
 my $CATEGORY_RECIPEFAILURE_MWCCSYM2_FILECANNOTBEOPENED = 'mwccsym2_file_cannot_be_opened';
+my $CATEGORY_RECIPEFAILURE_BINSH_COMMANDNOTFOUND = 'binsh_command_not_found';
+my $CATEGORY_RECIPEFAILURE_AS_ERROR = 'as_error';
+my $CATEGORY_RECIPEFAILURE_GPP_ERROR = 'g++_error';
+my $CATEGORY_RECIPEFAILURE_GPP_WARNING = 'g++_warning';
 
 my $mmp_with_issues = {};
 
@@ -128,6 +132,27 @@ sub process
 	elsif ($text =~ m,/armcc.exe , and $text =~ m,Error:  #655-D: the modifier ".*" is not allowed on this declaration,)
 	{
 		my $subcategory = $CATEGORY_RECIPEFAILURE_ARMCC_MODIFIERNOTALLOWED;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^\+.*/make.exe .*\n/bin/sh: .*: command not found,m)
+	{
+		$severity = $RaptorCommon::SEVERITY_CRITICAL;
+		my $subcategory = $CATEGORY_RECIPEFAILURE_BINSH_COMMANDNOTFOUND;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^\+.*/arm-none-symbianelf-as\.exe .*^Error: .*,ms)
+	{
+		my $subcategory = $CATEGORY_RECIPEFAILURE_AS_ERROR;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^\+.*/arm-none-symbianelf-g\+\+\.exe .*:\d+: [Ee]rror: .*,ms)
+	{
+		my $subcategory = $CATEGORY_RECIPEFAILURE_GPP_ERROR;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^\+.*/arm-none-symbianelf-g\+\+\.exe .*:\d+: [Ww]arning: .*,ms)
+	{
+		my $subcategory = $CATEGORY_RECIPEFAILURE_GPP_WARNING;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file, $line);
 	}
 	# the following captures generic armcc error/warnings, not captured by regexps above
