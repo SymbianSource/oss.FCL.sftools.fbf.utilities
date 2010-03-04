@@ -47,6 +47,9 @@ my $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET = 'no_rule_to_make_target';
 my $CATEGORY_RAPTORUNRECIPED_TARGETNOTREMADEFORERRORS = 'target_not_remade_for_errors';
 my $CATEGORY_RAPTORUNRECIPED_IGNORINGOLDCOMMANDSFORTARGET = 'ignoring_old_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET = 'overriding_commands_for_target';
+my $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS = 'make_target_not_remade_because_of_errors';
+my $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1 = 'make_error_1';
+my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET = 'make_no_rule_to_make_target';
 
 sub process
 {
@@ -80,7 +83,25 @@ sub process
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
 	}
-	elsif ($text =~ m,make\.exe: Nothing to be done for .*,)
+	elsif ($text =~ m,^make: Target .* not remade because of errors\.,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MINOR;
+		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^make: \*\*\* .* Error 1,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MINOR;
+		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^make: \*\*\* No rule to make target .*\ needed by .*,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MINOR;
+		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^make: Nothing to be done for .*,)
 	{
 		# don't dump
 	}
