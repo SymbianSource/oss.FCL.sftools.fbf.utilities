@@ -48,6 +48,8 @@ my $CATEGORY_RAPTORERROR_MAKEEXITEDWITHERRORS = 'make_exited_with_errors';
 my $CATEGORY_RAPTORERROR_TOOLDIDNOTRETURNVERSION = 'tool_didnot_return_version';
 my $CATEGORY_RAPTORERROR_UNKNOWNBUILDCONFIG = 'unknown_build_config';
 my $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN = 'no_build_configs_given';
+my $CATEGORY_RAPTORERROR_COULDNOTEXPORT = 'missing_source_file';
+my $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE = 'missing_bld_inf_file';
 
 sub process
 {
@@ -98,6 +100,26 @@ sub process
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,Could not export .* to .* : \[Errno 2\] No such file or directory: .*,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
+		$subcategory = $CATEGORY_RAPTORERROR_COULDNOTEXPORT;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,win32/mingw/bin/cpp\.exe: .*bld\.inf:.*bld\.inf: No such file or directory,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
+		$subcategory = $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^Preprocessor exception: ''Errors in .*bld\.inf'' : in command,)
+	{
+		# don't dump
+	}
+	elsif ($text =~ m,Source of export does not exist: .*,)
+	{
+		# don't dump
 	}
 	else # log everything by default
 	{

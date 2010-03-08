@@ -49,6 +49,7 @@ my $CATEGORY_RAPTORUNRECIPED_IGNORINGOLDCOMMANDSFORTARGET = 'ignoring_old_comman
 my $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET = 'overriding_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS = 'make_target_not_remade_because_of_errors';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1 = 'make_error_1';
+my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY = 'make_no_rule_to_make_target_needed_by';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET = 'make_no_rule_to_make_target';
 
 sub process
@@ -73,9 +74,7 @@ sub process
 	}
 	elsif ($text =~ m,: warning: ignoring old commands for target,)
 	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
-		my $subcategory = $CATEGORY_RAPTORUNRECIPED_IGNORINGOLDCOMMANDSFORTARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		# don't dump
 	}
 	elsif ($text =~ m,: warning: overriding commands for target,)
 	{
@@ -98,6 +97,12 @@ sub process
 	elsif ($text =~ m,^make: \*\*\* No rule to make target .*\ needed by .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
+		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+	}
+	elsif ($text =~ m,^make: \*\*\* No rule to make target .*,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
 	}
@@ -106,6 +111,18 @@ sub process
 		# don't dump
 	}
 	elsif ($text =~ m,^(true|false)$,)
+	{
+		# don't dump
+	}
+	elsif ($text =~ m,win32/cygwin/bin/cp\.exe,)
+	{
+		# don't dump
+	}
+	elsif ($text =~ m,epoc32/tools/svgtbinencode\.exe,)
+	{
+		# don't dump
+	}
+	elsif ($text =~ m,win32/cygwin/bin/chmod\.exe a\+rw,)
 	{
 		# don't dump
 	}
