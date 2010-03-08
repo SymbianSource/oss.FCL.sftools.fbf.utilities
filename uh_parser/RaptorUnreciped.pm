@@ -37,7 +37,6 @@ $buildlog_subtag_status->{on_start} = 'RaptorUnreciped::on_start_buildlog_subtag
 $buildlog_subtag_status->{on_end} = 'RaptorUnreciped::on_end_buildlog_subtag';
 
 my $filename = '';
-my $failure_item = 0;
 
 my $characters = '';
 my $store_chars = 1;
@@ -54,7 +53,9 @@ my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET = 'make_no_rule_to_make_tar
 
 sub process
 {
-	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file, $line) = @_;
+	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file) = @_;
+	
+	my $dumped = 1;
 
 	my $category = $CATEGORY_RAPTORUNRECIPED;	
 	my $severity = '';
@@ -64,72 +65,80 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,make\.exe: Target .* not remade because of errors,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_TARGETNOTREMADEFORERRORS;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,: warning: ignoring old commands for target,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,: warning: overriding commands for target,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make: Target .* not remade because of errors\.,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make: \*\*\* .* Error 1,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make: \*\*\* No rule to make target .*\ needed by .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make: \*\*\* No rule to make target .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make: Nothing to be done for .*,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,^(true|false)$,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,win32/cygwin/bin/cp\.exe,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,epoc32/tools/svgtbinencode\.exe,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,win32/cygwin/bin/chmod\.exe a\+rw,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	else # log everything by default
 	{
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
+	
+	return $dumped;
 }
 
 sub on_start_buildlog
@@ -178,27 +187,15 @@ sub process_characters
 	{
 		if ($line =~ m,[^\s^\r^\n],)
 		{
-			#print "dumping chars\n";
+			my $dumped = process($line, $::current_log_file, '', '', '', '', "raptor_unreciped.txt");
 			
-			if ($failure_item == 0 and -f "$filename")
+			if ($dumped)
 			{
-				open(FILE, "$filename");
-				{
-					local $/ = undef;
-					my $filecontent = <FILE>;
-					$failure_item = $1 if ($filecontent =~ m/.*---failure_item_(\d+)/s);
-				}
+				open(FILE, ">>$filename");
+				print FILE "---failure_item_$::failure_item_number\---\n";
+				print FILE "$line\n\n";
 				close(FILE);
 			}
-			
-			$failure_item++;
-							
-			open(FILE, ">>$filename");
-			print FILE "---failure_item_$failure_item\---\n";
-			print FILE "$line\n\n";
-			close(FILE);
-			
-			process($line, $::current_log_file, '', '', '', '', "raptor_unreciped.txt", $failure_item);
 		}
 	}
 	

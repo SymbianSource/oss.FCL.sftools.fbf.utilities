@@ -61,6 +61,8 @@ system("rmdir /S /Q $raptorbitsdir") if (-d $raptorbitsdir);
 mkdir($raptorbitsdir);
 #print "Created dir $raptorbitsdir.\n";
 
+our $failure_item_number = 0;
+
 # create empty summary file anyway
 open(SUMMARY, ">$raptorbitsdir/summary.csv");
 close(SUMMARY);

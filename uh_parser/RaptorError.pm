@@ -36,7 +36,6 @@ $buildlog_error_status->{on_end} = 'RaptorError::on_end_buildlog_error';
 $buildlog_error_status->{on_chars} = 'RaptorError::on_chars_buildlog_error';
 
 my $filename = '';
-my $failure_item = 0;
 
 my $characters = '';
 
@@ -53,7 +52,9 @@ my $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE = 'missing_bld_inf_file';
 
 sub process
 {
-	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file, $line) = @_;
+	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file) = @_;
+	
+	my $dumped = 1;
 	
 	my $category = $CATEGORY_RAPTORERROR;
 	my $severity = '';
@@ -63,68 +64,72 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_CANNOTPROCESSSCHEMAVERSION;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,No bld\.inf found at,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		$subcategory = $CATEGORY_RAPTORERROR_NOBLDINFFOUND;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Can't find mmp file,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		$subcategory = $CATEGORY_RAPTORERROR_CANTFINDMMPFILE;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,The make-engine exited with errors,)
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_MAKEEXITEDWITHERRORS;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,tool .* from config .* did not return version .* as required,)
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_TOOLDIDNOTRETURNVERSION;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Unknown build configuration '.*',)
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_UNKNOWNBUILDCONFIG;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,No build configurations given,)
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Could not export .* to .* : \[Errno 2\] No such file or directory: .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		$subcategory = $CATEGORY_RAPTORERROR_COULDNOTEXPORT;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,win32/mingw/bin/cpp\.exe: .*bld\.inf:.*bld\.inf: No such file or directory,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		$subcategory = $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^Preprocessor exception: ''Errors in .*bld\.inf'' : in command,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,Source of export does not exist: .*,)
 	{
 		# don't dump
+		$dumped = 0;
 	}
 	else # log everything by default
 	{
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
+	
+	return $dumped;
 }
 
 sub on_start_buildlog
@@ -164,25 +169,15 @@ sub on_end_buildlog_error
 	
 	if ($characters =~ m,[^\s^\r^\n],)
 	{	
-		if ($failure_item == 0 and -f "$filename")
+		my $dumped = process($characters, $::current_log_file, '', '', '', '', "raptor_error.txt");
+		
+		if ($dumped)
 		{
-			open(FILE, "$filename");
-			{
-				local $/ = undef;
-				my $filecontent = <FILE>;
-				$failure_item = $1 if ($filecontent =~ m/.*---failure_item_(\d+)/s);
-			}
+			open(FILE, ">>$filename");
+			print FILE "---failure_item_$::failure_item_number\---\n";
+			print FILE "$characters\n\n";
 			close(FILE);
 		}
-		
-		$failure_item++;
-	
-		open(FILE, ">>$filename");
-		print FILE "---failure_item_$failure_item\---\n";
-		print FILE "$characters\n\n";
-		close(FILE);
-		
-		process($characters, $::current_log_file, '', '', '', '', "raptor_error.txt", $failure_item);
 	}
 	
 	$characters = '';

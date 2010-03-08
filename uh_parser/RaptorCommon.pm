@@ -31,10 +31,12 @@ sub init
 
 sub dump_fault
 {
-	my ($category, $subcategory, $severity, $location, $component, $mmp, $phase, $recipe, $file, $line) = @_;
+	my ($category, $subcategory, $severity, $location, $component, $mmp, $phase, $recipe, $file) = @_;
+	
+	$::failure_item_number++;
 	
 	open(SUMMARY, ">>$::raptorbitsdir/summary.csv");
-	print SUMMARY "$category,$subcategory,$severity,$location,$component,$mmp,$phase,$recipe,$file,$line\n";
+	print SUMMARY "$category,$subcategory,$severity,$location,$component,$mmp,$phase,$recipe,$file,$::failure_item_number\n";
 	close(SUMMARY);
 }
 

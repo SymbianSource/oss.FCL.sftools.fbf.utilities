@@ -36,7 +36,6 @@ $buildlog_warning_status->{on_end} = 'RaptorWarning::on_end_buildlog_warning';
 $buildlog_warning_status->{on_chars} = 'RaptorWarning::on_chars_buildlog_warning';
 
 my $filename = '';
-my $failure_item = 0;
 
 my $characters = '';
 
@@ -46,7 +45,9 @@ my $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND = 'while_searchi
 
 sub process
 {
-	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file, $line) = @_;
+	my ($text, $logfile, $component, $mmp, $phase, $recipe, $file) = @_;
+	
+	my $dumped = 1;
 	
 	my $category = $CATEGORY_RAPTORWARNING;
 	my $severity = '';
@@ -56,18 +57,20 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORWARNING_MISSINGFLAGABIV2;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,While Searching for a SPECIFIED DEFFILE: file not found: .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	else # log everything by default
 	{
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file, $line);
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
+	
+	return $dumped;
 }
 
 sub on_start_buildlog
@@ -107,25 +110,15 @@ sub on_end_buildlog_warning
 	
 	if ($characters =~ m,[^\s^\r^\n],)
 	{
-		if ($failure_item == 0 and -f "$filename")
+		my $dumped = process($characters, $::current_log_file, '', '', '', '', "raptor_warning.txt");
+		
+		if ($dumped)
 		{
-			open(FILE, "$filename");
-			{
-				local $/ = undef;
-				my $filecontent = <FILE>;
-				$failure_item = $1 if ($filecontent =~ m/.*---failure_item_(\d+)/s);
-			}
+			open(FILE, ">>$filename");
+			print FILE "---failure_item_$::failure_item_number\---\n";
+			print FILE "$characters\n\n";
 			close(FILE);
 		}
-		
-		$failure_item++;
-	
-		open(FILE, ">>$filename");
-		print FILE "---failure_item_$failure_item\---\n";
-		print FILE "$characters\n\n";
-		close(FILE);
-		
-		process($characters, $::current_log_file, '', '', '', '', "raptor_warning.txt", $failure_item);
 	}
 	
 	$characters = '';
