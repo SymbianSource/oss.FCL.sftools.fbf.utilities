@@ -80,7 +80,8 @@ def extractfromzip(files, name):
         str = '%s%s' % (file,'\n')
         f.write(str)    
     f.close()
-    exestr = '7z x -y -i@%s %s' %(tmpfilename,name)
+    exestr = '7z x -y -i@%s %s >nul' %(tmpfilename,name)
+#    exestr = '7z x -y -i@%s %s' %(tmpfilename,name)
     print 'executing: >%s<\n' %exestr
     os.system(exestr)
     os.unlink(tmpfilename)
