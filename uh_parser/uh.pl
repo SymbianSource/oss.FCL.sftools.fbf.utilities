@@ -25,6 +25,8 @@ use XML::SAX;
 use RaptorSAXHandler;
 use Getopt::Long;
 
+use CGI;
+
 our $raptorbitsdir = 'raptorbits';
 our $basedir = '';
 my $outputdir = "html";
@@ -366,6 +368,7 @@ sub translate_detail_files_to_html
 		}
 		close(FILE);
 		
+		$filecontent = CGI::escapeHTML($filecontent);
 		$filecontent =~ s,---(failure_item_\d+)---,<a name="$1">---$1---</a>,g;
 		$filecontent = "<pre>$filecontent</pre>";
 		

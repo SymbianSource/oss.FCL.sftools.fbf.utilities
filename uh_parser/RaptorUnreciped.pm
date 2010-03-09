@@ -84,31 +84,31 @@ sub process
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make: Target .* not remade because of errors\.,)
+	elsif ($text =~ m,^make(\.exe)?: Target .* not remade because of errors\.,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make: \*\*\* .* Error 1,)
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* .* Error 1,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make: \*\*\* No rule to make target .*\ needed by .*,)
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .*\ needed by .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make: \*\*\* No rule to make target .*,)
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make: Nothing to be done for .*,)
+	elsif ($text =~ m,^make(\.exe)?: Nothing to be done for .*,)
 	{
 		# don't dump
 		$dumped = 0;
