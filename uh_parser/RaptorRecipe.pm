@@ -228,6 +228,10 @@ sub on_start_buildlog_recipe_status
 		{
 			$recipe_info->{$attributes->{$_}->{'LocalName'}} = $attributes->{$_}->{'Value'};
 		}
+		elsif ($attributes->{$_}->{'LocalName'} eq 'forcesuccess')
+		{
+			$recipe_info->{$attributes->{$_}->{'LocalName'}} = $attributes->{$_}->{'Value'};
+		}
 	}
 }
 
@@ -235,7 +239,7 @@ sub on_end_buildlog_recipe
 {
 	$::allbldinfs->{$recipe_info->{bldinf}} = 1;
 	
-	if ($recipe_info->{exit} =~ /failed/)
+	if ($recipe_info->{exit} =~ /failed/i || $recipe_info->{exit} =~ /retry/i && $recipe_info->{forcesuccess} =~ /FORCESUCCESS/i)
 	{
 		# normalize bldinf path
 		$recipe_info->{bldinf} = lc($recipe_info->{bldinf});
