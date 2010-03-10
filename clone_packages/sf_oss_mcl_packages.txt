@@ -25,6 +25,7 @@ https://developer.symbian.org/oss/MCL/sf/app/musicplayer
 https://developer.symbian.org/oss/MCL/sf/app/organizer
 https://developer.symbian.org/oss/MCL/sf/app/phone
 https://developer.symbian.org/oss/MCL/sf/app/photos
+https://developer.symbian.org/oss/MCL/sf/app/podcatcher
 https://developer.symbian.org/oss/MCL/sf/app/printing
 https://developer.symbian.org/oss/MCL/sf/app/profile
 https://developer.symbian.org/oss/MCL/sf/app/radio
