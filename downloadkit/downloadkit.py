@@ -26,37 +26,41 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.11'
+version = '0.12'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
-top_level_url = "http://developer.symbian.org"
+top_level_url = "https://developer.symbian.org"
+passman = urllib2.HTTPPasswordMgrWithDefaultRealm()	# not relevant for live Symbian website
 download_list = []
 unzip_list = []
 
 def build_opener(debug=False):
-    # Create a HTTP and HTTPS handler with the appropriate debug
-    # level.  We intentionally create a new one because the
-    # OpenerDirector class in urllib2 is smart enough to replace
-    # its internal versions with ours if we pass them into the
-    # urllib2.build_opener method.  This is much easier than trying
-    # to introspect into the OpenerDirector to find the existing
-    # handlers.
-    http_handler = urllib2.HTTPHandler(debuglevel=debug)
-    https_handler = urllib2.HTTPSHandler(debuglevel=debug)
+	# Create a HTTP and HTTPS handler with the appropriate debug
+	# level.  We intentionally create a new one because the
+	# OpenerDirector class in urllib2 is smart enough to replace
+	# its internal versions with ours if we pass them into the
+	# urllib2.build_opener method.  This is much easier than trying
+	# to introspect into the OpenerDirector to find the existing
+	# handlers.
+	http_handler = urllib2.HTTPHandler(debuglevel=debug)
+	https_handler = urllib2.HTTPSHandler(debuglevel=debug)
+	
+	# We want to process cookies, but only in memory so just use
+	# a basic memory-only cookie jar instance
+	cookie_jar = cookielib.LWPCookieJar()
+	cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
+	
+	# add HTTP authentication password handler (only relevant for Symbian staging server)
+	authhandler = urllib2.HTTPBasicAuthHandler(passman)
+	
+	handlers = [authhandler, http_handler, https_handler, cookie_handler]
+	opener = urllib2.build_opener(*handlers)
+	
+	# Save the cookie jar with the opener just in case it's needed
+	# later on
+	opener.cookie_jar = cookie_jar
 
-    # We want to process cookies, but only in memory so just use
-    # a basic memory-only cookie jar instance
-    cookie_jar = cookielib.LWPCookieJar()
-    cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
-
-    handlers = [http_handler, https_handler, cookie_handler]
-    opener = urllib2.build_opener(*handlers)
-
-    # Save the cookie jar with the opener just in case it's needed
-    # later on
-    opener.cookie_jar = cookie_jar
-
-    return opener
+	return opener
 
 urlopen = urllib2.urlopen
 Request = urllib2.Request
@@ -65,11 +69,23 @@ def quick_networking_check():
 	global options
 	defaulttimeout = socket.getdefaulttimeout()
 	socket.setdefaulttimeout(15)
-	probesite = 'https://developer.symbian.org'
+	probesite = top_level_url
 	probeurl = probesite + '/main/user_profile/login.php'
 	headers = { 'User-Agent' : user_agent }
 
 	req = urllib2.Request(probeurl, None, headers)
+
+	try:
+		response = urllib2.urlopen(req)
+		doc=response.read()
+	except urllib2.URLError, e:
+		if hasattr(e, 'code') and e.code == 401:#
+			# Needs HTTP basic authentication
+			print >> sys.stderr, 'HTTP username: ',
+			http_username=sys.stdin.readline().strip()
+			http_password=getpass.getpass('HTTP password: ')
+			passman.add_password(None, top_level_url, http_username, http_password)
+			# now try again...
 
 	try:
 		response = urllib2.urlopen(req)
@@ -80,7 +96,7 @@ def quick_networking_check():
 			print '*** Reason: ', e.reason
 		elif hasattr(e, 'code'):
 			print '*** Error code: ', e.code
-		print "Do you need to use a proxy server to access the developer.symbian.org website?"
+		print "Do you need to use a proxy server to access the %s website?" % probesite
 		sys.exit(1)
 	socket.setdefaulttimeout(defaulttimeout)	# restore the default timeout
 	if options.progress:
@@ -88,7 +104,7 @@ def quick_networking_check():
 
 def login(prompt):
 	global options
-	loginurl = 'https://developer.symbian.org/main/user_profile/login.php'
+	loginurl =  top_level_url + '/main/user_profile/login.php'
 	
 	if prompt:
 		if options.username == '':
@@ -292,8 +308,15 @@ def download_file(filename,url):
 		if 'Content-Length' in info:
 			filesize = int(info['Content-Length'])
 		else:
+			match = re.search('>([^>]+Licen[^<]+)<', chunk, re.IGNORECASE)
+			if match:
+				license = match.group(1).replace('&amp;','&')
+				print "*** %s is subject to the %s which you have not yet accepted\n" % (filename,license)
+				return False
 			print "*** HTTP response did not contain 'Content-Length' when expected"
-			print info
+			if options.debug:
+				print info
+				print chunk
 			return False
 
 	except urllib2.URLError, e:
@@ -354,7 +377,7 @@ def download_file(filename,url):
 def downloadkit(version):	
 	global headers
 	global options
-	urlbase = 'http://developer.symbian.org/main/tools_and_kits/downloads/'
+	urlbase = top_level_url + '/main/tools_and_kits/downloads/'
 
 	viewid = 5   # default to Symbian^3
 	if version[0] == 2:
@@ -374,11 +397,23 @@ def downloadkit(version):
 	except:
 		pass
 
-	threadlist = []
-	# let's hope the HTML format never changes...
-	# <a href='download.php?id=27&cid=60&iid=270' title='src_oss_mw.zip'> ...</a> 
+	if options.debug:
+		f = open("downloadpage.html","w")
+		print >>f, doc 
+		f.close()
 
 	soup=BeautifulSoup(doc)
+
+	# check that this is the right version
+	match = re.search('Platform Release v(\d\.\d\.[0-9a-z]+)', doc, re.IGNORECASE)
+	if match.group(1) != version:
+		print "*** ERROR: version %s is not available" % version
+		print "*** the website is offering version %s instead" % match.group(1)
+		return 0
+		
+	# let's hope the HTML format never changes...
+	# <a href='download.php?id=27&cid=60&iid=270' title='src_oss_mw.zip'> ...</a> 
+	threadlist = []
 	results=soup.findAll('a', href=re.compile("^download"), title=re.compile("\.(zip|xml)$"))
 	results.sort(orderResults)
 	for result in results:
@@ -430,6 +465,8 @@ parser.add_option("-p", "--password", dest="password", metavar="PWD",
 	help="specify the account password")
 parser.add_option("--debug", action="store_true", dest="debug", 
 	help="debug HTML traffic (not recommended!)")
+parser.add_option("--webhost", dest="webhost", metavar="SITE",
+	help="use alternative website (for testing!)")
 parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
@@ -439,6 +476,7 @@ parser.set_defaults(
 	progress=False,
 	username='',
 	password='',
+	webhost = 'developer.symbian.org',
 	debug=False
 	)
 
@@ -448,6 +486,7 @@ if len(args) != 1:
 if not check_unzip_environment() :
 	parser.error("Unable to execute 7z command")
 
+top_level_url = "https://" + options.webhost
 opener = build_opener(options.debug)
 urllib2.install_opener(opener)
 
