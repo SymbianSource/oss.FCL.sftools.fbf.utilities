@@ -41,7 +41,6 @@ https://developer.symbian.org/oss/FCL/sf/app/videotelephony
 https://developer.symbian.org/oss/FCL/sf/app/voicerec
 https://developer.symbian.org/oss/FCL/sf/app/webuis
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
-https://developer.symbian.org/oss/FCL/sf/incubator/podcatcher
 https://developer.symbian.org/oss/FCL/sf/incubator/socialmobilefw
 https://developer.symbian.org/oss/FCL/sf/mw/accesssec
 https://developer.symbian.org/oss/FCL/sf/mw/appinstall
