@@ -26,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.12'
+version = '0.13'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
@@ -406,7 +406,7 @@ def downloadkit(version):
 
 	# check that this is the right version
 	match = re.search('Platform Release v(\d\.\d\.[0-9a-z]+)', doc, re.IGNORECASE)
-	if match.group(1) != version:
+	if match and match.group(1) != version:
 		print "*** ERROR: version %s is not available" % version
 		print "*** the website is offering version %s instead" % match.group(1)
 		return 0
