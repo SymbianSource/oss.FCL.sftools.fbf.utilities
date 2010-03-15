@@ -74,6 +74,7 @@ def extractfiles(files, path):
 def extractfromzip(files, name, location):
     tmpfilename = os.tmpnam( )
     print tmpfilename
+    cwd = os.getcwd();
     os.chdir(os.path.join(epocroot(),location))
     f = open(tmpfilename,'w')
     for file in sorted(files):
@@ -85,6 +86,7 @@ def extractfromzip(files, name, location):
     print 'executing: >%s<\n' %exestr
     os.system(exestr)
     os.unlink(tmpfilename)
+    os.chdir(cwd)
 
 def deletefiles(files):
     os.chdir(epocroot())
