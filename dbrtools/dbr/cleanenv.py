@@ -38,7 +38,7 @@ def main(args):
         required.update(results['untestable']) #untestable is going to be a problem...
         dbrutils.extractfiles(required, zippath)
         for name in sorted(patches):
-          dbrutils.extractfromzip(required, re.sub('.txt','.zip',name))        
+          dbrutils.extractfromzip(required, re.sub('.txt','.zip',name),'')        
 
         env = dbrutils.scanenv()
         results2 = dbrpatch.newupdatedb(db,env)          

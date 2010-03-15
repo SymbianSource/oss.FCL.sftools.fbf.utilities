@@ -18,6 +18,9 @@
 import re
 import os
 import string
+import glob
+import tempfile
+import shutil
 from os.path import join, isfile, stat
 from stat import *
 import dbrutils
@@ -120,3 +123,34 @@ def compareupdatedb(db1, db2, update):
       for file in sorted(touched):
           print 'Updating timestamp for: ',file
           db1[file]['time'] = db2[file]['time']
+
+def createdb():
+    print 'creating db...Move CreateDB into dbrutils!!!'
+    env = dbrutils.scanenv()
+    hashes = glob.glob(os.path.join(dbrutils.patchpath(),'*.md5'))
+    for file in hashes:
+        print 'Reading: %s\n' % file
+        dbrutils.gethashes(env, file, False)
+    return env
+
+
+def readzippeddb(drive):
+  env = dict()
+  #Note that this is really crude. I'm seeing if it'll work before cleaning things up...
+  #see if we have a build_md5.zip file
+  md5zip = os.path.join(drive,'build_md5.zip')
+  temp_dir = tempfile.mkdtemp()
+  print temp_dir 
+  if(os.path.exists(md5zip)):
+    files = set();
+    files.add('*')
+    dbrutils.extractfromzip(files,md5zip,temp_dir)
+    globsearch = os.path.join(temp_dir, os.path.join(dbrutils.patch_path_internal(),'*.md5'))
+    print globsearch 
+    hashes = glob.glob(globsearch)
+    for file in hashes:
+        print 'Reading: %s\n' % file
+        dbrutils.gethashes(env, file, True)
+  shutil.rmtree(temp_dir)
+  return env
+

@@ -16,7 +16,6 @@
 import dbrbaseline
 import dbrpatch
 import dbrutils
-import glob
 
 import os.path
 
@@ -34,17 +33,9 @@ def main():
 
         dbrpatch.savepatches(patches)        
     else:
-        baseline = createdb()
+        baseline = dbrbaseline.createdb()
     dbrbaseline.writedb(baseline,dbfilename)
 
-def createdb():
-    print 'creating db...Move CreateDB into dbrutils!!!'
-    env = dbrutils.scanenv()
-    hashes = glob.glob(os.path.join(dbrutils.patchpath(),'*.md5'))
-    for file in hashes:
-        print 'Reading: %s\n' % file
-        dbrutils.gethashes(env, file)
-    return env
 
 def run(args):  
   main()

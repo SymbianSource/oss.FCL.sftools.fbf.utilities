@@ -68,13 +68,13 @@ def createzip(files, name):
 def extractfiles(files, path):
     zips = glob.glob(os.path.join(path, '*.zip'))
     for name in zips:
-      extractfromzip(files, name)    
+      extractfromzip(files, name,'')    
         
     
-def extractfromzip(files, name):
+def extractfromzip(files, name, location):
     tmpfilename = os.tmpnam( )
     print tmpfilename
-    os.chdir(epocroot())
+    os.chdir(os.path.join(epocroot(),location))
     f = open(tmpfilename,'w')
     for file in sorted(files):
         str = '%s%s' % (file,'\n')
@@ -115,13 +115,13 @@ def generateMD5s(testset):
       if(exeresult):
         sys.exit('Fatal error executing: %s\nReported error: %s' % (exestr,os.strerror(exeresult)))
       else:  
-        db = gethashes(db,outputfile)
+        db = gethashes(db,outputfile, False)
         os.unlink(outputfile)
         os.unlink(tmpfilename)
     return db
 
 # Brittle and nasty!!!
-def gethashes(db,md5filename):
+def gethashes(db, md5filename, create):
     os.chdir(epocroot())
 #    print 'trying to open %s' % md5filename
     file = open(md5filename,'r')
@@ -136,9 +136,16 @@ def gethashes(db,md5filename):
         if(res):
             filename = "%s%s" % (root,res.group(1))
             filename = string.lower(fixpath.sub('/',leadingslash.sub('',filename)))            
-#            print "found %s" % filename   
-            if(filename in db):
-                db[filename]['md5'] = res.group(3)
+#            print "found %s" % filename
+            if(create):
+              entry = dict()
+              entry['time'] = 'xxx'
+              entry['size'] = 'xxx'
+              entry['md5'] = res.group(3)
+              db[filename] = entry
+            else:    
+              if(filename in db):
+                  db[filename]['md5'] = res.group(3)
 
         else:
             res = dirparse.match(line)

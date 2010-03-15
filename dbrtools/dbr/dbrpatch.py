@@ -145,20 +145,22 @@ def newcomparepatcheddbs(drive1, drive2):
     envdbroot = dbrutils.defaultdb()
     print "MattD: should move this function to a better location..."
     print 'Comparing %s with %s' % (drive2,drive1)
-    print 'Loading %s' % drive1 
-    baseline1 = dbrbaseline.readdb('%s%s' %(drive1,envdbroot))
-    patches1 = loadpatches('%s/%s' %(drive1,dbrutils.patchpath()))
-    db1 = createpatchedbaseline(baseline1,patches1)
 
-    print 'Loading %s' % drive2 
-    baseline2 = dbrbaseline.readdb('%s%s' %(drive2,envdbroot))
-    patches2 = loadpatches('%s/%s' %(drive2,dbrutils.patchpath()))
-    db2 = createpatchedbaseline(baseline2,patches2)
-
+    db1 = loadpatcheddb(drive1)
+    db2 = loadpatcheddb(drive2)
+    
     results = newcompare(db1, db2)
     printresults(results)
- 
 
+def loadpatcheddb(drive):
+    envdbroot = dbrutils.defaultdb()
+    print 'Loading %s' % drive 
+    baseline = dbrbaseline.readdb('%s%s' %(drive,envdbroot))
+    if(len(baseline) > 0):      
+      patches = loadpatches('%s/%s' %(drive,dbrutils.patchpath()))
+      return createpatchedbaseline(baseline,patches)
+    else:
+      return dbrbaseline.readzippeddb(drive)
 
 def createpatchzip(patch, patchname):
     patchtext = '%s.txt' % patchname
@@ -192,7 +194,7 @@ def updatepatches(patches, db):
             if(file in patches[patch]['added']):
                mod = 'added'
             if(file in patches[patch]['changed']):
-                mod = 'changed'
+               mod = 'changed'
             if(mod):
                 if (patches[patch][mod][file]['time'] != db[file]['time']):
                   patches[patch][mod][file]['time'] = db[file]['time']

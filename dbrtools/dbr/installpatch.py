@@ -15,7 +15,7 @@
 
 import sys
 import os.path
-#import shutils
+import shutil
 import dbrutils
 
 
@@ -27,10 +27,10 @@ def run(args):
       if(os.path.exists(patch)):
         patchname = os.path.basename(patch)
         if(not os.path.exists(os.path.join(dbrutils.patchpath(),patchname))):
-          shutils.copyfile(patch, os.path.join(dbrutils.patchpath(),patchname))
+          shutil.copyfile(patch, os.path.join(dbrutils.patchpath(),patchname))
         files = set();
         files.add('*')
-        dbrutils.extractfromzip(files,os.path.join(dbrutils.patchpath(),patchname))
+        dbrutils.extractfromzip(files,os.path.join(dbrutils.patchpath(),patchname),'')
         print 'Should probably run checkenv now...'
       else:
         print 'Cannot find patch zip: %s\n' %patch
