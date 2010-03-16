@@ -26,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.14'
+version = '0.15'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
@@ -424,7 +424,10 @@ def downloadkit(version):
 			continue 	# no snapshots of Mercurial source thanks...
 		if options.nowinscw and re.search(r"winscw", filename) :
 			continue 	# no winscw emulator...
-
+		if options.noarmv5 and re.search(r"armv5", filename) :
+			continue 	# no armv5 emulator...
+		if options.noarmv5 and options.nowinscw and re.search(r"binaries_epoc.zip|binaries_epoc_sdk", filename) :
+			continue 	# skip binaries_epoc and binaries_sdk ...
 		if download_file(filename, downloadurl) != True :
 			continue # download failed
 
@@ -453,6 +456,8 @@ parser.add_option("--nosrc", action="store_true", dest="nosrc",
 	help="Don't download any of the source code available directly from Mercurial")
 parser.add_option("--nowinscw", action="store_true", dest="nowinscw",
 	help="Don't download the winscw emulator")
+parser.add_option("--noarmv5", action="store_true", dest="noarmv5",
+	help="Don't download the armv5 binaries")
 parser.add_option("--nounzip", action="store_true", dest="nounzip",
 	help="Just download, don't unzip or delete any files")
 parser.add_option("--nodelete", action="store_true", dest="nodelete",
@@ -471,6 +476,7 @@ parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
 	nowinscw=False, 
+	noarmv5=False, 
 	nounzip=False, 
 	nodelete=False, 
 	progress=False,
