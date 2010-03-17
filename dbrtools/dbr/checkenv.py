@@ -24,7 +24,7 @@ def run(args):
   local = dbrenv.DBRLocalEnv(location)
   results = db.compare(local)
   local.verify(results.unknown)
-  results2 = db.compare(local)hg diff -U 
+  results2 = db.compare(local)
   results2.printdetail()
   results2.printsummary()
   db.update(local, results2.touched)
