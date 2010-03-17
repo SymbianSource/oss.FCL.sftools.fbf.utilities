@@ -30,12 +30,13 @@ def newcompare(db1, db2):
 
     touched = set()
     for file in common:
-        if(db1[file]['time'] != db2[file]['time']):
+        if(int(db1[file]['time']) != int(db2[file]['time'])):
+            print 'touched %s %s - %s' % (db1[file]['time'], db2[file]['time'],file)  
             touched.add(file)
 
     sizechanged = set()
     for file in common:
-        if(db1[file]['size'] != db2[file]['size']):
+        if(int(db1[file]['size']) != int(db2[file]['size'])):
             sizechanged.add(file)
 
     changed = set()
@@ -56,22 +57,11 @@ def newcompare(db1, db2):
         if(db1[file]['md5'] != db2[file]['md5']):                    
           changed.add(file)
     touched = touched - changed
-
-    untestable1 = set()
-    untestable2 = set()
-    for file in common:
-        if(db1[file]['md5'] == "xxx"):
-          untestable1.add(file)  
-        if(db2[file]['md5'] == 'xxx'):
-          untestable2.add(file)
-          
-    untestable = untestable1 & untestable2         
-    changed = changed - untestable
+    
 
     #remove the ones we know are changed
     touched = touched - changed
-    touched = touched - untestable
- 
+    
     results = dict()
     results['added'] = dict()
     results['removed'] = dict()
@@ -84,11 +74,11 @@ def newcompare(db1, db2):
     for file in removed:
       results['removed'][file] = 0
     for file in touched:
-      results['touched'][file] = db2[file]  
+      results['touched'][file] = db2[file]
     for file in changed:
       results['changed'][file] = db2[file]  
-    for file in untestable:
-      results['untestable'][file] = 0  
+#    for file in untestable:
+#      results['untestable'][file] = 0  
     return results
 
 def printresults(results):
@@ -96,12 +86,12 @@ def printresults(results):
       print 'added:', file
     for file in sorted (results['removed']):
       print 'removed:', file              
-    for file in sorted (results['touched']):   
-      print 'touched:', file              
+#    for file in sorted (results['touched']):   
+#      print 'touched:', file              
     for file in sorted (results['changed']):
       print 'changed:', file          
-    for file in sorted (results['untestable']):
-      print 'untestable:', file          
+#    for file in sorted (results['untestable']):
+#      print 'untestable:', file          
     if(len(results['added']) + len(results['removed']) + len(results['changed']) + len(results['untestable']) == 0):
       print '\nStatus:\tclean'
     else:

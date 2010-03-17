@@ -1,4 +1,4 @@
-# Copyright (c) 2009 Symbian Foundation Ltd
+# Copyright (c) 2010 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
 # under the terms of the License "Eclipse Public License v1.0"
 # which accompanies this distribution, and is available
@@ -11,23 +11,30 @@
 # mattd <mattd@symbian.org>
 #
 # Description:
-# DBR diffenv - compares two environments
+# new diffenv - uses OO interface and can have 
 
-import sys
-import dbrpatch
+import dbrenv
 
 def run(args):
-    if(len(args) == 2):
-      first = args[0]
-      second = args[1]      
-      dbrpatch.newcomparepatcheddbs(first, second)
+    if(len(args)):
+      if(len(args) == 1):
+        first = '/'
+        second = args[0]
+      else:
+        first = args[0]
+        second = args[1]    
+      db1=dbrenv.CreateDB(first)
+      db2=dbrenv.CreateDB(second)
+      results = db1.compare(db2)
+      results.printdetail()
+      results.printsummary()
     else:
       help()
       
 def help():
   print "Compares two environments"
   print "Usage:"
-  print "\tdbr diffenv <drive1> <drive2>"
+  print "\tdbr diffenv <drive1> (<drive2>)"
     
-
+  
 

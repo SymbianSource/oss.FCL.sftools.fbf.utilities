@@ -46,8 +46,10 @@ def main(args):
         baseline = dbrpatch.updatebaseline(baseline, db)
         patches = dbrpatch.updatepatches(patches, db)
 
-        dbrpatch.savepatches(patches)        
-
+        dbrpatch.savepatches(patches)
+        dbrbaseline.writedb(baseline,dbfilename)        
+        
+    
 
 def run(args):  
   main(args)

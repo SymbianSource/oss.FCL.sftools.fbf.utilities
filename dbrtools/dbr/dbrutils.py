@@ -17,15 +17,17 @@ import re
 import os
 import sys
 import string
+import shutil
+import time
 from os.path import join, isfile, stat
 from stat import *
 
 import glob # temporary (I hope) used for grabbing stuf from zip files...
-
+import tempfile
 
 
 def defaultdb():
-  return os.path.join(patchpath(),'baseline.db')
+  return os.path.join(patch_path_internal(),'baseline.db')
 
 def patchpath():
   return os.path.join(epocroot(),'%s/' % patch_path_internal())
@@ -93,7 +95,61 @@ def deletefiles(files):
     for file in files:
       print 'deleting %s' %file
       os.unlink(file)
-          
+            
+
+def getzippedDB(location):
+    db = dict()
+    #This is really crude, but will do for now
+#    temp = tempfile.NamedTemporaryFile()
+#    print temp.name
+    #       Date      Time    Attr         Size   Compressed  Name
+    #------------------- ----- ------------ ------------  ------------------------
+    #2010-03-10 01:02:30 D....            0            0  epoc32
+    #2010-03-10 01:02:30 D....            0            0  epoc32\relinfo
+    #2010-03-10 00:49:12 .....      2327835       575578  epoc32\relinfo\epoc32_data.md5
+    reattribs = re.compile('(\d+-\d+-\d+\s\d+:\d+:\d+)\s+\..+\s+(\d+)\s+\d*\s*(\S.+)')
+    fixpath = re.compile('\\\\')
+
+    tmpfilename = os.tmpnam( )
+    print tmpfilename    
+
+#    exestr = '7z l -i!epoc32 -x!epoc32/relinfo %s/*.zip >%s' % (path,temp.name)
+    exestr = '7z l -i!epoc32 -x!epoc32/relinfo %s/*.zip >%s' % (location,tmpfilename)
+
+    exeresult = os.system(exestr) 
+    if(exeresult):
+      sys.exit('Fatal error executing: %s\nReported error: %s' % (exestr,os.strerror(exeresult)))
+    else:
+      temp = open(tmpfilename,'r')           
+      for line in temp:
+        res = reattribs.match(line)
+        if(res):
+            entry = dict()
+            entry['time'] = int(time.mktime(time.strptime(res.group(1), '%Y-%m-%d %H:%M:%S')))
+            entry['size'] = res.group(2)
+            entry['md5'] = 'xxx'
+            filename = string.lower(fixpath.sub('/',res.group(3))) 
+            db[filename] = entry
+      temp.close()
+      os.unlink(tmpfilename)      
+      #now fill with the MD5s...
+      md5zip = os.path.join(location,'build_md5.zip')
+      print md5zip 
+      temp_dir = tempfile.mkdtemp()
+      print temp_dir 
+      if(os.path.exists(md5zip)):
+        files = set();
+        files.add('*')
+        extractfromzip(files,md5zip,temp_dir)
+        globsearch = os.path.join(temp_dir, os.path.join(patch_path_internal(),'*.md5'))
+        print globsearch 
+        hashes = glob.glob(globsearch)
+        for file in hashes:
+            print 'Reading: %s\n' % file
+            gethashes(db, file, False)
+      shutil.rmtree(temp_dir)            
+    return db
+
 
 def generateMD5s(testset):
     db = dict()

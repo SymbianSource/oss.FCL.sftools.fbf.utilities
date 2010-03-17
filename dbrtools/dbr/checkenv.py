@@ -1,4 +1,4 @@
-# Copyright (c) 2009 Symbian Foundation Ltd
+# Copyright (c) 2010 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
 # under the terms of the License "Eclipse Public License v1.0"
 # which accompanies this distribution, and is available
@@ -11,35 +11,29 @@
 # mattd <mattd@symbian.org>
 #
 # Description:
-# DBR checkenv - Checks your environment against what was installed
+# new checkenv - uses OO interface.
 
-import dbrbaseline
-import dbrpatch
-import dbrutils
+import dbrenv
 
-import os.path
-
-def main():
-    dbfilename = dbrutils.defaultdb()
-
-    baseline = dbrbaseline.readdb(dbfilename)
-    if(len(baseline ) > 0):
-        patches = dbrpatch.loadpatches(dbrpatch.dbrutils.patchpath())
-        db = dbrpatch.createpatchedbaseline(baseline,patches)
-        env = dbrutils.scanenv()
-        dbrpatch.newupdatedb(db,env)
-        baseline = dbrpatch.updatebaseline(baseline, db)
-        patches = dbrpatch.updatepatches(patches, db)
-
-        dbrpatch.savepatches(patches)        
-    else:
-        baseline = dbrbaseline.createdb()
-    dbrbaseline.writedb(baseline,dbfilename)
-
-
-def run(args):  
-  main()
-
+def run(args):
+  location = '/'
+#needs a fix to scanenv for this to work...  
+#  if(len(args)):
+#    location = args[0]
+  db = dbrenv.CreateDB(location)
+  local = dbrenv.DBRLocalEnv(location)
+  results = db.compare(local)
+  local.verify(results.unknown)
+  results2 = db.compare(local)hg diff -U 
+  results2.printdetail()
+  results2.printsummary()
+  db.update(local, results2.touched)
+  db.save()
+    
 def help():
-  print "Shows the current state of the environment"
-  print "Usage\n\tdbr checkenv"
+  print "Checks the status of the current environment"
+  print "Usage:"
+  print "\tdbr checkenv"
+    
+  
+
