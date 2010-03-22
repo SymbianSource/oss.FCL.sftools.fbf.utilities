@@ -18,6 +18,7 @@ import dbrutils
 import dbrenv
 
 import re #temporary for dealing with patches
+import os
 
 def run(args):  
   zippath = '/'
@@ -40,7 +41,9 @@ def run(args):
   required = results2.changed | results2.removed
   dbrutils.extractfiles(required, zippath)
   #do something about the patches here...
-  print 'Need to extract the patches!!!'  
+  print 'Need to extract the patches in a nicer manner!!!'
+  dbrutils.extractfiles(required, os.path.join(location,dbrutils.patch_path_internal()))
+  
   #scan again...create a new 'local'   
   local = dbrenv.DBRLocalEnv(location)
   local.verify(required)
