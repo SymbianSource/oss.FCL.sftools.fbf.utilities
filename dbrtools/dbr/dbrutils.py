@@ -266,10 +266,14 @@ def readfilenamesfromfile(filename):
   fixpath = re.compile('\\\\')
   leadingslash = re.compile('^%s' % fixpath.sub('/',epocroot()))
   newline = re.compile('\n')
+  epoc32 = re.compile('^epoc32');
+  trailingtab = re.compile('\t\d+') #normally in rombuild files...
   for line in f:
     line = newline.sub('',line)
-    name = string.lower(leadingslash.sub('',fixpath.sub('/',line)))  
-    files.add(name)
+    name = string.lower(leadingslash.sub('',fixpath.sub('/',line)))
+    if(epoc32.search(name)):
+      name = trailingtab.sub('',name) 
+      files.add(name)
   f.close()  
   return files
 
