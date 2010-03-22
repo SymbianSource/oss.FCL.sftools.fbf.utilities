@@ -26,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.15'
+version = '0.16'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
@@ -380,11 +380,14 @@ def downloadkit(version):
 	urlbase = top_level_url + '/main/tools_and_kits/downloads/'
 
 	viewid = 5   # default to Symbian^3
-	if version[0] == 2:
+	if version[0] == '2':
 		viewid= 1  # Symbian^2
-	if version[0] == 3:
+	if version[0] == '3':
 		viewid= 5  # Symbian^3
-	url = urlbase + ('view.php?id=%d'% viewid) + 'vId=' + version
+	url = urlbase + ('view.php?id=%d'% viewid)
+	if len(version) > 1:
+		# single character version means "give me the latest"
+		url = url + '&vId=' + version
 
 	req = urllib2.Request(url, None, headers)
 	response = urllib2.urlopen(req)
@@ -406,10 +409,17 @@ def downloadkit(version):
 
 	# check that this is the right version
 	match = re.search('Platform Release (\(Public\) )?v(\d\.\d\.[0-9a-z]+)', doc, re.IGNORECASE)
-	if match and match.group(2) != version:
-		print "*** ERROR: version %s is not available" % version
-		print "*** the website is offering version %s instead" % match.group(1)
+	if not match:
+		print "*** ERROR: no version information in the download page"
 		return 0
+		
+	if len(version) > 1:
+		if match.group(2) != version:
+			print "*** ERROR: version %s is not available" % version
+			print "*** the website is offering version %s instead" % match.group(2)
+			return 0
+	else:
+		print "The latest version of Symbian^%s is PDK %s" % (version, match.group(2))
 		
 	# let's hope the HTML format never changes...
 	# <a href='download.php?id=27&cid=60&iid=270' title='src_oss_mw.zip'> ...</a> 
@@ -488,7 +498,7 @@ parser.set_defaults(
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
-	parser.error("Must supply a PDK version, e.g. 3.0.f")
+	parser.error("Must supply a PDK version, e.g. 3 or 3.0.h")
 if not check_unzip_environment() :
 	parser.error("Unable to execute 7z command")
 
