@@ -25,7 +25,7 @@ import dbrpatch
 def CreateDB(location): #virtual constructor
   print location
 #  print dbrutils.patch_path_internal()
-  if(os.path.exists(os.path.join(location,dbrutils.defaultdb()))):
+  if(os.path.isfile(os.path.join(location,dbrutils.defaultdb()))):
 #    print 'loading baseline environment'
 #    return DBRBaselineEnv(location)
     print 'loading patched baseline environment'
@@ -42,7 +42,11 @@ def CreateDB(location): #virtual constructor
 
   return DBREnv(location)
 
-
+#Start simple with the filtering...
+def CreateFilter(arg):
+  if(os.path.isfile(arg)):
+    return DBRFileFilter(arg)
+  return DBRFilter()     
 
 class DBREnv:
   db = dict()
@@ -230,4 +234,26 @@ class DBRCompResults:
       print 'status: dirty'
     else:
       print 'status: clean' 
-                     
+
+
+
+class DBRFilter:
+  info = ''
+  def __init__(self):
+    self.info = 'null filter'
+  def filter(self, results):
+    return results
+
+class DBRFileFilter (DBRFilter):
+  filename = ''
+  def __init__(self, filename):
+    DBRFilter.__init__(self)
+    self.info = 'file filter'
+    self.filename = filename
+    self.files = dbrutils.readfilenamesfromfile(self.filename)
+#    for file in sorted(self.files):
+#      print file
+     
+  def filter(self, results):
+    return DBRCompResults(results.added & self.files, results.removed & self.files, results.touched & self.files, results.changed & self.files, results.unknown & self.files)
+    

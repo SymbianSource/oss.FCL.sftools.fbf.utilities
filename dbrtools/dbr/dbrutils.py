@@ -258,3 +258,18 @@ def scandir(top, exclude_dirs, exclude_files):
   #            env[fn] = data
     print '\n'
     return env
+
+def readfilenamesfromfile(filename):
+  files = set()
+  f = open(filename, 'r')
+
+  fixpath = re.compile('\\\\')
+  leadingslash = re.compile('^%s' % fixpath.sub('/',epocroot()))
+  newline = re.compile('\n')
+  for line in f:
+    line = newline.sub('',line)
+    name = string.lower(leadingslash.sub('',fixpath.sub('/',line)))  
+    files.add(name)
+  f.close()  
+  return files
+

@@ -17,17 +17,22 @@ import dbrenv
 
 def run(args):
     if(len(args)):
+      filtertype = ''
       if(len(args) == 1):
         first = '/'
         second = args[0]
       else:
         first = args[0]
-        second = args[1]    
+        second = args[1]
+      if(len(args) == 3):
+        filtertype = args[2]    
       db1=dbrenv.CreateDB(first)
       db2=dbrenv.CreateDB(second)
       results = db1.compare(db2)
-      results.printdetail()
-      results.printsummary()
+      filter = dbrenv.CreateFilter(filtertype)
+      filteredresults = filter.filter(results)
+      filteredresults.printdetail()
+      filteredresults.printsummary()
     else:
       help()
       
