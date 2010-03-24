@@ -20,6 +20,7 @@ use RaptorWarning;
 use RaptorInfo;
 use RaptorUnreciped;
 use RaptorRecipe;
+use releaseables;
 
 use XML::SAX;
 use RaptorSAXHandler;
@@ -30,10 +31,13 @@ use CGI;
 our $raptorbitsdir = 'raptorbits';
 our $basedir = '';
 my $outputdir = "html";
+our $releaseablesdir = "releaseables";
 our $raptor_config = 'dummy_config';
 our $current_log_file = '';
+our $missing = 0;
 my $help = 0;
 GetOptions((
+	'missing!' => \$missing,
 	'basedir=s' => \$basedir,
 	'help!' => \$help
 ));
@@ -46,7 +50,9 @@ if ($help)
 	print "Unite and HTML-ize Raptor log files.\n";
 	print "Usage: perl uh.pl [OPTIONS] FILE1 FILE2 ...\n";
 	print "where OPTIONS are:\n";
-	print "\t--basedir=DIR Generate output under DIR (defaults to current dir)\n";
+	print "\t-m, --missing\tAlso add the list of missing binaries (Raptor log should include whatlog info).\n";
+	print "\t\t\tCheck is done against the epoc tree at the root of the current drive\n";
+	print "\t-b DIR, --basedir DIR\tGenerate output under DIR (defaults to current dir)\n";
 	exit(0);
 }
 
@@ -54,6 +60,7 @@ if ($basedir)
 {
 	$raptorbitsdir = "$basedir/raptorbits";
 	$outputdir = "$basedir/html";
+	$releaseablesdir = "$basedir/releaseables";
 }
 mkdir($basedir) if (!-d$basedir);
 
@@ -62,6 +69,8 @@ $raptorbitsdir =~ s,/,\\,g; # this is because rmdir doens't cope correctly with 
 system("rmdir /S /Q $raptorbitsdir") if (-d $raptorbitsdir);
 mkdir($raptorbitsdir);
 #print "Created dir $raptorbitsdir.\n";
+system("rmdir /S /Q $releaseablesdir") if (-d $releaseablesdir);
+mkdir("$releaseablesdir");
 
 our $failure_item_number = 0;
 
@@ -69,12 +78,14 @@ our $failure_item_number = 0;
 open(SUMMARY, ">$raptorbitsdir/summary.csv");
 close(SUMMARY);
 
+
 my $saxhandler = RaptorSAXHandler->new();
 $saxhandler->add_observer('RaptorError', $RaptorError::reset_status);
 $saxhandler->add_observer('RaptorWarning', $RaptorWarning::reset_status);
 $saxhandler->add_observer('RaptorInfo', $RaptorInfo::reset_status);
 $saxhandler->add_observer('RaptorUnreciped', $RaptorUnreciped::reset_status);
 $saxhandler->add_observer('RaptorRecipe', $RaptorRecipe::reset_status);
+$saxhandler->add_observer('releaseables', $releaseables::reset_status);
 
 our $allbldinfs = {};
 
@@ -85,6 +96,8 @@ for (@logfiles)
 	$current_log_file = $_;
 	$parser->parse_uri($_);
 }
+
+releaseables::remove_missing_duplicates();
 
 my @allpackages = distinct_packages($allbldinfs);
 
@@ -100,6 +113,7 @@ my $general_failures_num_by_severity = {};
 my $general_failures_by_category_severity = {};
 my $recipe_failures_num_by_severity = {};
 my $recipe_failures_by_package_severity = {};
+my $missing_by_package = {};
 #my $severities = {};
 my @severities = ('critical', 'major', 'minor', 'unknown');
 
@@ -235,13 +249,14 @@ print AGGREGATED "<br/>PACKAGE-SPECIFIC FAILURES<br/>\n";
 print AGGREGATED "<table border='1'>\n";
 $tableheader = "<tr><th>package</th>";
 for (@severities) { $tableheader .= "<th>$_</th>"; }
+$tableheader .= "<th>missing</th>" if ($missing);
 $tableheader .= "</tr>";
 print AGGREGATED "$tableheader\n";
 for my $package (@allpackages)
 {
-	if (defined $recipe_failures_num_by_severity->{$package})
+	my $mustlink = print_package_specific_summary($package);
+	if ($mustlink)
 	{
-		print_package_specific_summary($package, $recipe_failures_by_package_severity->{$package});
 		my $packagesummaryhtml = $package;
 		$packagesummaryhtml =~ s,/,_,;
 		$packagesummaryhtml .= ".html";
@@ -252,6 +267,7 @@ for my $package (@allpackages)
 			$failuresbyseverity = $recipe_failures_num_by_severity->{$package}->{$_} if (defined $recipe_failures_num_by_severity->{$package}->{$_});
 			$packageline .= "<td>$failuresbyseverity</td>";
 		}
+		$packageline .= "<td>".$missing_by_package->{$package}."</td>" if ($missing);
 		$packageline .= "</tr>";
 		print AGGREGATED "$packageline\n";
 	}
@@ -310,42 +326,99 @@ sub print_category_specific_summary
 
 sub print_package_specific_summary
 {
-	my ($package, $failures_by_severity) = @_;
+	my ($package) = @_;
+	
+	my $anyfailures = 0;
 	
 	my $filenamebase = $package;
 	$filenamebase =~ s,/,_,;
 	
-	open(SPECIFIC, ">$outputdir/$filenamebase.html");
-	print SPECIFIC "FAILURES FOR PACKAGE $package<br/>\n";
-		
-	for my $severity (@severities)
+	if (defined $recipe_failures_by_package_severity->{$package})
 	{
-		if (defined $failures_by_severity->{$severity})
+		$anyfailures = 1;
+		
+		my $failures_by_severity = $recipe_failures_by_package_severity->{$package};
+	
+		open(SPECIFIC, ">$outputdir/$filenamebase.html");	
+		print SPECIFIC "FAILURES FOR PACKAGE $package<br/>\n";
+			
+		for my $severity (@severities)
 		{
-			print SPECIFIC "<br/>".uc($severity)."<br/>\n";
-			print SPECIFIC "<table border='1'>\n";
-			# $subcategory, $severity, $mmp, $phase, $recipe, $file, $line
-			my $tableheader = "<tr><th>category</th><th>configuration</th><th>mmp</th><th>phase</th><th>recipe</th><th>log snippet</th></tr>";
-			print SPECIFIC "$tableheader\n";
-			
-			for my $failure (@{$failures_by_severity->{$severity}})
+			if (defined $failures_by_severity->{$severity})
 			{
-				my $failureline = "<tr><td>$failure->{subcategory}</td>";
-				$failureline .= "<td>$failure->{config}</td>";
-				$failureline .= "<td>$failure->{mmp}</td>";
-				$failureline .= "<td>$failure->{phase}</td>";
-				$failureline .= "<td>$failure->{recipe}</td>";
-				$failureline .= "<td><a href='$filenamebase\_failures.html#failure_item_$failure->{linenum}'>item $failure->{linenum}</a></td>";
-				$failureline .= "</tr>";
-				print SPECIFIC "$failureline\n";
+				print SPECIFIC "<br/>".uc($severity)."<br/>\n";
+				print SPECIFIC "<table border='1'>\n";
+				# $subcategory, $severity, $mmp, $phase, $recipe, $file, $line
+				my $tableheader = "<tr><th>category</th><th>configuration</th><th>mmp</th><th>phase</th><th>recipe</th><th>log snippet</th></tr>";
+				print SPECIFIC "$tableheader\n";
+				
+				for my $failure (@{$failures_by_severity->{$severity}})
+				{
+					my $failureline = "<tr><td>$failure->{subcategory}</td>";
+					$failureline .= "<td>$failure->{config}</td>";
+					$failureline .= "<td>$failure->{mmp}</td>";
+					$failureline .= "<td>$failure->{phase}</td>";
+					$failureline .= "<td>$failure->{recipe}</td>";
+					$failureline .= "<td><a href='$filenamebase\_failures.html#failure_item_$failure->{linenum}'>item $failure->{linenum}</a></td>";
+					$failureline .= "</tr>";
+					print SPECIFIC "$failureline\n";
+				}
+				
+				print SPECIFIC "</table>\n";
+				print SPECIFIC "<br/>\n";
 			}
+		}
+		close(SPECIFIC);
+	}
+	
+	if ($missing)
+	{
+		my $missinglistfile = $package;
+		$missinglistfile =~ s,/,_,;
+		$missinglistfile .= "_missing.txt";
+		if (open(MISSINGLIST, "$::raptorbitsdir/$missinglistfile"))
+		{
+			my @list = ();
+			while(<MISSINGLIST>)
+			{
+				my $missingfile = $_;
+				chomp $missingfile;
+				$missingfile =~ s,^\s+,,g;
+				$missingfile =~ s,\s+$,,g;
+				push(@list, $missingfile);
+			}
+			close(MISSINGLIST);
 			
-			print SPECIFIC "</table>\n";
-			print SPECIFIC "<br/>\n";
+			$missing_by_package->{$package} = scalar(@list);
+			
+			if ($missing_by_package->{$package} > 0)
+			{
+				open(SPECIFIC, ">>$outputdir/$filenamebase.html");
+				print SPECIFIC "FAILURES FOR PACKAGE $package<br/>\n" if(!$anyfailures);
+				
+				$anyfailures = 1;
+				
+				print SPECIFIC "<br/>MISSING<br/>\n";
+				print SPECIFIC "<table border='1'>\n";
+				# $subcategory, $severity, $mmp, $phase, $recipe, $file, $line
+				my $tableheader = "<tr><th>file</th></tr>\n";
+				print SPECIFIC "$tableheader\n";
+				
+				for my $missingfile (sort {$a cmp $b} @list)
+				{
+					$missingfile = CGI::escapeHTML($missingfile);
+					print SPECIFIC "<tr><td>$missingfile</td></tr>\n";
+				}
+				
+				print SPECIFIC "</table>\n";
+				print SPECIFIC "<br/>\n";
+				
+				close(SPECIFIC);
+			}
 		}
 	}
 	
-	close(SPECIFIC);
+	return $anyfailures;
 }
 
 sub translate_detail_files_to_html

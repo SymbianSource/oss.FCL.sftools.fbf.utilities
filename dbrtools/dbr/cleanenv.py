@@ -1,4 +1,4 @@
-# Copyright (c) 2009 Symbian Foundation Ltd
+# Copyright (c) 2009-2010 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
 # under the terms of the License "Eclipse Public License v1.0"
 # which accompanies this distribution, and is available
@@ -13,46 +13,48 @@
 # Description:
 # DBR cleanenv - cleans your environment
 
-import dbrbaseline
-import dbrpatch
+
 import dbrutils
+import dbrenv
 
 import re #temporary for dealing with patches
+import os
 
-def main(args):
-    zippath = '/'
-    if(len(args)):
-      zippath = args[0] 
-    
-    dbfilename = dbrutils.defaultdb()
-    baseline = dbrbaseline.readdb(dbfilename)
-    if(len(baseline ) > 0):
-        env = dbrutils.scanenv()
-        patches = dbrpatch.loadpatches(dbrpatch.dbrutils.patchpath())
-        db = dbrpatch.createpatchedbaseline(baseline,patches)
-        results = dbrpatch.newupdatedb(db,env)
-        dbrutils.deletefiles(sorted(results['added']))
-        required = set()
-        required.update(results['removed'])
-        required.update(results['changed'])
-        required.update(results['untestable']) #untestable is going to be a problem...
-        dbrutils.extractfiles(required, zippath)
-        for name in sorted(patches):
-          dbrutils.extractfromzip(required, re.sub('.txt','.zip',name),'')        
-
-        env = dbrutils.scanenv()
-        results2 = dbrpatch.newupdatedb(db,env)          
-         
-        baseline = dbrpatch.updatebaseline(baseline, db)
-        patches = dbrpatch.updatepatches(patches, db)
-
-        dbrpatch.savepatches(patches)
-        dbrbaseline.writedb(baseline,dbfilename)        
+def run(args):  
+  zippath = '/'
+  if(len(args)):
+    zippath = args[0]
+  #This block is a cut'n'paste from checkenv...we call call that instead... 
+      
+  location = '/'
+#needs a fix to scanenv for this to work...  
+#  if(len(args)):
+#    location = args[0]
+  db = dbrenv.CreateDB(location)
+  local = dbrenv.DBRLocalEnv(location)
+  results = db.compare(local)
+  local.verify(results.unknown)
+  results2 = db.compare(local)
+  db.update(local, results2.touched)
+  #cleaning
+  dbrutils.deletefiles(sorted(results2.added))
+  required = results2.changed | results2.removed
+  dbrutils.extractfiles(required, zippath)
+  #do something about the patches here...
+  print 'Need to extract the patches in a nicer manner!!!'
+  dbrutils.extractfiles(required, os.path.join(location,dbrutils.patch_path_internal()))
+  
+  #scan again...create a new 'local'   
+  local = dbrenv.DBRLocalEnv(location)
+  local.verify(required)
+  results3 = db.compare(local)
+  db.update(local, results3.touched)
+  db.save()
+  results3.printdetail()
+  results3.printsummary()  
         
     
 
-def run(args):  
-  main(args)
 
 def help():
   print "Cleans the current environment"

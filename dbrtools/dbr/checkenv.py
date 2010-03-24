@@ -17,16 +17,19 @@ import dbrenv
 
 def run(args):
   location = '/'
-#needs a fix to scanenv for this to work...  
-#  if(len(args)):
-#    location = args[0]
+  filtertype = ''
+#using arg for filter...not for other env  
+  if(len(args)):
+    filtertype = args[0]
   db = dbrenv.CreateDB(location)
   local = dbrenv.DBRLocalEnv(location)
   results = db.compare(local)
   local.verify(results.unknown)
-  results2 = db.compare(local)hg diff -U 
-  results2.printdetail()
-  results2.printsummary()
+  results2 = db.compare(local)
+  filter = dbrenv.CreateFilter(filtertype)
+  filteredresults = filter.filter(results2)
+  filteredresults.printdetail()
+  filteredresults.printsummary()
   db.update(local, results2.touched)
   db.save()
     

@@ -222,15 +222,14 @@ def addtodb(db,new,name):
     return db
 
 def listpatches():
-    path = dbrutils.patchpath()
-    patchfiles = glob.glob('%spatch*.txt' % path)
+    patchfiles = glob.glob(os.path.join(dbrutils.patchpath(),'patch*.txt'))
     print 'Installed patches'
     for file in patchfiles:
       print '\t%s' % re.sub('.txt','',os.path.basename(file))
 
 def removepatch(patch):
     path = dbrutils.patchpath()
-    file = '%s%s%s' %(path,patch,'.txt')
+    file = os.path.join(path,'%s.txt' % patch)
     files = set()
     files.add(file)
     dbrutils.deletefiles(files)
@@ -238,7 +237,7 @@ def removepatch(patch):
 
 def loadpatches(path):
     patches = dict()
-    patchfiles = glob.glob('%spatch*.txt' % path)
+    patchfiles = glob.glob(os.path.join(path,'patch*.txt'))
 
     for file in patchfiles:
         print 'Loading patch: %s' % re.sub('.txt','',os.path.basename(file))
