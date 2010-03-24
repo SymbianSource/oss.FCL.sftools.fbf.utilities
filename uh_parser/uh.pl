@@ -268,14 +268,15 @@ for my $package (@allpackages)
 			$packageline .= "<td>$failuresbyseverity</td>";
 		}
 		$packageline .= "<td>".$missing_by_package->{$package}."</td>" if ($missing);
-		$packageline .= "</tr>";
+		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
 	}
 	else
 	{
 		my $packageline = "<tr><td>$package</td>";
 		for (@severities) { $packageline .= "<td>0</td>"; }
-		$packageline .= "</tr>";
+		$packageline .= "<td>0</td>" if ($missing);
+		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
 	}
 }
@@ -426,7 +427,7 @@ sub translate_detail_files_to_html
 	opendir(DIR, $raptorbitsdir);
 	my @failurefiles = readdir(DIR);
 	closedir(DIR);	
-	@failurefiles = grep(/\.txt$/, @failurefiles);
+	@failurefiles = grep($_ =~ /\.txt$/ && $_ !~ /_missing\.txt$/, @failurefiles);
 	
 	for my $file (@failurefiles)
 	{

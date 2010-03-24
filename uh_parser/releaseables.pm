@@ -236,7 +236,6 @@ sub on_end_whatlog
 			
 			print "Writing info file $filename\n" if (!-f$filename);
 			open(FILE, ">>$filename");
-			open(MISSING, ">>$filenamemissing");
 			
 			for my $filetype (keys %{$whatlog_info->{$bldinf}->{$config}})
 			{
@@ -247,13 +246,13 @@ sub on_end_whatlog
 					
 					if($::missing && !-f $file)
 					{
-					   print MISSING $file."\n";
-                    }
+            open(MISSING, ">>$filenamemissing");
+            print MISSING $file."\n";
+            close(MISSING);
+          }
 				}
 			}
-			close(FILE);						
-			close(MISSING) if ($::missing);
-			
+			close(FILE);
 		}
 	}
 }
