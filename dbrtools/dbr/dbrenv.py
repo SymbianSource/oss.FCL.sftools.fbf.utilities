@@ -188,7 +188,7 @@ class DBRPatchedBaselineEnv (DBRBaselineEnv):
     #load up patches...        
     if(len(self.db) > 0):
       self.baseline = self.db      
-      self.patches = dbrpatch.loadpatches(os.path.join(self.location,dbrutils.patchpath()))
+      self.patches = dbrpatch.loadpatches(os.path.join(self.location,dbrutils.patch_path_internal()))
       self.db = dbrpatch.createpatchedbaseline(self.baseline,self.patches)
 
   def save(self):
