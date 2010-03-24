@@ -228,24 +228,59 @@ sub on_end_whatlog
 			my $layer = $1;
 			my $package = $2;
 			
-			mkdir("$::basedir/releaseables/$layer");
-			mkdir("$::basedir/releaseables/$layer/$package");
+			mkdir("$::releaseablesdir/$layer");
+			mkdir("$::releaseablesdir/$layer/$package");
 			
-			my $filename = "$::basedir/releaseables/$layer/$package/info.tsv";
+			my $filename = "$::releaseablesdir/$layer/$package/info.tsv";
+			my $filenamemissing = "$::raptorbitsdir/$layer\_$package\_missing.txt" if ($::missing);
 			
 			print "Writing info file $filename\n" if (!-f$filename);
 			open(FILE, ">>$filename");
+			open(MISSING, ">>$filenamemissing");
 			
 			for my $filetype (keys %{$whatlog_info->{$bldinf}->{$config}})
 			{
 				for (sort(@{$whatlog_info->{$bldinf}->{$config}->{$filetype}}))
 				{
 					print FILE "$_\t$filetype\t$config\n";
+					my $file = $_;
+					
+					if($::missing && !-f $file)
+					{
+					   print MISSING $file."\n";
+                    }
 				}
 			}
+			close(FILE);						
+			close(MISSING) if ($::missing);
 			
-			close(FILE);
 		}
+	}
+}
+sub remove_missing_duplicates
+{
+	opendir(DIR, $::raptorbitsdir);
+    my @files = grep((-f "$::raptorbitsdir/$_" && $_ !~ /^\.\.?$/ && $_ =~ /_missing\.txt$/), readdir(DIR));
+    close(DIR);
+
+	for my $file (@files)
+	{
+		open(FILE, "+<$::raptorbitsdir/$file");	
+		print "working on $file\n";	
+	
+		# Read it
+		my @content = <FILE>;
+
+		# Sort it, and grep to remove duplicates
+		my $previous = "\n\n";
+		@content = grep {$_ ne $previous && ($previous = $_, 1) } sort @content;
+
+		# Write it
+		seek(FILE, 0, 0);
+		print FILE @content;
+		truncate(FILE,tell(FILE));
+	
+		close(FILE);
 	}
 }
 
