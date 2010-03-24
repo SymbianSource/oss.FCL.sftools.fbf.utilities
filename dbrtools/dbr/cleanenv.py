@@ -55,5 +55,5 @@ def run(args):
 def help():
   print "Cleans the current environment"
   print "Usage\n\tdbr cleanenv (<baseline_zip_path>)"
-  print "\nDefault behaviour presumes baselie zips exist at the root"
+  print "\nDefault behaviour presumes baseline zips exist at the root"
   
