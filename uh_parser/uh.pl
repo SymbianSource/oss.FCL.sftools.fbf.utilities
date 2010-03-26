@@ -374,6 +374,8 @@ sub print_package_specific_summary
 	
 	if ($missing)
 	{
+		$missing_by_package->{$package} = 0;
+		
 		my $missinglistfile = $package;
 		$missinglistfile =~ s,/,_,;
 		$missinglistfile .= "_missing.txt";
