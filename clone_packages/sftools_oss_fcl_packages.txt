@@ -7,7 +7,7 @@ http://developer.symbian.org/oss/FCL/sftools/depl/doctools
 http://developer.symbian.org/oss/FCL/sftools/dev/build
 http://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/buildlayout34
 http://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/eclipse
-http://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/wrttools/
+http://developer.symbian.org/oss/FCL/sftools/dev/eclipseenv/wrttools
 http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/compilationtoolchains
 http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/cpptoolsplat
 http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/dist
@@ -15,3 +15,10 @@ http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/javatoolsplat
 http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/makeng
 http://developer.symbian.org/oss/FCL/sftools/dev/hostenv/pythontoolsplat
 http://developer.symbian.org/oss/FCL/sftools/dev/ide/carbidecpp
+http://developer.symbian.org/oss/FCL/sftools/fbf/bootstrap
+http://developer.symbian.org/oss/FCL/sftools/fbf/configs/default
+http://developer.symbian.org/oss/FCL/sftools/fbf/configs/pkgbuild
+http://developer.symbian.org/oss/FCL/sftools/fbf/hudson
+http://developer.symbian.org/oss/FCL/sftools/fbf/projects/packages
+http://developer.symbian.org/oss/FCL/sftools/fbf/projects/platforms
+http://developer.symbian.org/oss/FCL/sftools/fbf/utilities

@@ -17,3 +17,11 @@ http://developer.symbian.org/oss/MCL/sftools/dev/hostenv/makeng
 http://developer.symbian.org/oss/MCL/sftools/dev/hostenv/pythontoolsplat
 http://developer.symbian.org/oss/MCL/sftools/dev/ide/carbidecpp
 http://developer.symbian.org/oss/MCL/sftools/dev/ide/carbidecppplugins
+http://developer.symbian.org/oss/RCL/sftools/dev/ide/carbidecpp
+http://developer.symbian.org/oss/RCL/sftools/fbf/bootstrap
+http://developer.symbian.org/oss/RCL/sftools/fbf/configs/default
+http://developer.symbian.org/oss/RCL/sftools/fbf/configs/pkgbuild
+http://developer.symbian.org/oss/RCL/sftools/fbf/hudson
+http://developer.symbian.org/oss/RCL/sftools/fbf/projects/packages
+http://developer.symbian.org/oss/RCL/sftools/fbf/projects/platforms
+http://developer.symbian.org/oss/RCL/sftools/fbf/utilities

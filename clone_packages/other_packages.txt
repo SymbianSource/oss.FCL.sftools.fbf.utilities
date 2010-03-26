@@ -1,6 +1,5 @@
 https://developer.symbian.org/oss/API_REF/SHAI/
 https://developer.symbian.org/oss/FCL/examples/app/NPR/
-https://developer.symbian.org/oss/MCL/utilities
 https://developer.symbian.org/sfl/API_REF/Public_API/epoc32/
 https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/AgileBrowser
 https://developer.symbian.org/oss/FCL/interim/auxiliary_tools/route_generator

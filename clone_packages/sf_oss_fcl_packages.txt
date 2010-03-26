@@ -40,8 +40,12 @@ https://developer.symbian.org/oss/FCL/sf/app/videoplayer
 https://developer.symbian.org/oss/FCL/sf/app/videotelephony
 https://developer.symbian.org/oss/FCL/sf/app/voicerec
 https://developer.symbian.org/oss/FCL/sf/app/webuis
+https://developer.symbian.org/oss/FCL/sf/incubator/freedomfighters
+httsp://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
+https://developer.symbian.org/oss/FCL/sf/incubator/python
 https://developer.symbian.org/oss/FCL/sf/incubator/socialmobilefw
+https://developer.symbian.org/oss/FCL/sf/incubator/wildducks
 https://developer.symbian.org/oss/FCL/sf/mw/accesssec
 https://developer.symbian.org/oss/FCL/sf/mw/appinstall
 https://developer.symbian.org/oss/FCL/sf/mw/appsupport
