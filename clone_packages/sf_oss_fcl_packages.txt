@@ -43,6 +43,7 @@ https://developer.symbian.org/oss/FCL/sf/app/webuis
 https://developer.symbian.org/oss/FCL/sf/incubator/freedomfighters
 httsp://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
+https://developer.symbian.org/oss/FCL/sf/incubator/multimediaadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/python
 https://developer.symbian.org/oss/FCL/sf/incubator/socialmobilefw
 https://developer.symbian.org/oss/FCL/sf/incubator/wildducks
@@ -79,6 +80,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/opensrv
 https://developer.symbian.org/oss/FCL/sf/mw/phonesrv
 https://developer.symbian.org/oss/FCL/sf/mw/platformtools
 https://developer.symbian.org/oss/FCL/sf/mw/qt
+https://developer.symbian.org/oss/FCL/sf/mw/qtextensions
 https://developer.symbian.org/oss/FCL/sf/mw/remoteconn
 https://developer.symbian.org/oss/FCL/sf/mw/remotemgmt
 https://developer.symbian.org/oss/FCL/sf/mw/remotestorage
