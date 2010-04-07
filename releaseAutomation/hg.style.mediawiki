@@ -1,0 +1,10 @@
+#header='==== ${sf.package.short.name} ([${sf.package.URL} ${sf.package.path}]) ====\n\n{|\n'
+#header='{|\n'
+#footer='|}\n\n'
+
+changeset = '|[${sf.package.URL}/rev/{node|short} {node|short}]\n|{tags}{desc|firstline|strip}\n|-\n'
+
+start_tags = "'''"
+tag = '{tag} '
+last_tag = "{tag}''' "
+
