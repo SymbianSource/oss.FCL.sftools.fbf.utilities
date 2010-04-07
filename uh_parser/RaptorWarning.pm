@@ -44,6 +44,7 @@ my $characters = '';
 my $CATEGORY_RAPTORWARNING = 'raptor_warning';
 my $CATEGORY_RAPTORWARNING_MISSINGFLAGABIV2 = 'missing_enable_abiv2_mode';
 my $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND = 'while_searching_for_deffile_file_not_found';
+my $CATEGORY_RAPTORWARNING_EXPORTUNFROZENPRESENT = 'exportunfrozen_present';
 
 sub process
 {
@@ -65,6 +66,12 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORWARNING_WHILESEARCHINGFORDEFFILEFILENOTFOUND;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,EXPORTUNFROZEN present in .*,)
+	{
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
+		my $subcategory = $CATEGORY_RAPTORWARNING_EXPORTUNFROZENPRESENT;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	else # log everything by default
