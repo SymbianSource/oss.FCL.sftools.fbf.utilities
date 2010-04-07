@@ -169,30 +169,14 @@ while(<CSV>)
 		$failure->{subcategory} = 'uncategorized' if (!$failure->{subcategory});
 		$failure->{severity} = 'unknown' if (!$failure->{severity});
 		$failure->{mmp} = '-' if (!$failure->{mmp});
+		$failure->{phase} = '-' if (!$failure->{phase});
+		$failure->{recipe} = '-' if (!$failure->{recipe});
 		
 		# populate severities dynamically.
 		#$severities->{$failure->{severity}} = 1;
 		
 		# put failure items into their category container
-		if ($failure->{category} =~ /^raptor_(error|warning|unreciped)$/i)
-		{
-			$general_failures_num_by_severity->{$failure->{category}} = {} if (!defined $general_failures_num_by_severity->{$failure->{category}});
-			my $general_failure = $general_failures_num_by_severity->{$failure->{category}};
-			
-			if (!defined $general_failure->{$failure->{severity}})
-			{
-				$general_failure->{$failure->{severity}} = 1;
-			}
-			else
-			{
-				$general_failure->{$failure->{severity}} ++;
-			}
-			
-			$general_failures_by_category_severity->{$failure->{category}} = {} if (!defined $general_failures_by_category_severity->{$failure->{category}});
-			$general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}} = [] if (!defined $general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}});
-			push(@{$general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}}}, $failure);
-		}
-		elsif ($failure->{category} =~ /^recipe_failure$/i)
+		if ($failure->{category} =~ /^recipe_failure$/i || $failure->{category} =~ /^raptor_(error|warning|unreciped)$/i && $failure_package)
 		{
 			$recipe_failures_num_by_severity->{$failure_package} = {} if (!defined $recipe_failures_num_by_severity->{$failure_package});
 			my $package_failure = $recipe_failures_num_by_severity->{$failure_package};
@@ -209,6 +193,24 @@ while(<CSV>)
 			$recipe_failures_by_package_severity->{$failure_package} = {} if (!defined $recipe_failures_by_package_severity->{$failure_package});
 			$recipe_failures_by_package_severity->{$failure_package}->{$failure->{severity}} = [] if (!defined $recipe_failures_by_package_severity->{$failure_package}->{$failure->{severity}});
 			push(@{$recipe_failures_by_package_severity->{$failure_package}->{$failure->{severity}}}, $failure);
+		}
+		elsif ($failure->{category} =~ /^raptor_(error|warning|unreciped)$/i)
+		{
+			$general_failures_num_by_severity->{$failure->{category}} = {} if (!defined $general_failures_num_by_severity->{$failure->{category}});
+			my $general_failure = $general_failures_num_by_severity->{$failure->{category}};
+			
+			if (!defined $general_failure->{$failure->{severity}})
+			{
+				$general_failure->{$failure->{severity}} = 1;
+			}
+			else
+			{
+				$general_failure->{$failure->{severity}} ++;
+			}
+			
+			$general_failures_by_category_severity->{$failure->{category}} = {} if (!defined $general_failures_by_category_severity->{$failure->{category}});
+			$general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}} = [] if (!defined $general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}});
+			push(@{$general_failures_by_category_severity->{$failure->{category}}->{$failure->{severity}}}, $failure);
 		}
 	}
 	else

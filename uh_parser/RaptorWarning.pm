@@ -37,6 +37,8 @@ $buildlog_warning_status->{on_chars} = 'RaptorWarning::on_chars_buildlog_warning
 
 my $filename = '';
 
+my $raptor_warning_info = {};
+
 my $characters = '';
 
 my $CATEGORY_RAPTORWARNING = 'raptor_warning';
@@ -76,18 +78,20 @@ sub process
 sub on_start_buildlog
 {
 	RaptorCommon::init();
-	
-	$filename = "$::raptorbitsdir/raptor_warning.txt";
-	if (!-f$filename)
-	{
-		print "Writing warnings file $filename\n";
-		open(FILE, ">$filename");
-		close(FILE);
-	}
 }
+
 sub on_start_buildlog_warning
 {
-	open(FILE, ">>$filename");
+	my ($el) = @_;
+	
+	$raptor_warning_info = {};
+	
+	my $attributes = $el->{Attributes};
+	for (keys %{$attributes})
+	{
+		$raptor_warning_info->{$attributes->{$_}->{'LocalName'}} = $attributes->{$_}->{'Value'};
+		#print "$_ -> $attributes->{$_}->{'Value'}\n";
+	}
 }
 
 sub on_chars_buildlog_warning
@@ -105,12 +109,51 @@ sub on_end_buildlog_warning
 {
 	#print "on_end_buildlog_warning\n";
 	
+	my $package = '';
+	if ($raptor_warning_info->{bldinf})
+	{
+		$::allbldinfs->{$raptor_warning_info->{bldinf}} = 1;
+		
+		# normalize bldinf path
+		$raptor_warning_info->{bldinf} = lc($raptor_warning_info->{bldinf});
+		$raptor_warning_info->{bldinf} =~ s,^[A-Za-z]:,,;
+		$raptor_warning_info->{bldinf} =~ s,[\\],/,g;
+		
+		if ($raptor_warning_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[^/]*),)
+		{
+			$package = $1;
+			$package =~ s,/,_,;
+		}
+		else
+		{
+			print "WARNING: can't understand bldinf attribute of raptor warning: $raptor_warning_info->{bldinf}. Won't associate to package.\n";
+		}
+	}
+	
 	$characters =~ s,^[\r\n]*,,;
 	$characters =~ s,[\r\n]*$,,;
 	
 	if ($characters =~ m,[^\s^\r^\n],)
 	{
-		my $dumped = process($characters, $::current_log_file, '', '', '', '', "raptor_warning.txt");
+		my $bldinf_field = '';
+		if ($package)
+		{
+			$filename = "$::raptorbitsdir/$package.txt";
+			$bldinf_field = $raptor_warning_info->{bldinf};
+		}
+		else
+		{
+			$filename = "$::raptorbitsdir/raptor_warning.txt";
+		}
+		
+		if (!-f$filename)
+		{
+			print "Writing file $filename\n";
+			open(FILE, ">$filename");
+			close(FILE);
+		}
+		
+		my $dumped = process($characters, $::current_log_file, $bldinf_field, '', '', '', "$package.txt");
 		
 		if ($dumped)
 		{
