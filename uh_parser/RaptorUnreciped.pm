@@ -139,14 +139,6 @@ sub process
 sub on_start_buildlog
 {
 	RaptorCommon::init();
-	
-	$filename = "$::raptorbitsdir/raptor_unreciped.txt";
-	if (!-f$filename)
-	{
-		print "Writing unreciped file $filename\n";
-		open(FILE, ">$filename");
-		close(FILE);
-	}
 }
 
 sub on_chars_buildlog
@@ -180,9 +172,45 @@ sub process_characters
 	my @lines = split(/[\r\n]/, $characters);
 	for my $line (@lines)
 	{
+		my $package = '';
+		my $guessed_bldinf = '';
+		# if bldinf attribute is not available then heuristically attempt to determine the package
+		if ($line =~ m,.*?(([/\\]sf)?[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
+		{
+			$guessed_bldinf = "$1... (guessed)";
+		}
+		
+		if ($guessed_bldinf)
+		{
+			$::allbldinfs->{$guessed_bldinf} = 1;
+			
+			# normalize bldinf path
+			$guessed_bldinf = lc($guessed_bldinf);
+			$guessed_bldinf =~ s,^[A-Za-z]:,,;
+			$guessed_bldinf =~ s,[\\],/,g;
+			
+			if ($guessed_bldinf =~ m,/((os|mw|app|tools|ostools|adaptation)/[^/]*),)
+			{
+				$package = $1;
+				$package =~ s,/,_,;
+			}
+		}
+			
 		if ($line =~ m,[^\s^\r^\n],)
 		{
-			my $dumped = process($line, $::current_log_file, '', '', '', '', "raptor_unreciped.txt");
+			$filename = "$::raptorbitsdir/raptor_unreciped.txt";
+			$filename = "$::raptorbitsdir/$package.txt" if ($package);
+			my $filenamewnopath = "raptor_unreciped.txt";
+			$filenamewnopath = "$package.txt" if ($package);
+			
+			if (!-f$filename)
+			{
+				print "Writing file $filename\n";
+				open(FILE, ">$filename");
+				close(FILE);
+			}
+		
+			my $dumped = process($line, $::current_log_file, $guessed_bldinf, '', '', '', $filenamewnopath);
 			
 			if ($dumped)
 			{

@@ -151,6 +151,8 @@ sub on_end_buildlog_warning
 	{
 		$filename = "$::raptorbitsdir/raptor_warning.txt";
 		$filename = "$::raptorbitsdir/$package.txt" if ($package);
+		my $filenamewnopath = "raptor_warning.txt";
+		$filenamewnopath = "$package.txt" if ($package);
 		
 		if (!-f$filename)
 		{
@@ -159,7 +161,7 @@ sub on_end_buildlog_warning
 			close(FILE);
 		}
 		
-		my $dumped = process($characters, $::current_log_file, $raptor_warning_info->{bldinf}, '', '', '', "$package.txt");
+		my $dumped = process($characters, $::current_log_file, $raptor_warning_info->{bldinf}, '', '', '', $filenamewnopath);
 		
 		if ($dumped)
 		{

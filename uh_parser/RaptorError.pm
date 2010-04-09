@@ -212,6 +212,8 @@ sub on_end_buildlog_error
 	{
 		$filename = "$::raptorbitsdir/raptor_error.txt";
 		$filename = "$::raptorbitsdir/$package.txt" if ($package);
+		my $filenamewnopath = "raptor_error.txt";
+		$filenamewnopath = "$package.txt" if ($package);
 		
 		if (!-f$filename)
 		{
@@ -220,7 +222,7 @@ sub on_end_buildlog_error
 			close(FILE);
 		}
 		
-		my $dumped = process($characters, $::current_log_file, $raptor_error_info->{bldinf}, '', '', '', "$package.txt");
+		my $dumped = process($characters, $::current_log_file, $raptor_error_info->{bldinf}, '', '', '', $filenamewnopath);
 		
 		if ($dumped)
 		{
