@@ -50,7 +50,7 @@ my $CATEGORY_RAPTORERROR_TOOLDIDNOTRETURNVERSION = 'tool_didnot_return_version';
 my $CATEGORY_RAPTORERROR_UNKNOWNBUILDCONFIG = 'unknown_build_config';
 my $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN = 'no_build_configs_given';
 my $CATEGORY_RAPTORERROR_COULDNOTEXPORT = 'missing_source_file';
-my $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE = 'missing_bld_inf_file';
+my $CATEGORY_RAPTORERROR_CPPEXENOSUCHFILEORDIRECTORY = 'cpp_exe_no_such_file_or_directory';
 my $CATEGORY_RAPTORERROR_FAILEDTOPARSEXMLFILE = 'failed_to_parse_xml_file';
 
 sub process
@@ -117,13 +117,13 @@ sub process
 		$subcategory = $CATEGORY_RAPTORERROR_COULDNOTEXPORT;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,win32/mingw/bin/cpp\.exe: .*bld\.inf:.*bld\.inf: No such file or directory,)
+	elsif ($text =~ m,win32/mingw/bin/cpp\.exe:.*:.*: No such file or directory,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MAJOR;
-		$subcategory = $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE;
+		$subcategory = $CATEGORY_RAPTORERROR_CPPEXENOSUCHFILEORDIRECTORY;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^Preprocessor exception: ''Errors in .*bld\.inf'' : in command,)
+	elsif ($text =~ m,^Preprocessor exception: ''Errors in .*'' : in command,)
 	{
 		# don't dump
 		$dumped = 0;
