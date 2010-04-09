@@ -43,11 +43,9 @@ my $store_chars = 1;
 
 my $CATEGORY_RAPTORUNRECIPED = 'raptor_unreciped';
 my $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET = 'no_rule_to_make_target';
-my $CATEGORY_RAPTORUNRECIPED_TARGETNOTREMADEFORERRORS = 'target_not_remade_for_errors';
 my $CATEGORY_RAPTORUNRECIPED_IGNORINGOLDCOMMANDSFORTARGET = 'ignoring_old_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET = 'overriding_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS = 'make_target_not_remade_because_of_errors';
-my $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1 = 'make_error_1';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY = 'make_no_rule_to_make_target_needed_by';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET = 'make_no_rule_to_make_target';
 
@@ -67,12 +65,6 @@ sub process
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,make\.exe: Target .* not remade because of errors,)
-	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
-		my $subcategory = $CATEGORY_RAPTORUNRECIPED_TARGETNOTREMADEFORERRORS;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
-	}
 	elsif ($text =~ m,: warning: ignoring old commands for target,)
 	{
 		# don't dump
@@ -82,18 +74,6 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
-	}
-	elsif ($text =~ m,^make(\.exe)?: Target .* not remade because of errors\.,)
-	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
-		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
-	}
-	elsif ($text =~ m,^make(\.exe)?: \*\*\* .* Error 1,)
-	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
-		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_ERROR1;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .*\ needed by .*,)
@@ -107,6 +87,16 @@ sub process
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* .* Error \d,)
+	{
+		# don't dump
+		$dumped = 0;
+	}
+	elsif ($text =~ m,^make(\.exe)?: Target .* not remade because of errors,)
+	{
+		# don't dump
+		$dumped = 0;
 	}
 	elsif ($text =~ m,^make(\.exe)?: Nothing to be done for .*,)
 	{
@@ -129,6 +119,11 @@ sub process
 		$dumped = 0;
 	}
 	elsif ($text =~ m,win32/cygwin/bin/chmod\.exe a\+rw,)
+	{
+		# don't dump
+		$dumped = 0;
+	}
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* Waiting for unfinished jobs\.\.\.\.,)
 	{
 		# don't dump
 		$dumped = 0;

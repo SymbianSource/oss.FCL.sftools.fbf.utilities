@@ -177,12 +177,22 @@ sub on_end_buildlog_error
 {
 	#print "on_end_buildlog_error\n";
 	
+	$characters =~ s,^[\r\n]*,,;
+	$characters =~ s,[\r\n]*$,,;
+	
 	my $package = '';
+	# if bldinf attribute is not available then heuristically attempt to determine the package
+	if (!$raptor_error_info->{bldinf} &&
+		$characters =~ m,.*?(([/\\]sf)?[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
+	{
+		$raptor_error_info->{bldinf} = "$1... (guessed)";
+	}
+	
 	if ($raptor_error_info->{bldinf})
 	{
-    $::allbldinfs->{$raptor_error_info->{bldinf}} = 1;
+		$::allbldinfs->{$raptor_error_info->{bldinf}} = 1;
     
-    # normalize bldinf path
+		# normalize bldinf path
 		$raptor_error_info->{bldinf} = lc($raptor_error_info->{bldinf});
 		$raptor_error_info->{bldinf} =~ s,^[A-Za-z]:,,;
 		$raptor_error_info->{bldinf} =~ s,[\\],/,g;
@@ -196,23 +206,12 @@ sub on_end_buildlog_error
 		{
 			print "WARNING: can't understand bldinf attribute of raptor error: $raptor_error_info->{bldinf}. Won't associate to package.\n";
 		}
-  }
-	
-	$characters =~ s,^[\r\n]*,,;
-	$characters =~ s,[\r\n]*$,,;
+	}
 	
 	if ($characters =~ m,[^\s^\r^\n],)
 	{
-    my $bldinf_field = '';
-    if ($package)
-		{
-			$filename = "$::raptorbitsdir/$package.txt";
-			$bldinf_field = $raptor_error_info->{bldinf};
-		}
-		else
-		{
-		  $filename = "$::raptorbitsdir/raptor_error.txt";
-		}
+		$filename = "$::raptorbitsdir/raptor_error.txt";
+		$filename = "$::raptorbitsdir/$package.txt" if ($package);
 		
 		if (!-f$filename)
 		{
@@ -221,7 +220,7 @@ sub on_end_buildlog_error
 			close(FILE);
 		}
 		
-		my $dumped = process($characters, $::current_log_file, $bldinf_field, '', '', '', "$package.txt");
+		my $dumped = process($characters, $::current_log_file, $raptor_error_info->{bldinf}, '', '', '', "$package.txt");
 		
 		if ($dumped)
 		{

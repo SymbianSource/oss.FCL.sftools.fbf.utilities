@@ -116,7 +116,17 @@ sub on_end_buildlog_warning
 {
 	#print "on_end_buildlog_warning\n";
 	
+	$characters =~ s,^[\r\n]*,,;
+	$characters =~ s,[\r\n]*$,,;
+	
 	my $package = '';
+	# if bldinf attribute is not available then heuristically attempt to determine the package
+	if (!$raptor_warning_info->{bldinf} &&
+		$characters =~ m,.*?(([/\\]sf)?[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
+	{
+		$raptor_warning_info->{bldinf} = "$1... (guessed)";
+	}
+	
 	if ($raptor_warning_info->{bldinf})
 	{
 		$::allbldinfs->{$raptor_warning_info->{bldinf}} = 1;
@@ -137,21 +147,10 @@ sub on_end_buildlog_warning
 		}
 	}
 	
-	$characters =~ s,^[\r\n]*,,;
-	$characters =~ s,[\r\n]*$,,;
-	
 	if ($characters =~ m,[^\s^\r^\n],)
 	{
-		my $bldinf_field = '';
-		if ($package)
-		{
-			$filename = "$::raptorbitsdir/$package.txt";
-			$bldinf_field = $raptor_warning_info->{bldinf};
-		}
-		else
-		{
-			$filename = "$::raptorbitsdir/raptor_warning.txt";
-		}
+		$filename = "$::raptorbitsdir/raptor_warning.txt";
+		$filename = "$::raptorbitsdir/$package.txt" if ($package);
 		
 		if (!-f$filename)
 		{
@@ -160,7 +159,7 @@ sub on_end_buildlog_warning
 			close(FILE);
 		}
 		
-		my $dumped = process($characters, $::current_log_file, $bldinf_field, '', '', '', "$package.txt");
+		my $dumped = process($characters, $::current_log_file, $raptor_warning_info->{bldinf}, '', '', '', "$package.txt");
 		
 		if ($dumped)
 		{
