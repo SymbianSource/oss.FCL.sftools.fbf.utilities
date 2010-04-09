@@ -51,6 +51,7 @@ my $CATEGORY_RAPTORERROR_UNKNOWNBUILDCONFIG = 'unknown_build_config';
 my $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN = 'no_build_configs_given';
 my $CATEGORY_RAPTORERROR_COULDNOTEXPORT = 'missing_source_file';
 my $CATEGORY_RAPTORERROR_MISSINGBLDINFFILE = 'missing_bld_inf_file';
+my $CATEGORY_RAPTORERROR_FAILEDTOPARSEXMLFILE = 'failed_to_parse_xml_file';
 
 sub process
 {
@@ -102,6 +103,12 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,Failed to parse XML file,)
+	{
+		$severity = $RaptorCommon::SEVERITY_CRITICAL;
+		$subcategory = $CATEGORY_RAPTORERROR_FAILEDTOPARSEXMLFILE;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Could not export .* to .* : \[Errno 2\] No such file or directory: .*,)
