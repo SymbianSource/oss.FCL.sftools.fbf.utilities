@@ -52,6 +52,7 @@ my $CATEGORY_RAPTORERROR_NOBUILDCONFIGSGIVEN = 'no_build_configs_given';
 my $CATEGORY_RAPTORERROR_COULDNOTEXPORT = 'missing_source_file';
 my $CATEGORY_RAPTORERROR_CPPEXENOSUCHFILEORDIRECTORY = 'cpp_exe_no_such_file_or_directory';
 my $CATEGORY_RAPTORERROR_FAILEDTOPARSEXMLFILE = 'failed_to_parse_xml_file';
+my $CATEGORY_RAPTORERROR_VARIANTFILEDOESNOTEXIST = 'variant_file_does_not_exist';
 
 sub process
 {
@@ -109,6 +110,12 @@ sub process
 	{
 		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_FAILEDTOPARSEXMLFILE;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,Variant file .* does not exist,)
+	{
+		$severity = $RaptorCommon::SEVERITY_CRITICAL;
+		$subcategory = $CATEGORY_RAPTORERROR_VARIANTFILEDOESNOTEXIST;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Could not export .* to .* : \[Errno 2\] No such file or directory: .*,)
