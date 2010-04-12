@@ -42,7 +42,6 @@ my $characters = '';
 my $store_chars = 1;
 
 my $CATEGORY_RAPTORUNRECIPED = 'raptor_unreciped';
-my $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET = 'no_rule_to_make_target';
 my $CATEGORY_RAPTORUNRECIPED_IGNORINGOLDCOMMANDSFORTARGET = 'ignoring_old_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET = 'overriding_commands_for_target';
 my $CATEGORY_RAPTORUNRECIPED_MAKE_TARGETNOTREMADEBECAUSEOFERRORS = 'make_target_not_remade_because_of_errors';
@@ -59,13 +58,7 @@ sub process
 	my $severity = '';
 	my $subcategory = '';
 	
-	if ($text =~ m,make\.exe: \*\*\* No rule to make target,)
-	{
-		$severity = $RaptorCommon::SEVERITY_MAJOR;
-		my $subcategory = $CATEGORY_RAPTORUNRECIPED_NORULETOMAKETARGET;
-		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
-	}
-	elsif ($text =~ m,: warning: ignoring old commands for target,)
+	if ($text =~ m,: warning: ignoring old commands for target,)
 	{
 		# don't dump
 		$dumped = 0;
@@ -76,7 +69,7 @@ sub process
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_OVERRIDINGCOMMANDSFORTARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
-	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .*\ needed by .*,)
+	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .* needed by .*,)
 	{
 		$severity = $RaptorCommon::SEVERITY_MINOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY;
