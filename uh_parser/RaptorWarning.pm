@@ -122,7 +122,7 @@ sub on_end_buildlog_warning
 	my $package = '';
 	# if bldinf attribute is not available then heuristically attempt to determine the package
 	if (!$raptor_warning_info->{bldinf} &&
-		$characters =~ m,.*?(([/\\]sf)?[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
+		$characters =~ m,.*?([/\\]sf[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
 	{
 		$raptor_warning_info->{bldinf} = "$1... (guessed)";
 	}

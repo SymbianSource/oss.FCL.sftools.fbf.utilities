@@ -175,7 +175,7 @@ sub process_characters
 		my $package = '';
 		my $guessed_bldinf = '';
 		# if bldinf attribute is not available then heuristically attempt to determine the package
-		if ($line =~ m,.*?(([/\\]sf)?[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
+		if ($line =~ m,.*?([/\\]sf[/\\](os|mw|app|tools|ostools|adaptation)[/\\][^/^\\]*[/\\]),s)
 		{
 			$guessed_bldinf = "$1... (guessed)";
 		}
