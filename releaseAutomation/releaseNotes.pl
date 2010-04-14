@@ -1,16 +1,62 @@
 #!perl -w
 
+# Copyright (c) 2009 Symbian Foundation Ltd
+# This component and the accompanying materials are made available
+# under the terms of the License "Eclipse Public License v1.0"
+# which accompanies this distribution, and is available
+# at the URL "http://www.eclipse.org/legal/epl-v10.html".
+#
+# Initial Contributors:
+# Symbian Foundation Ltd - initial contribution.
+# 
+# Contributors:
+#
+# Description:
+# Automates the creation of parts of the PDK Release Notes
+
 use strict;
 
 use FindBin;
 use Text::CSV;
+use Getopt::Long;
 
-my $sourcesCSV = shift or die "First arg must be sources.csv to process\n";
+my $sourcesCSV;		# sources.csv file for this build
+my $previousPdkLabel;	# hg tag to compare against
+
+GetOptions((
+	'sources=s' => \$sourcesCSV,
+	'baseline=s' => \$previousPdkLabel,
+));
+
+if (!$sourcesCSV ||!$previousPdkLabel)
+{
+	warn "Necessary argument(s) not supplied\n\n";
+	usage();
+	exit (1);
+}
+
+if (@ARGV)
+{
+	warn "Don't know what to do with these arguments: @ARGV\n\n";
+	usage();
+	exit (1);
+}
 
 # Load CSV
 open my $csvText, "<", $sourcesCSV or die "Unable to open sources.csv from $sourcesCSV";
 my $csv = Text::CSV->new();
 my @keys;
+
+print <<"EOT";
+== FCLs ==
+
+This PDK was built using FCL versions of the packages listed below: for each one we list allthe changes in the FCL which are not in the MCL.
+
+The previous PDK also involved some FCLs, so we indicate which FCLs are new to this build.
+
+Cloning the source from Mercurial is made more awkward by using a mixture of MCLs and FCLs, but we provide a tool to help - see [[How to build the Platform]] for details.
+
+EOT
 
 while (my $line = <$csvText>)
 {
@@ -42,6 +88,10 @@ while (my $line = <$csvText>)
 	my $packageMCL = $package{source};
 	next unless $packageMCL =~ s{(oss|sfl)/FCL/}{$1/MCL/};
 
+	# See if previous PDK was built from MCL
+	my $previousHash = `hg id -i -r $previousPdkLabel $packageMCL 2> nul:`;
+	my $newMarker = $previousHash ? "'''NEW''' " : "";
+
 	# Work out package short name (leaf of path)
 	my ($packageShortName) = $packageMCL =~ m{([^\\/]*)[\\/]?$};
 	# Work out package path (local path without preceeding /)
@@ -49,10 +99,10 @@ while (my $line = <$csvText>)
 	$packagePath =~ s{^[\\/]}{};
 
 	# Heading for this package
-	print "==== $packageShortName ([$package{source}/ $packagePath]) ====\n\n";
+	print "==== $packageShortName ([$package{source}/ $packagePath]) $newMarker====\n\n";
 
 	# List all the changesets needed from the FCL
-	my $fclOnly = `hg -R $package{dst} out $packageMCL -r $package{pattern} -n -q -M --style $FindBin::Bin/hg.style.mediawiki`;
+	my $fclOnly = `hg -R $package{dst} out $packageMCL -r $package{pattern} -n -q --style $FindBin::Bin/hg.style.mediawiki`;
 	if ($fclOnly)
 	{
 		# Substitute in the source URL
@@ -70,3 +120,12 @@ while (my $line = <$csvText>)
 	}
 }
 
+sub usage
+{
+	warn <<EOT;
+Generates release notes content
+
+releaseNotes.pl -sources=<SOURCES.CSV> -baseline=<PDK RELEASE LABEL>
+
+EOT
+}
