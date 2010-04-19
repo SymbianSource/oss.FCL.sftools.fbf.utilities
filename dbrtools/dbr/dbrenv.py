@@ -21,6 +21,8 @@ import dbrutils
 import dbrbaseline
 import dbrpatch
 
+import dbrresults
+import dbrfilter
 
 def CreateDB(location): #virtual constructor
   print location
@@ -42,12 +44,7 @@ def CreateDB(location): #virtual constructor
 
   return DBREnv(location)
 
-#Start simple with the filtering...
-def CreateFilter(arg):
-  if(os.path.isfile(arg)):
-    return DBRFileFilter(arg)
-  return DBRFilter()     
-
+#Basic DBREnv definition
 class DBREnv:
   db = dict()
   location = ''
@@ -91,11 +88,12 @@ class DBREnv:
     touched = touched - unknown     
     touched = touched - changed     
           
-    results = DBRCompResults(added, removed, touched, changed, unknown)   
+    results = dbrresults.DBRResults(added, removed, touched, changed, unknown)   
     return results
     
   def verify(self, files):
     print 'this is a pure virtual...'
+
   def save(self):
     print 'this is a pure virtual...'
 
@@ -142,6 +140,7 @@ class DBRLocalEnv (DBREnv):
       for file in files:
         self.db[file]['md5'] = md5s[file]['md5']
 
+#Creating a DBREnv from scratch...
 class DBRNewLocalEnv (DBRLocalEnv):
   def __init__(self, location):
     DBRLocalEnv.__init__(self, location)
@@ -156,8 +155,6 @@ class DBRNewLocalEnv (DBRLocalEnv):
     print 'Saving %s' % filename 
     dbrbaseline.writedb(self.db,filename)
 
-        
-
     
 #zipped files, contains MD5s.   
 class DBRZippedEnv (DBREnv):
@@ -165,6 +162,7 @@ class DBRZippedEnv (DBREnv):
     DBREnv.__init__(self, location)
     #load up zip MD5 and stuff
     self.db = dbrutils.getzippedDB(self.location)        
+
       
 #Database, but no filesystem access
 class DBRBaselineEnv (DBREnv):
@@ -179,6 +177,7 @@ class DBRBaselineEnv (DBREnv):
     filename = os.path.join(self.location,dbrutils.defaultdb())
     print 'Saving %s' % filename 
     dbrbaseline.writedb(self.db,filename)
+
 
 class DBRPatchedBaselineEnv (DBRBaselineEnv):
   patches = []
@@ -202,58 +201,3 @@ class DBRPatchedBaselineEnv (DBRBaselineEnv):
 class CBREnv (DBREnv): # placeholder for handling CBR components...
   def __init__(self, location):
     DBREnv.__init__(self, location)
-
-
-#comparison results...
-class DBRCompResults:
-  added = set()
-  removed = set()
-  touched = set()
-  changed = set()
-  unknown = set()
-  def __init__(self, added, removed, touched, changed, unknown):
-    #Should probably assert that these are disjoint.
-    self.added = added
-    self.removed = removed
-    self.touched = touched
-    self.changed = changed
-    self.unknown = unknown
-     
-  def printdetail(self):
-    for file in sorted(self.added):
-      print 'added:', file
-    for file in sorted(self.removed):
-      print 'removed:', file
-    for file in sorted(self.changed):
-      print 'changed:', file
-    for file in sorted(self.unknown):
-      print 'unknown:', file
-    
-  def printsummary(self):
-    if(len(self.added | self.removed | self.changed | self.unknown)):
-      print 'status: dirty'
-    else:
-      print 'status: clean' 
-
-
-
-class DBRFilter:
-  info = ''
-  def __init__(self):
-    self.info = 'null filter'
-  def filter(self, results):
-    return results
-
-class DBRFileFilter (DBRFilter):
-  filename = ''
-  def __init__(self, filename):
-    DBRFilter.__init__(self)
-    self.info = 'file filter'
-    self.filename = filename
-    self.files = dbrutils.readfilenamesfromfile(self.filename)
-#    for file in sorted(self.files):
-#      print file
-     
-  def filter(self, results):
-    return DBRCompResults(results.added & self.files, results.removed & self.files, results.touched & self.files, results.changed & self.files, results.unknown & self.files)
-    
