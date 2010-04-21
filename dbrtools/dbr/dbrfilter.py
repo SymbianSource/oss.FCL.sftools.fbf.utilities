@@ -147,20 +147,23 @@ class DBRComplexFilter (DBRFilter):
     self.exc.add(filter)
 
   def include(self, results):
-    res = dbrresults.DBRResults(set(),set(),set(),set(),set())
     if self.inc:
+      res = dbrresults.DBRResults(set(),set(),set(),set(),set())
       for filter in self.inc:  
-        res |= filter.include(results) 
+        res |= filter.include(results)
+    else:
+      res = results     
     return res
     
   def exclude(self, results):
-    res = results
+    res = dbrresults.DBRResults(set(),set(),set(),set(),set())
     if self.exc:
+      res = results
       for filter in self.exc:
         res &= filter.exclude(results)
     return res
   
   def filter(self, results):
-    return self.include(results) | self.exclude(results)
+    return self.include(results) & self.exclude(results)
      
                 
