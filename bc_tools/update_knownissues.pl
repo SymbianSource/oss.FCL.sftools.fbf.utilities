@@ -24,15 +24,24 @@ my $lib_report;
 my $ki_file;
 my $current_report;
 my $header_num;
+my $issues_num;
 my $n;
 my $m;
+my $offset;
+my $counter;
 my $file_name;
 my $check_sum;
 my $comment = "Issue closed as invalid by the PkO (Not a BC break)."; # This is a default comment that will be added to Known Issues list with each header file.
 my $header_found;
+my $library_found;
+my $issue_found;
 my $status;
 my $line;
 my @lines;
+my $temp_ref;
+my $temp_line;
+my $temp_issues_num;
+my $my_issue;
 my $help;
 
 sub usage($);
@@ -130,11 +139,157 @@ if ($hdr_report) {
 		}
 		$n++;
 	}
+	# Free up memory resources.
+	$current_report = ();
 	print "OK\n";
 }
 
 if ($lib_report) {
-	print "Warning: Automatic update of the Known Issues file based on a libraries report is not available in the current version of the script.\n"
+	# Parse the input XMLs into hashrefs.
+	print "Parsing " . $lib_report . "... ";
+	$current_report = XMLin("./$lib_report", keeproot => 1,
+		forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
+		'laversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
+		'library', 'name', 'comparefilename', 'shortname', 'baseplatform', 'currentplatform', 'issue', 'typeinfo', 'typeid', 'funcname', 'newfuncname', 'newfuncpos', #
+		'bc_severity', 'sc_severity', 'status', 'comment', 'funcpos' ], keyattr => [] );
+	print "complete \n";
+	# Get number of libraries.
+	my $lib_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}};
+	print "Number of libraries in the report: $lib_num \n";
+	
+	$n = 0;
+	while ($n < $lib_num) {
+		$file_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'shortname'}->[0];
+		# Check if library present in the Known Issues file.
+		$m = 0;
+		$library_found = 0;
+		foreach (@lines) { 
+			if (@lines[$m] =~ "\"$file_name\"") { # Mark header file as present in the Known Issues file.
+				$library_found = 1;
+				$line = $m;
+				last;
+			}
+			$m++;
+		}
+		if ($library_found) { # Some entries already persent in the Known Issues file for the current library.
+			print "Found library: $file_name in line: $line\n";
+			$issues_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}};
+			# Get library with all issues to $temp_ref;
+			$m = $line - 1;
+			$temp_line = "";
+			do {
+				$m++;
+				$temp_line = $temp_line . @lines[$m];
+			} while (@lines[$m] !~ "<\/library>");
+			$temp_ref = XMLin($temp_line, keeproot => 1,
+			forcearray => [ 'library', 'issue', 'typeid', 'typeinfo', 'funcname', 'newfuncname', 'funcpos', #
+			'newfuncpos', 'bc_severity', 'sc_severity', 'status', 'comment' ], keyattr => [] );
+			$temp_issues_num = @{$temp_ref->{'library'}->[0]->{'issue'}};
+			# For each issue related to the current library check for a matching issue in $temp_ref.
+			foreach $my_issue (@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}}) {
+				$issue_found = 0;
+				$m = 0;
+				while ($m < $temp_issues_num) {
+					# Compare all possible values.
+					if (($my_issue->{'typeid'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'typeid'}->[0]) &&
+						($my_issue->{'typeinfo'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'typeinfo'}->[0]) &&
+						($my_issue->{'funcname'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'funcname'}->[0]) &&
+						($my_issue->{'newfuncname'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'newfuncname'}->[0]) &&
+						($my_issue->{'funcpos'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'funcpos'}->[0]) &&
+						($my_issue->{'newfuncpos'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'newfuncpos'}->[0]) &&
+						($my_issue->{'bc_severity'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'bc_severity'}->[0]) &&
+						($my_issue->{'sc_severity'}->[0] eq $temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'sc_severity'}->[0]) &&
+						($temp_ref->{'library'}->[0]->{'issue'}->[$m]->{'status'}->[0]) =~ "OK") {
+						print "Duplicated issue found for library: $file_name\n";
+						$issue_found = 1; # Do not add this issue to the Known Issues file.
+						last;
+					}
+					$m++;
+				}
+				if (!$issue_found) { # Add the issue to the Known Issues file for exising library entry (as the top one).
+					$offset = 1; # Initial offset value.
+					splice @lines, $line+$offset, 0, "    <issue>"; $offset++;
+					if ($my_issue->{'typeid'}->[0]) { splice @lines, $line+$offset, 0, "      <typeid>$my_issue->{'typeid'}->[0]<\/typeid>"; $offset++; }
+					if ($my_issue->{'typeinfo'}->[0]) { splice @lines, $line+$offset, 0, "      <typeinfo>$my_issue->{'typeinfo'}->[0]<\/typeinfo>"; $offset++; }
+					if ($my_issue->{'funcname'}->[0]) { 
+						# Fix ampersand, greater-than and less-than characters before saving.
+						$my_issue->{'funcname'}->[0] =~ s/&/&amp;/g;
+						$my_issue->{'funcname'}->[0] =~ s/</&lt;/g;
+						$my_issue->{'funcname'}->[0] =~ s/>/&gt;/g;
+						splice @lines, $line+$offset, 0, "      <funcname>$my_issue->{'funcname'}->[0]<\/funcname>"; 
+						$offset++;
+					}
+					if ($my_issue->{'newfuncname'}->[0]) { 
+						# Fix ampersand, greater-than and less-than characters before saving.
+						$my_issue->{'newfuncname'}->[0] =~ s/&/&amp;/g;
+						$my_issue->{'newfuncname'}->[0] =~ s/</&lt;/g;
+						$my_issue->{'newfuncname'}->[0] =~ s/>/&gt;/g;
+						splice @lines, $line+$offset, 0, "      <newfuncname>$my_issue->{'newfuncname'}->[0]<\/newfuncname>";
+						$offset++;
+					}
+					if ($my_issue->{'funcpos'}->[0]) { splice @lines, $line+$offset, 0, "      <funcpos>$my_issue->{'funcpos'}->[0]<\/funcpos>"; $offset++; }
+					if ($my_issue->{'newfuncpos'}->[0]) { splice @lines, $line+$offset, 0, "      <newfuncpos>$my_issue->{'newfuncpos'}->[0]<\/newfuncpos>"; $offset++; }
+					if ($my_issue->{'bc_severity'}->[0]) { splice @lines, $line+$offset, 0, "      <bc_severity>$my_issue->{'bc_severity'}->[0]<\/bc_severity>"; $offset++; }
+					if ($my_issue->{'sc_severity'}->[0]) { splice @lines, $line+$offset, 0, "      <sc_severity>$my_issue->{'sc_severity'}->[0]<\/sc_severity>"; $offset++; }
+					splice @lines, $line+$offset, 0, "      <status>OK<\/status>"; $offset++;
+					splice @lines, $line+$offset, 0, "      <comment>$comment<\/comment>"; $offset++;
+					splice @lines, $line+$offset, 0, "    <\/issue>";
+					print "New issue added to Known Issues list for library: $file_name\n";
+				}
+			}
+			$temp_ref = ();
+		} else { # Add the whole new entry for the current library.
+			# Find the first occurrence of <library>. - ASSUMPTION: at least one entry exists.
+			$m = 0;
+			foreach (@lines) { 
+				if (@lines[$m] =~ "<library") { 
+					last; }
+				else {
+					$m++;
+				}
+			}
+			$offset = 0; # Initial offset value.
+			splice @lines, $m+$offset, 0, "  <library name=\"$file_name\">"; $offset++;
+			print "Library: $file_name added to Known Issues list\n";
+			$counter = 1;
+			foreach $my_issue (@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}}) {	
+				print "Adding issue: $counter... ";
+				splice @lines, $m+$offset, 0, "    <issue>"; $offset++;
+				if ($my_issue->{'typeid'}->[0]) { splice @lines, $m+$offset, 0, "      <typeid>$my_issue->{'typeid'}->[0]<\/typeid>"; $offset++; }
+				if ($my_issue->{'typeinfo'}->[0]) { splice @lines, $m+$offset, 0, "      <typeinfo>$my_issue->{'typeinfo'}->[0]<\/typeinfo>"; $offset++; }
+				if ($my_issue->{'funcname'}->[0]) { 
+					# Fix ampersand, greater-than and less-than characters before saving.
+					$my_issue->{'funcname'}->[0] =~ s/&/&amp;/g;
+					$my_issue->{'funcname'}->[0] =~ s/</&lt;/g;
+					$my_issue->{'funcname'}->[0] =~ s/>/&gt;/g;
+					splice @lines, $m+$offset, 0, "      <funcname>$my_issue->{'funcname'}->[0]<\/funcname>"; 
+					$offset++;
+				}
+				if ($my_issue->{'newfuncname'}->[0]) { 
+					# Fix ampersand, greater-than and less-than characters before saving.
+					$my_issue->{'newfuncname'}->[0] =~ s/&/&amp;/g;
+					$my_issue->{'newfuncname'}->[0] =~ s/</&lt;/g;
+					$my_issue->{'newfuncname'}->[0] =~ s/>/&gt;/g;
+					splice @lines, $m+$offset, 0, "      <newfuncname>$my_issue->{'newfuncname'}->[0]<\/newfuncname>";
+					$offset++;
+				}
+				if ($my_issue->{'funcpos'}->[0]) { splice @lines, $m+$offset, 0, "      <funcpos>$my_issue->{'funcpos'}->[0]<\/funcpos>"; $offset++; }
+				if ($my_issue->{'newfuncpos'}->[0]) { splice @lines, $m+$offset, 0, "      <newfuncpos>$my_issue->{'newfuncpos'}->[0]<\/newfuncpos>"; $offset++; }
+				if ($my_issue->{'bc_severity'}->[0]) { splice @lines, $m+$offset, 0, "      <bc_severity>$my_issue->{'bc_severity'}->[0]<\/bc_severity>"; $offset++; }
+				if ($my_issue->{'sc_severity'}->[0]) { splice @lines, $m+$offset, 0, "      <sc_severity>$my_issue->{'sc_severity'}->[0]<\/sc_severity>"; $offset++; }
+				splice @lines, $m+$offset, 0, "      <status>OK<\/status>"; $offset++;
+				splice @lines, $m+$offset, 0, "      <comment>$comment<\/comment>"; $offset++;
+				splice @lines, $m+$offset, 0, "    <\/issue>"; $offset++;
+				print "done\n";
+				$counter++;
+			}
+			splice @lines, $m+$offset, 0, "  <\/library>";
+		}
+		$n++;
+	}
+	# Free up memory resources.
+	$current_report = ();
+	print "OK\n";
 }
 
 untie @lines;
