@@ -90,7 +90,7 @@ my $current_report = XMLin("./$report", keeproot => 1,
     forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 	'laversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 	'library', 'name', 'comparefilename', 'shortname', 'baseplatform', 'currentplatform', 'issue', 'typeinfo', 'typeid', 'funcname', 'newfuncname', 'newfuncpos', #
-	'bc_severity', 'sc_severity', 'status', 'funcpos' ], keyattr => [] );
+	'bc_severity', 'sc_severity', 'status', 'comment', 'funcpos' ], keyattr => [] );
 print "complete \n";
 
 # Get number of libraries.
@@ -246,7 +246,7 @@ if ($gen_missing_report) {
 		forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 		'laversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 		'library', 'name', 'comparefilename', 'shortname', 'baseplatform', 'currentplatform', 'issue', 'typeinfo', 'typeid', 'funcname', 'newfuncname', 'newfuncpos', #
-		'bc_severity', 'sc_severity', 'status', 'funcpos' ], keyattr => [] );
+		'bc_severity', 'sc_severity', 'status', 'comment', 'funcpos' ], keyattr => [] );
 	print "complete \n";
 	print "Generating report for missing libraries... ";
 	# Get number of libraries.
@@ -297,7 +297,7 @@ if (($sub_reports) && ($gen_missing_report)) { # Generate sub-reports per packag
 		forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 		'laversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 		'library', 'name', 'comparefilename', 'shortname', 'baseplatform', 'currentplatform', 'issue', 'typeinfo', 'typeid', 'funcname', 'newfuncname', 'newfuncpos', #
-		'bc_severity', 'sc_severity', 'status', 'funcpos' ], keyattr => [] );
+		'bc_severity', 'sc_severity', 'status', 'comment', 'funcpos' ], keyattr => [] );
 	print "complete \n";
 	$lib_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}};
 	if (!defined($baselinedlldir)) { # Define baselinedlldir.
@@ -395,7 +395,7 @@ if (($sub_reports) && ($gen_missing_report)) { # Generate sub-reports per packag
 			forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 			'laversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 			'library', 'name', 'comparefilename', 'shortname', 'baseplatform', 'currentplatform', 'issue', 'typeinfo', 'typeid', 'funcname', 'newfuncname', 'newfuncpos', #
-			'bc_severity', 'sc_severity', 'status', 'funcpos' ], keyattr => [] );
+			'bc_severity', 'sc_severity', 'status', 'comment', 'funcpos' ], keyattr => [] );
 		print "complete \n";
 		$lib_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}};
 		$n = 0;
