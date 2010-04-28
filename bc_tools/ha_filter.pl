@@ -79,7 +79,7 @@ my $current_report = XMLin("./$report", keeproot => 1,
     forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 	'haversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 	'headerfile', 'filename', 'comparefilename', 'status', 'comment', 'issue', 'checksum', 'shortname', 'issueid', 'typeid', 'identityid', #
-	'identitydescription', 'typestring', 'cause', 'documentation', 'ignoreinformation', 'linenumber', 'severity', 'scseverity'], keyattr => [] );
+	'identitydescription', 'typestring', 'cause', 'documentation', 'ignoreinformation', 'linenumber', 'severity', 'scseverity', 'compilationerror'], keyattr => [] );
 print "complete \n";
 
 # Get number of header files.
@@ -256,7 +256,7 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 		 forcearray => [ 'header', 'baselineversion', 'currentversion', 'timestamp', 'day', 'month', 'year', 'hour', 'minute', 'second', #
 		 'haversion', 'formatversion', 'cmdlineparms', 'parm', 'pname', 'pvalue', 'knownissuesversion', 'os', 'version', 'buildweek', 'issuelist',#
 		 'headerfile', 'filename', 'comparefilename', 'status', 'comment', 'issue', 'checksum', 'shortname', 'issueid', 'typeid', 'identityid', #
-		 'identitydescription', 'typestring', 'cause', 'documentation', 'ignoreinformation', 'linenumber', 'severity', 'scseverity'], keyattr => [] );
+		 'identitydescription', 'typestring', 'cause', 'documentation', 'ignoreinformation', 'linenumber', 'severity', 'scseverity', 'compilationerror'], keyattr => [] );
 		print "complete \n";
 		$n = 0;
 		$header_num = @{$temp_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}};
@@ -264,7 +264,7 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 		while ($n < $header_num) {
 			$file_name = $temp_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'shortname'}->[0];
 			$pkg_found = 0;
-			open FILE, "<$tsv_file" or die("Failed to read $tsv_file: $!\n");;
+			open FILE, "<$tsv_file" or die("Failed to read $tsv_file: $!\n");
 			while ($line = <FILE>)
 			{
 				chomp $line;
