@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="ASCII" standalone="no" ?>
+<?xml-stylesheet type="text/xsl" href="BCHdrGreyList.xsl"?>
+<bbcresults>
+  <issuelist>
+    <headerfile>
+      <status></status>
+      <comment></comment>
+      <issue>
+        <issueid>1385</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>512</ignoreinformation>
+        <severity>
+          <typestring>BBC Break</typestring>
+          <typeid>1</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore</documentation>
+        <typestring>has changed size</typestring>
+        <cause>::CSARStore</cause>
+        <identitydescription>Class</identitydescription>
+        <typeid>3</typeid>
+        <identityid>0</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1386</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>512</ignoreinformation>
+        <severity>
+          <typestring>BBC Break</typestring>
+          <typeid>1</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore</documentation>
+        <typestring>has changed base size</typestring>
+        <cause>::CSARStore</cause>
+        <identitydescription>Class</identitydescription>
+        <typeid>18</typeid>
+        <identityid>0</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1391</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iCommitCount</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iCommitCount</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1388</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iEntryArray</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iEntryArray</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1389</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>::CArrayFixSeg&lt;TSAREntry&gt;</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iEntryArray</documentation>
+        <typestring>has changed its type</typestring>
+        <cause>::CSARStore::iEntryArray</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>11</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1390</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iExtraStreamId</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iExtraStreamId</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1387</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iFileStore</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iFileStore</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1392</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iFullName</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iFullName</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1394</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iInTransaction</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iInTransaction</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1395</issueid>
+        <linenumber>436</linenumber>
+        <ignoreinformation>None_445;::TInt</ignoreinformation>
+        <severity>
+          <typestring>Informative</typestring>
+          <typeid>3</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iMaxmumNumberOfMessagesInSegmentationStore</documentation>
+        <typestring>has been added</typestring>
+        <cause>::CSARStore::iMaxmumNumberOfMessagesInSegmentationStore</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>1</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <issue>
+        <issueid>1393</issueid>
+        <linenumber>438</linenumber>
+        <ignoreinformation>_445</ignoreinformation>
+        <severity>
+          <typestring>Possible BBC Break</typestring>
+          <typeid>2</typeid>
+        </severity>
+        <scseverity>
+          <typestring>None</typestring>
+          <typeid>0</typeid>
+        </scseverity>
+        <documentation>Not specified::CSARStore::iThirdUid</documentation>
+        <typestring>has changed its offset</typestring>
+        <cause>::CSARStore::iThirdUid</cause>
+        <identitydescription>Field</identitydescription>
+        <typeid>9</typeid>
+        <identityid>10</identityid>
+		<!-- Mikek -->
+		<date-added>2010-04-28</date-added>
+		<bugzilla-id>2326</bugzilla-id>
+		<bc-status>OPEN</bc-status>
+		<!-- Mikek -->
+      </issue>
+      <checksum>81iYdSbAMMWrD</checksum>
+      <filename>d:\installed\pdk_2.0.2_installed\epoc32\include\gsmustor.h</filename>
+      <shortname>gsmustor.h</shortname>
+      <comparefilename>p:\epoc32\include\gsmustor.h</comparefilename>
+    </headerfile>
+  </issuelist>
+</bbcresults>
