@@ -43,16 +43,33 @@ GetOptions((
 ));
 my @logfiles = @ARGV;
 
-$help = 1 if (!@logfiles);
-
 if ($help)
 {
 	print "Unite and HTML-ize Raptor log files.\n";
 	print "Usage: perl uh.pl [OPTIONS] FILE1 FILE2 ...\n";
-	print "where OPTIONS are:\n";
+	print "where FILE1 FILE2 ... are Raptor log files.\n";
+	print "If no file argument is provided then UH takes the latest under \\epoc32\\build\n";
+	print "OPTIONS:\n";
 	print "\t-m, --missing\tAlso add the list of missing binaries (Raptor log should include whatlog info).\n";
 	print "\t\t\tCheck is done against the epoc tree at the root of the current drive\n";
 	print "\t-b DIR, --basedir DIR\tGenerate output under DIR (defaults to current dir)\n";
+	exit(0);
+}
+
+if (!@logfiles)
+{
+	if (-d "\\epoc32\\build")
+	{
+		opendir(BUILDDIR, "\\epoc32\\build");
+		my @allfoundlogfiles = grep(/^Makefile.\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}\.log$/, readdir(BUILDDIR));
+		@allfoundlogfiles = sort {$b cmp $a} @allfoundlogfiles;
+		push @logfiles, "\\epoc32\\build\\" . shift @allfoundlogfiles;
+	}
+}
+
+if (!@logfiles)
+{
+	print "No files to parse.\n";
 	exit(0);
 }
 
