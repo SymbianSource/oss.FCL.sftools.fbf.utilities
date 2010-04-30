@@ -10,12 +10,14 @@ https://developer.symbian.org/oss/FCL/sf/app/conversations
 https://developer.symbian.org/oss/FCL/sf/app/devicecontrol
 https://developer.symbian.org/oss/FCL/sf/app/dictionary
 https://developer.symbian.org/oss/FCL/sf/app/files
+https://developer.symbian.org/oss/FCL/sf/app/firsttimeuse
 https://developer.symbian.org/oss/FCL/sf/app/graphicsuis
 https://developer.symbian.org/oss/FCL/sf/app/helps
 https://developer.symbian.org/oss/FCL/sf/app/homescreen
 https://developer.symbian.org/oss/FCL/sf/app/homescreentools
 https://developer.symbian.org/oss/FCL/sf/app/im
 https://developer.symbian.org/oss/FCL/sf/app/imgeditor
+https://developer.symbian.org/oss/FCL/sf/app/internetradio
 https://developer.symbian.org/oss/FCL/sf/app/iptelephony
 https://developer.symbian.org/oss/FCL/sf/app/jrt
 https://developer.symbian.org/oss/FCL/sf/app/location
@@ -31,6 +33,7 @@ https://developer.symbian.org/oss/FCL/sf/app/profile
 https://developer.symbian.org/oss/FCL/sf/app/radio
 https://developer.symbian.org/oss/FCL/sf/app/rndtools
 https://developer.symbian.org/oss/FCL/sf/app/screensaver
+https://developer.symbian.org/oss/FCL/sf/app/search
 https://developer.symbian.org/oss/FCL/sf/app/settingsuis
 https://developer.symbian.org/oss/FCL/sf/app/speechsrv
 https://developer.symbian.org/oss/FCL/sf/app/techview
@@ -58,8 +61,11 @@ https://developer.symbian.org/oss/FCL/sf/mw/drm
 https://developer.symbian.org/oss/FCL/sf/mw/gsprofilesrv
 https://developer.symbian.org/oss/FCL/sf/mw/gstreamer
 https://developer.symbian.org/oss/FCL/sf/mw/hapticsservices
+https://developer.symbian.org/oss/FCL/sf/mw/hb
 https://developer.symbian.org/oss/FCL/sf/mw/helix
+https://developer.symbian.org/oss/FCL/sf/mw/hgwidgets
 https://developer.symbian.org/oss/FCL/sf/mw/homescreensrv
+https://developer.symbian.org/oss/FCL/sf/mw/homescreensrvlegacy
 https://developer.symbian.org/oss/FCL/sf/mw/imghandling
 https://developer.symbian.org/oss/FCL/sf/mw/imsrv
 https://developer.symbian.org/oss/FCL/sf/mw/inputmethods
@@ -78,12 +84,14 @@ https://developer.symbian.org/oss/FCL/sf/mw/netprotocols
 https://developer.symbian.org/oss/FCL/sf/mw/networkingdm
 https://developer.symbian.org/oss/FCL/sf/mw/opensrv
 https://developer.symbian.org/oss/FCL/sf/mw/phonesrv
+https://developer.symbian.org/oss/FCL/sf/mw/platformthemes
 https://developer.symbian.org/oss/FCL/sf/mw/platformtools
 https://developer.symbian.org/oss/FCL/sf/mw/qt
 https://developer.symbian.org/oss/FCL/sf/mw/qtextensions
 https://developer.symbian.org/oss/FCL/sf/mw/remoteconn
 https://developer.symbian.org/oss/FCL/sf/mw/remotemgmt
 https://developer.symbian.org/oss/FCL/sf/mw/remotestorage
+https://developer.symbian.org/oss/FCL/sf/mw/searchsrv
 https://developer.symbian.org/oss/FCL/sf/mw/securitysrv
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapifw
@@ -97,6 +105,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/usbservices
 https://developer.symbian.org/oss/FCL/sf/mw/videoutils
 https://developer.symbian.org/oss/FCL/sf/mw/vpnclient
 https://developer.symbian.org/oss/FCL/sf/mw/web
+https://developer.symbian.org/oss/FCL/sf/mw/webruntime
 https://developer.symbian.org/oss/FCL/sf/mw/websrv
 https://developer.symbian.org/oss/FCL/sf/mw/wirelessacc
 https://developer.symbian.org/oss/FCL/sf/os/boardsupport
