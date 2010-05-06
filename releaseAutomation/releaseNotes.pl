@@ -50,7 +50,7 @@ my @keys;
 print <<"EOT";
 == FCLs ==
 
-This PDK was built using FCL versions of the packages listed below: for each one we list allthe changes in the FCL which are not in the MCL.
+This PDK was built using FCL versions of the packages listed below: for each one we list all the changes in the FCL which are not in the MCL.
 
 The previous PDK also involved some FCLs, so we indicate which FCLs are new to this build.
 
@@ -107,6 +107,8 @@ while (my $line = <$csvText>)
 	{
 		# Substitute in the source URL
 		$fclOnly =~ s[\${sf\.package\.URL}][$package{source}]g;
+		# Don't bother mentioning the tip revision
+		$fclOnly =~ s['''tip''' ][]g;
 		# Turn bug references into links
 		$fclOnly =~ s{\b(bug) (\d+)}{[http://developer.symbian.org/bugs/show_bug.cgi?id=$2 $1 $2]}gi;
 		print "{|\n";
