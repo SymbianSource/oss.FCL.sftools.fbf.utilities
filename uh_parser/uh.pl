@@ -172,7 +172,7 @@ while(<CSV>)
 		}
 		if ($failure->{component})
 		{
-			if ($failure->{component} =~ m,/((os|mw|app|tools|ostools|adaptation)/[^/]*),)
+			if ($failure->{component} =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
 			{
 				$failure_package = $1;
 			}
@@ -487,7 +487,7 @@ sub distinct_packages
 		$bldinf =~ s,[\\],/,g;
 		
 		my $package = '';
-		if ($bldinf =~ m,/((os|mw|app|tools|ostools|adaptation)/[^/]*),)
+		if ($bldinf =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
 		{
 			$package = $1;
 		}
@@ -499,5 +499,14 @@ sub distinct_packages
 		$allpackages->{$package} = 1;
 	}
 	
-	return sort {$a cmp $b} keys %{$allpackages};
+	# sort packages, but set unknown first
+	my @sorted = ();
+	if (defined $allpackages->{'unknown/unknown'})
+	{
+		push @sorted, 'unknown/unknown';
+		undef $allpackages->{'unknown/unknown'};
+	}
+	push @sorted, sort {$a cmp $b} keys %{$allpackages};
+	
+	return @sorted;
 }

@@ -237,24 +237,33 @@ sub on_start_buildlog_recipe_status
 
 sub on_end_buildlog_recipe
 {
-	$::allbldinfs->{$recipe_info->{bldinf}} = 1;
+	if ($recipe_info->{bldinf})
+	{
+		$::allbldinfs->{$recipe_info->{bldinf}} = 1;
+	}
+	else
+	{
+		$::allbldinfs->{'/unknown/unknown'} = 1;
+	}
 	
 	if ($recipe_info->{exit} =~ /failed/i || $recipe_info->{exit} =~ /retry/i && $recipe_info->{forcesuccess} =~ /FORCESUCCESS/i)
 	{
+		#print "2 normalizing bldinf: $recipe_info->{bldinf} \n";
 		# normalize bldinf path
 		$recipe_info->{bldinf} = lc($recipe_info->{bldinf});
 		$recipe_info->{bldinf} =~ s,^[A-Za-z]:,,;
 		$recipe_info->{bldinf} =~ s,[\\],/,g;
 		
 		my $package = '';
-		if ($recipe_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[^/]*),)
+		if ($recipe_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[a-zA-Z]+),)
 		{
 			$package = $1;
 			$package =~ s,/,_,;
 		}
 		else
 		{
-			print "WARNING: can't understand bldinf attribute of recipe: $recipe_info->{bldinf}. Won't dump to failed recipes file.\n";
+			#print "WARNING: can't understand bldinf attribute of recipe: $recipe_info->{bldinf}. Won't dump to failed recipes file.\n";
+			$package = 'unknown_unknown';
 		}
 		
 		# also normalize mmp path if this exists
@@ -277,8 +286,10 @@ sub on_end_buildlog_recipe
 				open(FILE, ">$filename");
 				close(FILE);
 			}
-			
-			my $dumped = process($characters, $recipe_info->{config}, $recipe_info->{bldinf}, $recipe_info->{mmp}, $recipe_info->{phase}, $recipe_info->{name}, "$package.txt");
+
+			my $bldinf_arg = '/unknown/unknown';
+			$bldinf_arg = $recipe_info->{bldinf} if ($recipe_info->{bldinf});	
+			my $dumped = process($characters, $recipe_info->{config}, $bldinf_arg, $recipe_info->{mmp}, $recipe_info->{phase}, $recipe_info->{name}, "$package.txt");
 			
 			if ($dumped)
 			{
