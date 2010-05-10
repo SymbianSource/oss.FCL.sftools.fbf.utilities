@@ -105,6 +105,7 @@ $saxhandler->add_observer('RaptorRecipe', $RaptorRecipe::reset_status);
 $saxhandler->add_observer('releaseables', $releaseables::reset_status);
 
 our $allbldinfs = {};
+our $allconfigs = {};
 
 my $parser = XML::SAX::ParserFactory->parser(Handler=>$saxhandler);
 for (@logfiles)
@@ -240,7 +241,17 @@ close(CSV);
 # PRINT HTML SUMMARY
 my $aggregated_html = "$outputdir/index.html";
 open(AGGREGATED, ">$aggregated_html");
-print AGGREGATED "RAPTOR BUILD SUMMARY<br/>\n";
+print AGGREGATED "RAPTOR BUILD SUMMARY<br/><br/>\n";
+
+my $allfilesstring = '';
+for my $raptorfile (sort {$a cmp $b} @logfiles) { $allfilesstring .= ", $raptorfile"; }
+$allfilesstring =~ s/^, //;
+print AGGREGATED "PARSED LOGS: $allfilesstring<br/>\n";
+
+my $allconfigsstring = '';
+for my $raptorconfig (sort {$a cmp $b} keys %{$allconfigs}) { $allconfigsstring .= ", $raptorconfig"; }
+$allconfigsstring =~ s/^, //;
+print AGGREGATED "BUILT CONFIGS: $allconfigsstring<br/><br/>\n";
 
 print AGGREGATED "<br/>GENERAL FAILURES<br/>\n";
 print AGGREGATED "<table border='1'>\n";

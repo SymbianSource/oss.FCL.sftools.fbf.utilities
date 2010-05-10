@@ -42,14 +42,9 @@ sub process
 {
 	my ($text) = @_;
 	
-	my $severity = '';
-	
-	if ($text =~ m,unmatchable,)
+	if ($text =~ m,Buildable configuration '(.*)',)
 	{
-		$severity = $RaptorCommon::SEVERITY_CRITICAL;
-		
-		#dump_error($category, $severity, $text);
-		print "$category, $severity, $text\n";
+		$::allconfigs->{$1}=1;	
 	}
 }
 

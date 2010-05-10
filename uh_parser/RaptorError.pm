@@ -187,6 +187,8 @@ sub on_end_buildlog_error
 	$characters =~ s,^[\r\n]*,,;
 	$characters =~ s,[\r\n]*$,,;
 	
+	#print "error: -->$characters<--\n";
+	
 	my $package = '';
 	# if bldinf attribute is not available then heuristically attempt to determine the package
 	if (!$raptor_error_info->{bldinf} &&
