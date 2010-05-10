@@ -504,7 +504,7 @@ sub distinct_packages
 	if (defined $allpackages->{'unknown/unknown'})
 	{
 		push @sorted, 'unknown/unknown';
-		undef $allpackages->{'unknown/unknown'};
+		delete $allpackages->{'unknown/unknown'};
 	}
 	push @sorted, sort {$a cmp $b} keys %{$allpackages};
 	
