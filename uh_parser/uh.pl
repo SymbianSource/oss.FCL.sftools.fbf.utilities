@@ -248,7 +248,7 @@ for my $raptorconfig (sort {$a cmp $b} keys %{$allconfigs}) { $allconfigsstring 
 $allconfigsstring =~ s/^, //;
 print AGGREGATED "BUILT CONFIGS:<br/>$allconfigsstring<br/>\n";
 
-print AGGREGATED "<br/>GENERAL FAILURES<br/>\n";
+print AGGREGATED "<br/>FLOATING FAILURES<br/>\n";
 print AGGREGATED "<table border='1'>\n";
 my $tableheader = "<tr><th>category</th>";
 for (@severities) { $tableheader .= "<th>$_</th>"; }
