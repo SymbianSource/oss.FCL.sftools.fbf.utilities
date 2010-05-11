@@ -243,15 +243,10 @@ my $aggregated_html = "$outputdir/index.html";
 open(AGGREGATED, ">$aggregated_html");
 print AGGREGATED "RAPTOR BUILD SUMMARY<br/><br/>\n";
 
-my $allfilesstring = '';
-for my $raptorfile (sort {$a cmp $b} @logfiles) { $allfilesstring .= ", $raptorfile"; }
-$allfilesstring =~ s/^, //;
-print AGGREGATED "PARSED LOGS: $allfilesstring<br/>\n";
-
 my $allconfigsstring = '';
 for my $raptorconfig (sort {$a cmp $b} keys %{$allconfigs}) { $allconfigsstring .= ", $raptorconfig"; }
 $allconfigsstring =~ s/^, //;
-print AGGREGATED "BUILT CONFIGS: $allconfigsstring<br/><br/>\n";
+print AGGREGATED "BUILT CONFIGS:<br/>$allconfigsstring<br/>\n";
 
 print AGGREGATED "<br/>GENERAL FAILURES<br/>\n";
 print AGGREGATED "<table border='1'>\n";
@@ -311,6 +306,12 @@ for my $package (@allpackages)
 	}
 }
 print AGGREGATED "</table>\n";
+print AGGREGATED "<br/>\n";
+
+my $allfilesstring = '';
+for my $raptorfile (sort {$a cmp $b} @logfiles) { $allfilesstring .= "<br/>$raptorfile"; }
+print AGGREGATED "PARSED LOGS:$allfilesstring<br/>\n";
+
 close(AGGREGATED);
 
 translate_detail_files_to_html();
