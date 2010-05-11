@@ -225,7 +225,7 @@ sub on_end_whatlog
 			$normalized =~ s,^[A-Za-z]:,,;
 			$normalized =~ s,[\\],/,g;
 			
-			$normalized =~ m,^/sf/([^/]+)/([^/]+)/,;
+			$normalized =~ m,^/sf|sftools/([^/]+)/([^/]+)/,;
 			my $layer = $1;
 			my $package = $2;
 			

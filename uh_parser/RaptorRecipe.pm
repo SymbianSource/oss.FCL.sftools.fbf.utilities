@@ -256,7 +256,7 @@ sub on_end_buildlog_recipe
 		$recipe_info->{bldinf} =~ s,[\\],/,g;
 		
 		my $package = '';
-		if ($recipe_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[a-zA-Z]+),)
+		if ($recipe_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation|dev)/[a-zA-Z]+),)
 		{
 			$package = $1;
 			$package =~ s,/,_,;
