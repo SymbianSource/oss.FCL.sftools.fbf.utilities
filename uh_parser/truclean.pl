@@ -8,9 +8,10 @@
 # Symbian Foundation Ltd - initial contribution.
 #
 # Contributors:
+# Dario Sestito <darios@symbian.org>
 #
 # Description:
-# Extracts output text in <buildlog> context which doesn't belong to <recipe>'s
+# Clean environment by removing releaseable files based on info.tsv
 
 use strict;
 use Getopt::Long;

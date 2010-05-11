@@ -8,6 +8,7 @@
 # Symbian Foundation Ltd - initial contribution.
 #
 # Contributors:
+# Dario Sestito <darios@symbian.org>
 #
 # Description:
 # Extract releaseable (whatlog) information from Raptor log files

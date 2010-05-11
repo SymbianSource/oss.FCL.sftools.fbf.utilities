@@ -9,6 +9,7 @@
 # Symbian Foundation Ltd - initial contribution.
 #
 # Contributors:
+# Dario Sestito <darios@symbian.org>
 #
 # Description:
 # Preprocess a raptor log, trying to countermeasure a list of known anomalies
