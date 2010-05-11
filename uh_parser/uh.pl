@@ -270,7 +270,7 @@ for my $category (keys %{$general_failures_num_by_severity})
 print AGGREGATED "</table>\n";
 print AGGREGATED "<br/>\n";
 
-print AGGREGATED "<br/>PACKAGE-SPECIFIC FAILURES<br/>\n";
+print AGGREGATED "PACKAGE-SPECIFIC FAILURES<br/>\n";
 print AGGREGATED "<table border='1'>\n";
 $tableheader = "<tr><th>package</th>";
 for (@severities) { $tableheader .= "<th>$_</th>"; }
@@ -296,6 +296,8 @@ for my $package (@allpackages)
 		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
 	}
+	# don't display the unknown/unknown package unless there are associated failures
+	elsif ($package eq 'unknown/unknown') {}
 	else
 	{
 		my $packageline = "<tr><td>$package</td>";
