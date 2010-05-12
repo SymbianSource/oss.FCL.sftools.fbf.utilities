@@ -174,7 +174,7 @@ while(<CSV>)
 		}
 		if ($failure->{component})
 		{
-			if ($failure->{component} =~ m,/((os|mw|app|tools|ostools|adaptation|unknown|dev)/[a-zA-Z]+),)
+			if ($failure->{component} =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
 			{
 				$failure_package = $1;
 			}
@@ -502,7 +502,7 @@ sub distinct_packages
 		$bldinf =~ s,[\\],/,g;
 		
 		my $package = '';
-		if ($bldinf =~ m,/((os|mw|app|tools|ostools|adaptation|unknown|dev)/[a-zA-Z]+),)
+		if ($bldinf =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
 		{
 			$package = $1;
 		}
