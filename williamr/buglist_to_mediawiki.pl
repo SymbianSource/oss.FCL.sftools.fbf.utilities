@@ -12,15 +12,27 @@
 # Contributors:
 #
 # Description:
-# Convert tab-separated buglist into Mediawiki table
+# Convert comma-separated buglist into Mediawiki table
+#
+# Usage
+# buglist_to_mediawiki bugreport.csv [--pdk=PDK_3.0.0] > bugs.mediawiki.txt
 
 use strict;
 
 use FindBin;
 use lib "$FindBin::Bin\\..\\lib";
 use Text::CSV;
+use Getopt::Long;
+
+my $PDK="PDK_???";
+
+GetOptions((
+	'pdk=s' => \$PDK,
+));
 
 my $csv = Text::CSV->new();
+
+print "== Defects open at time of creation of $PDK ==\n\n";
 
 print "{|\n";   # start of table
 
