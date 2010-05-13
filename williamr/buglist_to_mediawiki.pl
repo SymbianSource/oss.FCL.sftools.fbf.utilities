@@ -16,12 +16,26 @@
 
 use strict;
 
+use FindBin;
+use lib "$FindBin::Bin\\..\\lib";
+use Text::CSV;
+
+my $csv = Text::CSV->new();
+
 print "{|\n";   # start of table
 
 while (my $line = <>)
   {
   chomp $line;
-  my @columns = split /\t/, $line;
+  
+  unless ($csv->parse($line))
+  {
+    my $err = $csv->error_input();
+    warn "Failed to parse line '$line': $err\n";
+    next;
+  }
+
+  my @columns = $csv->fields();
   
   next if scalar @columns < 2;    # skip dubious looking lines
   
