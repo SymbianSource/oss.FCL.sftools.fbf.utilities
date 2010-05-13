@@ -1,4 +1,4 @@
-#! perl
+#! perl -w
 
 # Copyright (c) 2009 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
@@ -16,28 +16,35 @@
 
 use strict;
 
-my $line;
-my $header = 1;
+print "{|\n";   # start of table
 
-while ($line =<>)
+while (my $line = <>)
   {
   chomp $line;
   my @columns = split /\t/, $line;
   
   next if scalar @columns < 2;    # skip dubious looking lines
   
-  if ($header)
+  if ($. == 1)
     {
-    print "{|\n";   # start of table
+    # First line of file = table headings
+    my %preferredHeadings =
+      (
+      bug_id => "ID",
+      bug_severity => "Severity",
+      reporter => "Reporter",
+      bug_status => "Status",
+      product => "Package",
+      short_desc => "Title",
+      );
+    @columns = map { $preferredHeadings{$_} || $_ } @columns;
     print "! ", join(" !! ", @columns), "\n";
-    $header = 0;
     next;
     }
 
   # row with a bug id
-  my $id = shift @columns;
-  $id = sprintf "[http://developer.symbian.org/bugs/show_bug.cgi?id=%s Bug %s]", $id, $id;
-  unshift @columns, $id;   
+
+  $columns[0] = "[http://developer.symbian.org/bugs/show_bug.cgi?id=$columns[0] Bug$columns[0]]";
   
   print "|-\n"; # row separator
   print "| ", join(" || ", @columns), "\n";
