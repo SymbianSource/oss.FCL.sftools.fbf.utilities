@@ -1,6 +1,7 @@
 https://developer.symbian.org/oss/MCL/sf/adaptation/beagleboard
 https://developer.symbian.org/oss/MCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/MCL/sf/adaptation/stubs
+https://developer.symbian.org/oss/MCL/sf/app/browserui
 https://developer.symbian.org/oss/MCL/sf/app/camera
 https://developer.symbian.org/oss/MCL/sf/app/commonemail
 https://developer.symbian.org/oss/MCL/sf/app/conntools
@@ -11,6 +12,7 @@ https://developer.symbian.org/oss/MCL/sf/app/devicecontrol
 https://developer.symbian.org/oss/MCL/sf/app/dictionary
 https://developer.symbian.org/oss/MCL/sf/app/files
 https://developer.symbian.org/oss/MCL/sf/app/firsttimeuse
+https://developer.symbian.org/oss/MCL/sf/app/flashlite
 https://developer.symbian.org/oss/MCL/sf/app/graphicsuis
 https://developer.symbian.org/oss/MCL/sf/app/helps
 https://developer.symbian.org/oss/MCL/sf/app/homescreen
@@ -31,6 +33,7 @@ https://developer.symbian.org/oss/MCL/sf/app/podcatcher
 https://developer.symbian.org/oss/MCL/sf/app/printing
 https://developer.symbian.org/oss/MCL/sf/app/profile
 https://developer.symbian.org/oss/MCL/sf/app/radio
+https://developer.symbian.org/oss/MCL/sf/app/recents
 https://developer.symbian.org/oss/MCL/sf/app/rndtools
 https://developer.symbian.org/oss/MCL/sf/app/screensaver
 https://developer.symbian.org/oss/MCL/sf/app/search
@@ -46,6 +49,7 @@ https://developer.symbian.org/oss/MCL/sf/app/webuis
 https://developer.symbian.org/oss/MCL/sf/mw/accesssec
 https://developer.symbian.org/oss/MCL/sf/mw/appinstall
 https://developer.symbian.org/oss/MCL/sf/mw/appsupport
+https://developer.symbian.org/oss/MCL/sf/mw/browser
 https://developer.symbian.org/oss/MCL/sf/mw/btservices
 https://developer.symbian.org/oss/MCL/sf/mw/camerasrv
 https://developer.symbian.org/oss/MCL/sf/mw/classicui
@@ -81,6 +85,7 @@ https://developer.symbian.org/oss/MCL/sf/mw/platformthemes
 https://developer.symbian.org/oss/MCL/sf/mw/platformtools
 https://developer.symbian.org/oss/MCL/sf/mw/qt
 https://developer.symbian.org/oss/MCL/sf/mw/qtextensions
+https://developer.symbian.org/oss/MCL/sf/mw/qttranslations
 https://developer.symbian.org/oss/MCL/sf/mw/remoteconn
 https://developer.symbian.org/oss/MCL/sf/mw/remotemgmt
 https://developer.symbian.org/oss/MCL/sf/mw/remotestorage
@@ -125,6 +130,7 @@ https://developer.symbian.org/oss/MCL/sf/os/xmlsrv
 https://developer.symbian.org/oss/MCL/sf/ostools/osrndtools
 https://developer.symbian.org/oss/MCL/sf/tools/build_s60
 https://developer.symbian.org/oss/MCL/sf/tools/buildplatforms
+https://developer.symbian.org/oss/MCL/sf/tools/homescreentools
 https://developer.symbian.org/oss/MCL/sf/tools/makefile_templates
 https://developer.symbian.org/oss/MCL/sf/tools/platformtools
 https://developer.symbian.org/oss/MCL/sf/tools/rndtools
