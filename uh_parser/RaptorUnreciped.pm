@@ -72,13 +72,13 @@ sub process
 	}
 	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .* needed by .*,)
 	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGETNEEDEDBY;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,^make(\.exe)?: \*\*\* No rule to make target .*,)
 	{
-		$severity = $RaptorCommon::SEVERITY_MINOR;
+		$severity = $RaptorCommon::SEVERITY_MAJOR;
 		my $subcategory = $CATEGORY_RAPTORUNRECIPED_MAKE_NORULETOMAKETARGET;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}
