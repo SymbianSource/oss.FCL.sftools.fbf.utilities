@@ -60,10 +60,12 @@ my $CATEGORY_RECIPEFAILURE_ARMCC_MODIFIERNOTALLOWED = 'armcc_modifier_not_allowe
 my $CATEGORY_RECIPEFAILURE_ARMCC_GENERICWARNINGSERRORS = 'armcc_generic_warnings_errors';
 my $CATEGORY_RECIPEFAILURE_ELF2E32_SYMBOLMISSINGFROMELFFILE = 'elf2e32_symbol_missing_from_elf_file';
 my $CATEGORY_RECIPEFAILURE_MWCCSYM2_FILECANNOTBEOPENED = 'mwccsym2_file_cannot_be_opened';
+my $CATEGORY_RECIPEFAILURE_MWLDSYM2_UNDEFINEDSYMBOL = 'mwldsym2_undefined_symbol';
 my $CATEGORY_RECIPEFAILURE_BINSH_COMMANDNOTFOUND = 'binsh_command_not_found';
 my $CATEGORY_RECIPEFAILURE_AS_ERROR = 'as_error';
 my $CATEGORY_RECIPEFAILURE_GPP_ERROR = 'g++_error';
 my $CATEGORY_RECIPEFAILURE_GPP_WARNING = 'g++_warning';
+my $CATEGORY_RECIPEFAILURE_MAKEDEF_FROZENEXPORTMISSING = 'makedef_frozen_export_missing';
 
 my $mmp_with_issues = {};
 
@@ -166,6 +168,16 @@ sub process
 	elsif ($text =~ m,mwccsym2.exe , and $text =~ m,: the file '.*' cannot be opened,)
 	{
 		my $subcategory = $CATEGORY_RECIPEFAILURE_MWCCSYM2_FILECANNOTBEOPENED;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,mwldsym2\.exe: Undefined symbol: '.*',)
+	{
+		my $subcategory = $CATEGORY_RECIPEFAILURE_MWLDSYM2_UNDEFINEDSYMBOL;
+		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file);
+	}
+	elsif ($text =~ m,MAKEDEF ERROR: \d+ Frozen Export\(s\) missing from object files,)
+	{
+		my $subcategory = $CATEGORY_RECIPEFAILURE_MAKEDEF_FROZENEXPORTMISSING;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file);
 	}
 	else # log everything by default
