@@ -94,6 +94,7 @@ https://developer.symbian.org/oss/MCL/sf/mw/securitysrv
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/MCL/sf/mw/serviceapifw
 https://developer.symbian.org/oss/MCL/sf/mw/shortlinkconn
+https://developer.symbian.org/oss/MCL/sf/mw/socialmobilefw
 https://developer.symbian.org/oss/MCL/sf/mw/srvdiscovery
 https://developer.symbian.org/oss/MCL/sf/mw/svgt
 https://developer.symbian.org/oss/MCL/sf/mw/uiaccelerator

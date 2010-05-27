@@ -51,7 +51,6 @@ httsp://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/multimediaadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/python
-https://developer.symbian.org/oss/FCL/sf/incubator/socialmobilefw
 https://developer.symbian.org/oss/FCL/sf/incubator/wildducks
 https://developer.symbian.org/oss/FCL/sf/mw/accesssec
 https://developer.symbian.org/oss/FCL/sf/mw/appinstall
@@ -101,6 +100,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/securitysrv
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapi
 https://developer.symbian.org/oss/FCL/sf/mw/serviceapifw
 https://developer.symbian.org/oss/FCL/sf/mw/shortlinkconn
+https://developer.symbian.org/oss/FCL/sf/mw/socialmobilefw
 https://developer.symbian.org/oss/FCL/sf/mw/srvdiscovery
 https://developer.symbian.org/oss/FCL/sf/mw/svgt
 https://developer.symbian.org/oss/FCL/sf/mw/uiaccelerator
