@@ -127,7 +127,7 @@ sub process
 	}
 	elsif ($text =~ m,win32/mingw/bin/cpp\.exe:.*:.*: No such file or directory,)
 	{
-		$severity = $RaptorCommon::SEVERITY_MAJOR;
+		$severity = $RaptorCommon::SEVERITY_CRITICAL;
 		$subcategory = $CATEGORY_RAPTORERROR_CPPEXENOSUCHFILEORDIRECTORY;
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $logfile, $component, $mmp, $phase, $recipe, $file);
 	}

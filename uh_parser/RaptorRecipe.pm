@@ -101,6 +101,9 @@ sub process
 	if ($text =~ m,Error:  #5: cannot open source input file .*: No such file or directory,)
 	{
 		my $subcategory = $CATEGORY_RECIPEFAILURE_ARMCC_CANNOTOPENSOURCEINPUTFILE;
+		# set severity as critical,
+		# but leave alone failures which are minor (for the chronological rule)  
+		$severity = $RaptorCommon::SEVERITY_CRITICAL if ($severity eq $RaptorCommon::SEVERITY_MAJOR);
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,Fatal error: L6002U: Could not open file .*: No such file or directory,)
@@ -168,6 +171,9 @@ sub process
 	elsif ($text =~ m,mwccsym2.exe , and $text =~ m,: the file '.*' cannot be opened,)
 	{
 		my $subcategory = $CATEGORY_RECIPEFAILURE_MWCCSYM2_FILECANNOTBEOPENED;
+		# set severity as critical,
+		# but leave alone failures which are minor (for the chronological rule)  
+		$severity = $RaptorCommon::SEVERITY_CRITICAL if ($severity eq $RaptorCommon::SEVERITY_MAJOR);
 		RaptorCommon::dump_fault($category, $subcategory, $severity, $config, $component, $mmp, $phase, $recipe, $file);
 	}
 	elsif ($text =~ m,mwldsym2\.exe: Undefined symbol: '.*',)
