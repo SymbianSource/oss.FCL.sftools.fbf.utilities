@@ -11,30 +11,107 @@
 # Dario Sestito <darios@symbian.org>
 #
 # Description:
-# Dumps environment info such as tools version to cmdline or optionally to a Diamonds file
+# Dumps environment info such as tools version to cmdline and/or to a file
 
 use strict;
 
 use Getopt::Long;
 
-my $output = "\\output\\logs\\diamonds_envinfo.xml";
-my $diamonds = 0;
+my $report;
+my $output = "\\output\\logs\\envinfo.txt";
+my $compare;
+my $baseline = "\\build_info\\logs\\envinfo.txt";
 my $help = 0;
 GetOptions((
-	'diamonds!' => \$diamonds,
-	'out=s' => \$output,
+	'report:s' => \$report,
+	'compare:s' => \$compare,
 	'help!' => \$help
 ));
 
+$output = $report if ($report);
+$baseline = $compare if ($compare);
+
 if ($help)
 {
-	print "Dumps environment info such as tools version to cmdline or optionally to a Diamonds file\n";
-	print "Usage: perl envinfo.pl [-d [-o XMLFILE]]\n";
-	print "\n";
-	print "-d,--diamonds\tcreate Diamonds file with environment info\n";
-	print "-o,--out XMLFILE Diamonds file to write to (default \\output\\logs\\diamonds_envinfo.xml)\n";
+	print "Dumps environment info such as tools version to cmdline and/or to a file\n";
+	print "Usage: perl envinfo.pl [OPTIONS]\n";
+	print "where OPTIONS are:\n";
+	print "-r,--report [FILE]\tCreate report file (default \\output\\logs\\envinfo.txt)\n";
+	print "-c,--compare [LOCATION]\tCompare environment with info at LOCATION (default \\output\\logs\\envinfo.txt)\n";
 	exit(0);
 }
+
+my $baseline_environment_info = {};
+if (defined $compare)
+{
+	my $target = '';
+	my $tmp_file = '';
+	# understand where we should get the info from
+	$target = $baseline if (-f $baseline);
+	$target = "$baseline\\envinfo.txt" if (!$target && -f "$baseline\\envinfo.txt");
+	$target = "$baseline\\build_info\\logs\\envinfo.txt" if (!$target && -f "$baseline\\build_info\\logs\\envinfo.txt");
+	$target = "$baseline\\build_BOM.zip" if (!$target && -f "$baseline\\build_BOM.zip");
+	if (!$target)
+	{
+		warn "WARNING: Can't find envinfo.txt from location '$baseline'\n";
+	}
+	elsif ($target =~ /\.zip$/)
+	{
+		print "Extracting envinfo.txt from $target\n";
+		my $cmd = "7z e -y $target build_info\logs\envinfo.txt";
+		my $output = `$cmd 2>&1`;
+		if ($output =~ /is not recognized as an internal or external command/)
+		{
+			$target = '';
+			warn "WARNING: You need to have 7z in the PATH if you want to do comparison against a compressed baseline\n";
+		}
+		elsif ($output =~ /No files to process/)
+		{
+			$target = '';
+			warn "WARNING: The compressed baseline doesn't seem to contain an envinfo.txt file\n";
+		}
+		else
+		{
+			my $tmp_file = "tmp$$.txt";
+			system("ren envinfo.txt $tmp_file"); 
+			$target = $tmp_file;
+		}
+	}
+	
+	if (!$target)
+	{
+		warn "WARNING: Will not do comparison\n";
+		$compare = undef; 
+	}
+	else
+	{
+		print "Will compare environment info to $target\n";
+		
+		if (open(BASEINFO, $target))
+		{
+			for my $line (<BASEINFO>)
+			{
+				if ($line =~ /([^\t]*)\t([^\t]*)/)
+				{
+					my $name = $1;
+					my $version = $2;
+					chomp $name;
+					chomp $version;
+					$baseline_environment_info->{$name}=$version;
+				}
+			}
+			close(BASEINFO);
+			unlink $tmp_file if ($tmp_file);
+		}
+		else
+		{
+			warn "WARNING: Could not open file $target for reading. Will not do comparison\n";
+			$compare = undef;
+		}
+	}
+	
+}
+
 
 my @environment_info = ();
 
@@ -159,43 +236,84 @@ my $java_out = `java -version 2>&1`;
 $java_ver = $1 if ($java_out =~ /^java version (.*)/m);
 push @environment_info, {name=>'java', version=>$java_ver};
 
+# change tabs to spaces
 for my $tool_info (@environment_info)
 {
-	print $tool_info->{name} . ": " . $tool_info->{version} . "\n";
+	$tool_info->{name} =~ s/\t/ /g;
+	$tool_info->{version} =~ s/\t/ /g;
 }
 
+print "\nTools breakdown\n";
 
-# write diamonds file
-if ($diamonds)
+my $cmp_notpresent = 0;
+my $cmp_diffver = 0;
+for my $tool_info (@environment_info)
 {
-	@environment_info = reverse(@environment_info);
+	print " " . $tool_info->{name} . ": " . $tool_info->{version};
 	
-	my $xml_content = <<_EOX;
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<diamonds-build>
- <schema>10</schema>
-  <tools>        
-_HERE_TOOLS_LINES_
-  </tools>
-</diamonds-build>
-_EOX
-	
-	my $tools_lines = '';
-	for my $tool_info (@environment_info)
+	if (defined $compare &&
+		$tool_info->{name} ne 'Machine' &&
+		$tool_info->{name} ne 'OS Name')
 	{
-		$tools_lines .= "   <tool><name>$tool_info->{name}</name><version>$tool_info->{version}</version></tool>\n";
+		print "\t";
+		if (defined $baseline_environment_info->{$tool_info->{name}})
+		{
+			my $baselineversion = $baseline_environment_info->{$tool_info->{name}};
+			if ($tool_info->{version} eq 'N.A.' && $baselineversion ne 'N.A.')
+			{
+				print "[ERROR: tool not present]";
+				$cmp_notpresent++;
+			}
+			elsif ($tool_info->{version} eq $baselineversion || $baselineversion eq 'N.A.')
+			{
+				print "[OK]";
+			}
+			elsif ($tool_info->{version} cmp $baselineversion < 0)
+			{
+				print "[WARNING: less recent than baseline]";
+				$cmp_diffver++;
+			}
+			elsif ($tool_info->{version} cmp $baselineversion > 0)
+			{
+				print "[WARNING: more recent than baseline]";
+				$cmp_diffver++;
+			}
+		}
 	}
-	
-	$xml_content =~ s/_HERE_TOOLS_LINES_/$tools_lines/;
-	
-	if (open(ENVINFO, ">$output"))
+	print "\n";
+}
+
+print "\n";
+
+if (defined $compare)
+{
+	print "Summary of comparison to baseline:\n";
+	if ($cmp_notpresent || $cmp_diffver)
 	{
-		print ENVINFO $xml_content;
-		close(ENVINFO);
-		print "Wrote Diamonds file: $output\n";
+		print " Tools not present or not found in the expected location: $cmp_notpresent\n";
+		print " Tools at different version: $cmp_diffver\n";
 	}
 	else
 	{
-		warn "Could not write to file: $output\n";
+		print " All tools seem to match the baseline :-)\n";
+	}
+	print "\n";
+}
+
+# write report file
+if (defined $report)
+{
+	if (open(ENVINFO, ">$output"))
+	{
+		for my $tool_info (@environment_info)
+		{
+			print ENVINFO "$tool_info->{name}\t$tool_info->{version}\n";
+		}
+		close(ENVINFO);
+		print "Wrote report file: $output\n";
+	}
+	else
+	{
+		warn "WARNING: Could not write to file: $output\n";
 	}
 }
