@@ -51,6 +51,8 @@ if (defined $compare)
 	$target = "$baseline\\envinfo.txt" if (!$target && -f "$baseline\\envinfo.txt");
 	$target = "$baseline\\build_info\\logs\\envinfo.txt" if (!$target && -f "$baseline\\build_info\\logs\\envinfo.txt");
 	$target = "$baseline\\build_BOM.zip" if (!$target && -f "$baseline\\build_BOM.zip");
+	$target = "$baseline\\output\\logs\\envinfo.txt" if (!$target && -f "$baseline\\output\\logs\\envinfo.txt");
+	$target = "$baseline\\output\\zips\\release\\build_BOM.zip" if (!$target && -f "$baseline\\output\\zips\\release\\build_BOM.zip");
 	if (!$target)
 	{
 		warn "WARNING: Can't find envinfo.txt from location '$baseline'\n";
@@ -58,7 +60,7 @@ if (defined $compare)
 	elsif ($target =~ /\.zip$/)
 	{
 		print "Extracting envinfo.txt from $target\n";
-		my $cmd = "7z e -y $target build_info\logs\envinfo.txt";
+		my $cmd = "7z e -y $target build_info\\logs\\BOM\\envinfo.txt";
 		my $output = `$cmd 2>&1`;
 		if ($output =~ /is not recognized as an internal or external command/)
 		{
