@@ -12,13 +12,4 @@
 @REM Description:
 @REM Invokes the tool by call to the related interpreter
 
-@SETLOCAL
-@IF NOT "%PDT_HOME%"=="" (
-SET UTILITIES_HOME=%PDT_HOME%\utilities
-) ELSE (
-SET UTILITIES_HOME=%~dp0\..
-)
-
-@perl %UTILITIES_HOME%\envinfo\envinfo.pl %*
-
-@ENDLOCAL
+@perl %~dp0\..\envinfo\envinfo.pl %*
