@@ -46,14 +46,25 @@ my @logfiles = @ARGV;
 
 if ($help)
 {
-	print "Unite and HTML-ize Raptor log files.\n";
-	print "Usage: perl uh.pl [OPTIONS] FILE1 FILE2 ...\n";
-	print "where FILE1 FILE2 ... are Raptor log files.\n";
-	print "If no file argument is provided then UH takes the latest under \\epoc32\\build\n";
-	print "OPTIONS:\n";
-	print "\t-m, --missing\tAlso add the list of missing binaries (Raptor log should include whatlog info).\n";
-	print "\t\t\tCheck is done against the epoc tree at the root of the current drive\n";
-	print "\t-b DIR, --basedir DIR\tGenerate output under DIR (defaults to current dir)\n";
+print <<_EOH;
+UH parser
+Reads one or more Raptor log files, extracts the interesting bits and puts them into a
+set of HTML files, making it easy to spot the failures and see the related log snippets.
+
+Usage: uh.pl [options] [files]
+
+Options:
+  -h, --help            Show this help message and exit
+  -m, --missing         Add report on missing binaries. Check is done against the epoc
+                        tree at the root of the current drive
+                        (Note: it requires Raptor log to include whatlog info)
+  -b OUTDIR, --basedir OUTDIR
+                        Generate output under OUTDIR (defaults to current dir)
+  
+Files:
+  Accepts one or a list of raptor log files (separated by a space)
+  If no file argument is provided then take the most recent log under \\epoc32\\build
+_EOH
 	exit(0);
 }
 
