@@ -37,8 +37,10 @@ def run(args):
       
 def help():
   print "Compares two environments"
+  print "Locations can be local environments or zipped environments available via UNC or http paths."
   print "Usage:"
-  print "\tdbr diffenv <drive1> (<drive2>)"
+  print "\tdbr diffenv <location1> (<location2>)"
+  
     
   
 def summary():

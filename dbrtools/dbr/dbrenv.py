@@ -16,6 +16,7 @@
 #I'm using the existing stuff as helpers until things get relocated...
 import os.path
 import glob
+import re
 
 import dbrutils
 import dbrbaseline
@@ -34,6 +35,9 @@ def CreateDB(location): #virtual constructor
     return DBRPatchedBaselineEnv(location)
   if(os.path.exists(os.path.join(location,'build_md5.zip'))):
     print 'loading zipped environment'
+    return DBRZippedEnv(location)
+  if(re.match('http://.+',location, re.IGNORECASE)):  
+    print 'loading remote zipped environment'
     return DBRZippedEnv(location)
   if(os.path.exists(os.path.join(location,dbrutils.patch_path_internal()))): #should do something more fun with creating a basleine if we have MD5s
     print 'loading new env...warning: this is only here for compatibility'

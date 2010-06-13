@@ -19,6 +19,9 @@ import sys
 import string
 import shutil
 import time
+import urllib
+from urlparse import urljoin
+
 from os.path import join, isfile, stat
 from stat import *
 
@@ -99,16 +102,20 @@ def deletefiles(files):
 
 def getzippedDB(location):
     db = dict()
-    md5zip = os.path.join(location,'build_md5.zip')
-    print md5zip 
     temp_dir = tempfile.mkdtemp()
+    md5zip = os.path.join(location,'build_md5.zip')
+    if(re.match('^http',location, re.IGNORECASE)):
+      md5zip = os.path.join(temp_dir,'build_md5.zip')
+      url = '%s%s' % (location,'build_md5.zip')
+      res = urllib.urlretrieve(url,md5zip) 
+    print md5zip 
     print temp_dir 
     if(os.path.exists(md5zip)):
       files = set();
       files.add('*')
       extractfromzip(files,md5zip,temp_dir)
       globsearch = os.path.join(temp_dir, os.path.join(patch_path_internal(),'*.md5'))
-      print globsearch 
+#      print globsearch 
       hashes = glob.glob(globsearch)
       for file in hashes:
 #          print 'Reading: %s\n' % file
