@@ -64,6 +64,8 @@ class DBREnv:
     for file in common:
       if(int(self.db[file]['time']) != int(other.db[file]['time'])):
         touched.add(file)
+      if(int(self.db[file]['time']) ==0 or int(other.db[file]['time']) == 0): #workaround for zipped dbs
+        touched.add(file)
 
     sizechanged = set()
     for file in common:
