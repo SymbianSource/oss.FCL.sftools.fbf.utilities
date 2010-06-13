@@ -17,19 +17,21 @@ import sys
 import os.path
 
 def main():
-    print 'MattD: Need to fix the import path properly!'
+#    print 'MattD: Need to fix the import path properly!'
     dbrpath = os.path.join(os.path.dirname(sys.argv[0]),'dbr')
     sys.path.append(dbrpath)
-    args = sys.argv
+    args = sys.argv[1:]
     if(len(sys.argv)>1):
       cmd = sys.argv[1]
-      args.pop(0)
-      args.pop(0)
+      args = sys.argv[2:]
+#      print sys.argv
   
       if(cmd):
         try:
-            command = __import__ (cmd)
-            command.run(args)        
+#          print cmd
+#          print args
+          command = __import__ (cmd)
+          command.run(args)
         except ImportError:
           help(args)
     else:
@@ -42,5 +44,7 @@ def help(args):
   except ImportError:
     print "error: Cannot find DBR tools help in %s" % dbrpath
                     
+
+
 main()
   

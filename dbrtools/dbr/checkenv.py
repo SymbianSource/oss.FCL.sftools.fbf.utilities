@@ -38,5 +38,6 @@ def help():
   print "Usage:"
   print "\tdbr checkenv"
     
-  
+def summary():
+  return "Checks the status of the current environment"
 

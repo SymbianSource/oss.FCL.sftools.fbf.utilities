@@ -28,6 +28,7 @@ def run(args):
       db1=dbrenv.CreateDB(first)
       db2=dbrenv.CreateDB(second)
       results = db1.compare(db2)
+#      results.printdetail()
       filteredresults = filter.filter(results)
       filteredresults.printdetail()
       filteredresults.printsummary()
@@ -40,4 +41,5 @@ def help():
   print "\tdbr diffenv <drive1> (<drive2>)"
     
   
-
+def summary():
+  return "Compares two baselines"

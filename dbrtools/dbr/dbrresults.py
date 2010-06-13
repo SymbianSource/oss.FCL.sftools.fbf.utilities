@@ -52,6 +52,8 @@ class DBRResults:
     self.unknown |= other.unknown
     return self
   
+  def __sub__(self, other):
+    return DBRResults(self.added - other.added, self.removed - other.removed, self.touched - other.touched, self.changed - other.changed, self.unknown - other.unknown)
          
   def printdetail(self):
     for file in sorted(self.added):

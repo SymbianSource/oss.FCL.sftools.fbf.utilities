@@ -14,6 +14,8 @@
 # DBR help - displays the DBR help
 
 import sys
+import os
+import re
 
 def main():
   args = sys.argv
@@ -26,11 +28,42 @@ def run(args):
         tool.help()
       except ImportError:
         print "No help on %s\n" % args[0]
-        usage()
+        getsummary()
     else:
-      usage()
+      getsummary()
+
+def getsummary():
+  debug = 0
+
+  print "Usage:"
+  modules = os.listdir(os.path.join(os.path.dirname(sys.argv[0]),'dbr'))
+  for module in sorted(modules):
+    modname = re.match('(.+)\.py$',module)
+    if(modname):
+      module = modname.group(1)
+      try:
+        tool = __import__(module)
+        str = tool.summary()
+        print "\tdbr %s\t- %s" %(module, str)
+      except ImportError:
+        if(debug):
+          print "Couldn't import %s" % module
+      except AttributeError:
+        if(debug):
+          print "Couldn't find summary in %s" % module
+      except NameError: #if it doesn't work...
+        if(debug):
+          print "%s looks broken" % module
+      except SyntaxError: #if it doesn't work...
+        if(debug):
+          print "%s looks broken" % module
+
+      
+
+
+
+def oldusage():
     
-def usage():    
     print "Usage:"
     print "\tdbr intro\t- basic introduction\n"
 
@@ -47,5 +80,9 @@ def usage():
     print ""
     print "\tdbr help - help"
     
+
+def summary():
+  return "Displays the help"
+
 def help():
-  print "No help available!"    
+  getsummary()

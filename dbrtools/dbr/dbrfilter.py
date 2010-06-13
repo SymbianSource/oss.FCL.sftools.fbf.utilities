@@ -151,17 +151,16 @@ class DBRComplexFilter (DBRFilter):
       res = dbrresults.DBRResults(set(),set(),set(),set(),set())
       for filter in self.inc:  
         res |= filter.include(results)
-    else:
-      res = results     
-    return res
+        print 'including...'
+      return res
+    return results
     
   def exclude(self, results):
     res = dbrresults.DBRResults(set(),set(),set(),set(),set())
-    if self.exc:
-      res = results
-      for filter in self.exc:
-        res &= filter.exclude(results)
-    return res
+    for filter in self.exc:
+      print 'excluding...'
+      res |= filter.include(results)
+    return results - res
   
   def filter(self, results):
     return self.include(results) & self.exclude(results)
