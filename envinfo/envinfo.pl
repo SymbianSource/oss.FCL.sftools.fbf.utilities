@@ -34,12 +34,20 @@ $baseline = $compare if ($compare);
 
 if ($help)
 {
-	print "Dumps environment info such as tools version to cmdline and/or to a file\n";
-	print "Compare info with a baseline\n";
-	print "Usage: perl envinfo.pl [OPTIONS]\n";
-	print "where OPTIONS are:\n";
-	print "-r,--report [FILE]\tCreate report file (default \\output\\logs\\envinfo.txt)\n";
-	print "-c,--compare [LOCATION]\tCompare environment with info at LOCATION (default \\build_info\\logs\\envinfo.txt)\n";
+print <<_EOH;
+envinfo
+Dumps environment info such as tools version to cmdline and/or to a file
+Compare info with a baseline
+
+Usage: envinfo.pl [options]
+
+Options:
+  -h, --help            Show this help message and exit
+  -r,--report [FILE]    Write report to FILE (default \\output\\logs\\envinfo.txt)
+  -c,--compare [LOCATION]
+                        Compare environment with info at LOCATION
+                        (default \\build_info\\logs\\envinfo.txt)
+_EOH
 	exit(0);
 }
 
