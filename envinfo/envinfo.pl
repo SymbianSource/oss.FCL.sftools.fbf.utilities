@@ -214,9 +214,9 @@ elsif (defined $ENV{'GCCE441BIN'})
 }
 if ($gcc441_path)
 {
-	my $gcc441_cmd = "$gcc441_path\\arm-none-symbianelf-g++ -dumpversion";
+	my $gcc441_cmd = "$gcc441_path\\arm-none-symbianelf-g++ --version";
 	my $gcc441_out = `$gcc441_cmd`;
-	$gcc441_ver = "4.4.1" if ($gcc441_out =~ /4.4.1/);
+	$gcc441_ver = $1 if ($gcc441_out =~ /arm-none-symbianelf-g\+\+\ (.*)/);
 }
 push @environment_info, {name=>'GCC4.4.1', version=>$gcc441_ver};
 
