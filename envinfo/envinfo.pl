@@ -19,9 +19,11 @@ use strict;
 use Getopt::Long;
 
 my $report;
-my $output = "\\output\\logs\\envinfo.txt";
+my $output = "$ENV{'EPOCROOT'}\\output\\logs\\envinfo.txt";
+$output =~ s/^\\+/\\/;
 my $compare;
-my $baseline = "\\build_info\\logs\\envinfo.txt";
+my $baseline = "$ENV{'EPOCROOT'}\\build_info\\logs\\envinfo.txt";
+$baseline =~ s/^\\+/\\/;
 my $help = 0;
 GetOptions((
 	'report:s' => \$report,
@@ -43,10 +45,10 @@ Usage: envinfo.pl [options]
 
 Options:
   -h, --help            Show this help message and exit
-  -r,--report [FILE]    Write report to FILE (default \\output\\logs\\envinfo.txt)
+  -r,--report [FILE]    Write report to FILE (default %EPOCROOT%\\output\\logs\\envinfo.txt)
   -c,--compare [LOCATION]
                         Compare environment with info at LOCATION
-                        (default \\build_info\\logs\\envinfo.txt)
+                        (default %EPOCROOT%\\build_info\\logs\\envinfo.txt)
 _EOH
 	exit(0);
 }
@@ -163,6 +165,13 @@ my $zip_out = `7z`;
 $zip_ver = $1 if ($zip_out =~ /^7-Zip\s+(\S+)\s+Copyright/m);
 push @environment_info, {name=>'7-Zip', version=>$zip_ver};
 
+# EPOCROOT
+my $epocroot_ver = 'N.A.';
+my $epocroot_out = `echo %EPOCROOT%`;
+chomp $epocroot_out;
+$epocroot_ver = $epocroot_out if ($epocroot_out ne '%EPOCROOT%');
+push @environment_info, {name=>'EPOCROOT', version=>$epocroot_ver};
+
 # Raptor
 my $sbs_ver = 'N.A.';
 my $sbs_out = `sbs -v`;
@@ -255,7 +264,7 @@ for my $tool_info (@environment_info)
 	$tool_info->{version} =~ s/\t/ /g;
 }
 
-print "\nTools breakdown\n";
+print "\nEnvironment Information:\n";
 
 my $cmp_notpresent = 0;
 my $cmp_diffver = 0;
