@@ -86,7 +86,7 @@ if (defined $compare)
 		}
 		else
 		{
-			my $tmp_file = "tmp$$.txt";
+			$tmp_file = "tmp$$.txt";
 			system("ren envinfo.txt $tmp_file"); 
 			$target = $tmp_file;
 		}
