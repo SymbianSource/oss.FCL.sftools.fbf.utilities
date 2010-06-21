@@ -289,12 +289,12 @@ for my $tool_info (@environment_info)
 			{
 				print "[OK]";
 			}
-			elsif ($tool_info->{version} cmp $baselineversion < 0)
+			elsif (($tool_info->{version} cmp $baselineversion) < 0)
 			{
 				print "[WARNING: less recent than baseline]";
 				$cmp_diffver++;
 			}
-			elsif ($tool_info->{version} cmp $baselineversion > 0)
+			elsif (($tool_info->{version} cmp $baselineversion) > 0)
 			{
 				print "[WARNING: more recent than baseline]";
 				$cmp_diffver++;
