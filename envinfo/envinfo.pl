@@ -274,7 +274,8 @@ for my $tool_info (@environment_info)
 	
 	if (defined $compare &&
 		$tool_info->{name} ne 'Machine' &&
-		$tool_info->{name} ne 'OS Name')
+		$tool_info->{name} ne 'OS Name' &&
+    $tool_info->{name} ne 'EPOCROOT')
 	{
 		print "\t";
 		if (defined $baseline_environment_info->{$tool_info->{name}})
