@@ -110,6 +110,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/usbservices
 https://developer.symbian.org/oss/FCL/sf/mw/videoutils
 https://developer.symbian.org/oss/FCL/sf/mw/vpnclient
 https://developer.symbian.org/oss/FCL/sf/mw/web
+https://developer.symbian.org/oss/FCL/sf/mw/webextensions
 https://developer.symbian.org/oss/FCL/sf/mw/webruntime
 https://developer.symbian.org/oss/FCL/sf/mw/websrv
 https://developer.symbian.org/oss/FCL/sf/mw/wirelessacc
