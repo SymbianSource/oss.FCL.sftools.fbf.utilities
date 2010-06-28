@@ -132,17 +132,11 @@ sub on_end_buildlog_warning
 	{
 		$::allbldinfs->{$raptor_warning_info->{bldinf}} = 1;
 		
-		# normalize bldinf path
-		$raptor_warning_info->{bldinf} = lc($raptor_warning_info->{bldinf});
-		$raptor_warning_info->{bldinf} =~ s,^[A-Za-z]:,,;
-		$raptor_warning_info->{bldinf} =~ s,[\\],/,g;
+		RaptorCommon::normalize_bldinf_path(\$raptor_warning_info->{bldinf});
 		
-		if ($raptor_warning_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[a-zA-Z]+),)
-		{
-			$package = $1;
-			$package =~ s,/,_,;
-		}
-		else
+		$package = RaptorCommon::get_package_subpath($raptor_warning_info->{bldinf});
+		$package =~ s,/,_,g;
+		if (!$package)
 		{
 			print "WARNING: can't understand bldinf attribute of raptor warning: $raptor_warning_info->{bldinf}. Won't associate to package.\n";
 		}

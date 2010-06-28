@@ -178,16 +178,10 @@ sub process_characters
 		{
 			$::allbldinfs->{$guessed_bldinf} = 1;
 			
-			# normalize bldinf path
-			$guessed_bldinf = lc($guessed_bldinf);
-			$guessed_bldinf =~ s,^[A-Za-z]:,,;
-			$guessed_bldinf =~ s,[\\],/,g;
+			RaptorCommon::normalize_bldinf_path(\$guessed_bldinf);
 			
-			if ($guessed_bldinf =~ m,/((os|mw|app|tools|ostools|adaptation)/[a-zA-Z]+),)
-			{
-				$package = $1;
-				$package =~ s,/,_,;
-			}
+			$package = RaptorCommon::get_package_subpath($guessed_bldinf);
+			$package =~ s,/,_,g;
 		}
 			
 		if ($line =~ m,[^\s^\r^\n],)

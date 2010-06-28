@@ -185,11 +185,8 @@ while(<CSV>)
 		}
 		if ($failure->{component})
 		{
-			if ($failure->{component} =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
-			{
-				$failure_package = $1;
-			}
-			else
+			$failure_package = RaptorCommon::get_package_subpath($failure->{component});
+			if (!$failure_package)
 			{
 				print "WARNING: summary line with wrong component path at $csv_file line $csv_linenum. Skipping\n";
 				next;
@@ -295,7 +292,7 @@ for my $package (@allpackages)
 	if ($mustlink)
 	{
 		my $packagesummaryhtml = $package;
-		$packagesummaryhtml =~ s,/,_,;
+		$packagesummaryhtml =~ s,/,_,g;
 		$packagesummaryhtml .= ".html";
 		my $packageline = "<tr><td><a href='$packagesummaryhtml'>$package</a></td>";
 		for (@severities)
@@ -337,8 +334,8 @@ sub print_category_specific_summary
 {
 	my ($category, $failures_by_severity) = @_;
 	
-	my $filenamebase = $category;
-	$filenamebase =~ s,/,_,;
+	my $filenamebase = $category; 
+	$filenamebase =~ s,/,_,g;
 	
 	open(SPECIFIC, ">$outputdir/$filenamebase.html");
 	print SPECIFIC "FAILURES FOR CATEGORY $category<br/>\n";
@@ -376,8 +373,8 @@ sub print_package_specific_summary
 	
 	my $anyfailures = 0;
 	
-	my $filenamebase = $package;
-	$filenamebase =~ s,/,_,;
+	my $filenamebase = $package; 
+	$filenamebase =~ s,/,_,g;
 	
 	if (defined $recipe_failures_by_package_severity->{$package})
 	{
@@ -422,7 +419,7 @@ sub print_package_specific_summary
 		$missing_by_package->{$package} = 0;
 		
 		my $missinglistfile = $package;
-		$missinglistfile =~ s,/,_,;
+		$missinglistfile =~ s,/,_,g;
 		$missinglistfile .= "_missing.txt";
 		if (open(MISSINGLIST, "$::raptorbitsdir/$missinglistfile"))
 		{
@@ -507,17 +504,13 @@ sub distinct_packages
 	
 	for my $bldinf (keys %{$allbldinfs})
 	{
-		# normalize bldinf path
-		$bldinf = lc($bldinf);
-		$bldinf =~ s,^[A-Za-z]:,,;
-		$bldinf =~ s,[\\],/,g;
+		RaptorCommon::normalize_bldinf_path(\$bldinf);
 		
 		my $package = '';
-		if ($bldinf =~ m,/((os|mw|app|tools|ostools|adaptation|unknown)/[a-zA-Z]+),)
-		{
-			$package = $1;
-		}
-		else
+		print "bldinf: $bldinf\n";
+		$package = RaptorCommon::get_package_subpath($bldinf);
+		print "package: $package\n";
+		if (!$package)
 		{
 			print "WARNING: can't understand bldinf attribute of recipe: $bldinf. Won't dump to failed recipes file.\n";
 		}

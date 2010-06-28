@@ -268,18 +268,12 @@ sub on_end_buildlog_recipe
 	if ($recipe_info->{exit} =~ /failed/i || $recipe_info->{exit} =~ /retry/i && $recipe_info->{forcesuccess} =~ /FORCESUCCESS/i)
 	{
 		#print "2 normalizing bldinf: $recipe_info->{bldinf} \n";
-		# normalize bldinf path
-		$recipe_info->{bldinf} = lc($recipe_info->{bldinf});
-		$recipe_info->{bldinf} =~ s,^[A-Za-z]:,,;
-		$recipe_info->{bldinf} =~ s,[\\],/,g;
+		RaptorCommon::normalize_bldinf_path(\$recipe_info->{bldinf});
 		
 		my $package = '';
-		if ($recipe_info->{bldinf} =~ m,/((os|mw|app|tools|ostools|adaptation)/[a-zA-Z]+),)
-		{
-			$package = $1;
-			$package =~ s,/,_,;
-		}
-		else
+		$package = RaptorCommon::get_package_subpath($recipe_info->{bldinf});
+		$package =~ s,/,_,g;
+		if (!$package)
 		{
 			#print "WARNING: can't understand bldinf attribute of recipe: $recipe_info->{bldinf}. Won't dump to failed recipes file.\n";
 			$package = 'unknown_unknown';

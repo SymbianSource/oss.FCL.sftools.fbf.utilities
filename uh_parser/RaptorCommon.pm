@@ -41,4 +41,39 @@ sub dump_fault
 	close(SUMMARY);
 }
 
+sub normalize_bldinf_path
+{
+	my ($bldinfref) = @_;
+	
+	${$bldinfref} = lc(${$bldinfref});
+	${$bldinfref} =~ s,^[A-Za-z]:,,;
+	${$bldinfref} =~ s,[\\],/,g;
+}
+
+sub get_package_subpath
+{
+	my ($bldinf) = @_;
+	
+	my $package = '';
+	
+	if ($bldinf =~ m,(unknown/unknown),)
+	{
+		$package = 'unknown/unknown';
+	}
+	elsif ($bldinf =~ m,^/+?([^/]*?/[^/]*?/[^/]*?)/,)
+	{
+		$package = $1;
+	}
+	#elsif ($bldinf =~ m,^/+?([^/]*?/[^/]*?)/,)
+	#{
+	#	$package = $1;
+	#}
+	#elsif ($bldinf =~ m,^/+?([^/]*?)/,)
+	#{
+	#	$package = $1;
+	#}
+	
+	return $package;
+}
+
 1;
