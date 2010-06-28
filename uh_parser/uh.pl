@@ -507,9 +507,9 @@ sub distinct_packages
 		RaptorCommon::normalize_bldinf_path(\$bldinf);
 		
 		my $package = '';
-		print "bldinf: $bldinf\n";
+		#print "bldinf: $bldinf\n";
 		$package = RaptorCommon::get_package_subpath($bldinf);
-		print "package: $package\n";
+		#print "package: $package\n";
 		if (!$package)
 		{
 			print "WARNING: can't understand bldinf attribute of recipe: $bldinf. Won't dump to failed recipes file.\n";
