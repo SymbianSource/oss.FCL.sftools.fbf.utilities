@@ -16,6 +16,8 @@
 
 package releaseables;
 
+use File::Path;
+
 use strict;
 
 our $reset_status = {};
@@ -221,19 +223,16 @@ sub on_end_whatlog
 	{
 		for my $config (keys %{$whatlog_info->{$bldinf}})
 		{
-			my $normalized = lc($bldinf);
-			$normalized =~ s,^[A-Za-z]:,,;
-			$normalized =~ s,[\\],/,g;
+			my $normalized = $bldinf;
+			RaptorCommon::normalize_bldinf_path(\$normalized);
 			
-			$normalized =~ m,^/sf/([^/]+)/([^/]+)/,;
-			my $layer = $1;
-			my $package = $2;
+			my $package = RaptorCommon::get_package_subpath($normalized);
 			
-			mkdir("$::releaseablesdir/$layer");
-			mkdir("$::releaseablesdir/$layer/$package");
+			mkpath("$::releaseablesdir/$package");
 			
-			my $filename = "$::releaseablesdir/$layer/$package/info.tsv";
-			my $filenamemissing = "$::raptorbitsdir/$layer\_$package\_missing.txt" if ($::missing);
+			my $filename = "$::releaseablesdir/$package/info.tsv";
+			$package =~ s,/,_,g;
+			my $filenamemissing = "$::raptorbitsdir/$package\_missing.txt" if ($::missing);
 			
 			print "Writing info file $filename\n" if (!-f$filename);
 			open(FILE, ">>$filename");
