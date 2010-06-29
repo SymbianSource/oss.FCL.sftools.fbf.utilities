@@ -1,6 +1,8 @@
 https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
+https://developer.symbian.org/oss/FCL/sf/adaptation/openmaxil.adapt
 https://developer.symbian.org/oss/FCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/FCL/sf/adaptation/stubs
+https://developer.symbian.org/oss/FCL/sf/adaptation/wlan.ti.WL1271
 https://developer.symbian.org/oss/FCL/sf/app/browserui
 https://developer.symbian.org/oss/FCL/sf/app/camera
 https://developer.symbian.org/oss/FCL/sf/app/commonemail
@@ -50,7 +52,10 @@ https://developer.symbian.org/oss/FCL/sf/incubator/freedomfighters
 httsp://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/multimediaadaptation
+https://developer.symbian.org/oss/FCL/sf/incubator/openmar
 https://developer.symbian.org/oss/FCL/sf/incubator/python
+https://developer.symbian.org/oss/FCL/sf/incubator/socialmobilefw
+https://developer.symbian.org/oss/FCL/sf/incubator/widgetbuilder
 https://developer.symbian.org/oss/FCL/sf/incubator/wildducks
 https://developer.symbian.org/oss/FCL/sf/mw/accesssec
 https://developer.symbian.org/oss/FCL/sf/mw/appinstall
@@ -126,7 +131,12 @@ https://developer.symbian.org/oss/FCL/sf/os/imagingext
 https://developer.symbian.org/oss/FCL/sf/os/kernelhwsrv
 https://developer.symbian.org/oss/FCL/sf/os/lbs
 https://developer.symbian.org/oss/FCL/sf/os/mm
+https://developer.symbian.org/oss/FCL/sf/os/mmaudio
+https://developer.symbian.org/oss/FCL/sf/os/mmcamera
+https://developer.symbian.org/oss/FCL/sf/os/mmimaging
+https://developer.symbian.org/oss/FCL/sf/os/mmvideo
 https://developer.symbian.org/oss/FCL/sf/os/networkingsrv
+https://developer.symbian.org/oss/FCL/sf/os/openmaxil
 https://developer.symbian.org/oss/FCL/sf/os/osrndtools
 https://developer.symbian.org/oss/FCL/sf/os/ossrv
 https://developer.symbian.org/oss/FCL/sf/os/persistentdata

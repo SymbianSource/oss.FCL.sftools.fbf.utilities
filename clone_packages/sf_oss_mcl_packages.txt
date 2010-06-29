@@ -1,4 +1,5 @@
 https://developer.symbian.org/oss/MCL/sf/adaptation/beagleboard
+https://developer.symbian.org/oss/MCL/sf/adaptation/openmaxil.adapt
 https://developer.symbian.org/oss/MCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/MCL/sf/adaptation/stubs
 https://developer.symbian.org/oss/MCL/sf/app/browserui
@@ -120,7 +121,12 @@ https://developer.symbian.org/oss/MCL/sf/os/imagingext
 https://developer.symbian.org/oss/MCL/sf/os/kernelhwsrv
 https://developer.symbian.org/oss/MCL/sf/os/lbs
 https://developer.symbian.org/oss/MCL/sf/os/mm
+https://developer.symbian.org/oss/MCL/sf/os/mmaudio
+https://developer.symbian.org/oss/MCL/sf/os/mmcamera
+https://developer.symbian.org/oss/MCL/sf/os/mmimaging
+https://developer.symbian.org/oss/MCL/sf/os/mmvideo
 https://developer.symbian.org/oss/MCL/sf/os/networkingsrv
+https://developer.symbian.org/oss/MCL/sf/os/openmaxil
 https://developer.symbian.org/oss/MCL/sf/os/osrndtools
 https://developer.symbian.org/oss/MCL/sf/os/ossrv
 https://developer.symbian.org/oss/MCL/sf/os/persistentdata
