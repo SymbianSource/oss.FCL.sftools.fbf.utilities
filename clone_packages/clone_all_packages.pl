@@ -1,6 +1,6 @@
 #! perl
 
-# Copyright (c) 2009 Symbian Foundation Ltd
+# Copyright (c) 2009-2010 Symbian Foundation Ltd
 # This component and the accompanying materials are made available
 # under the terms of the License "Eclipse Public License v1.0"
 # which accompanies this distribution, and is available
@@ -311,6 +311,15 @@ foreach my $file (@packagelist_files)
       $revision = $3;
       }
  
+ 		# sources.csv format
+ 		# http://developer.symbian.org/oss/FCL/sf/app/browserui/,/sf/app/browserui,tag,tip_bulk,layers.sysdef.xml
+ 		# http://developer.symbian.org/oss/FCL/sf/app/browserui/,/sf/app/browserui,changeset,e086c7f635d5,layers.sysdef.xml
+		if ($line =~ /^(http[^,]+),(\S+),\S+,(\S+),\S*$/)
+			{
+			$line = $1;
+			$revision = $3;
+			}
+
     # Look for the oss/MCL/ prefix to a path e.g.
     # https://developer.symbian.org/oss/FCL/interim/contrib/WidgetExamples
     if ($line =~ /((oss|sfl)\/(FCL|MCL)\/.*)\s*$/)
