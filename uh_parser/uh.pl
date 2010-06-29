@@ -52,22 +52,32 @@ if ($help)
 {
 print <<_EOH;
 UH parser
-Reads one or more Raptor log files, extracts the interesting bits and puts them into a
-set of HTML files, making it easy to spot the failures and see the related log snippets.
+Reads one or more Raptor log files, extracts the interesting bits and puts them
+into a set of HTML files, making it easy to spot the failures and see the
+related log snippets.
 
 Usage: uh.pl [options] [files]
 
 Options:
   -h, --help            Show this help message and exit
-  -m, --missing         Add report on missing binaries. Check is done against the epoc
-                        tree at the root of the current drive
+  -m, --missing         Add report on missing binaries. Check is done against
+                        the epoc tree at the root of the current drive
                         (Note: it requires Raptor log to include whatlog info)
   -b OUTDIR, --basedir OUTDIR
                         Generate output under OUTDIR (defaults to current dir)
   
 Files:
-  Accepts one or a list of raptor log files (separated by a space)
-  If no file argument is provided then take the most recent log under \\epoc32\\build
+  Accepts one or a list of raptor log files (separated by a space).
+  Shell wildcards are accepted in the file names.
+  If no file argument is provided then take the most recent log under
+  \\epoc32\\build
+  
+Examples:
+  uh.pl -m              Launched from the build drive, parses the log file of
+                        the last call to sbs. Also reports on missing files.
+  uh.pl -m \\output\\logs\\*_compile.log
+                        Parses all files ending in '_compile.log' under the
+                        \\output\\logs directory. Also reports on missing files.
 _EOH
 	exit(0);
 }
