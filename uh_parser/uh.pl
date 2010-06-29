@@ -42,7 +42,11 @@ GetOptions((
 	'basedir=s' => \$basedir,
 	'help!' => \$help
 ));
-my @logfiles = @ARGV;
+my @logfiles = ();
+for my $logfilesarg (@ARGV)
+{
+	push(@logfiles, glob($logfilesarg));
+}
 
 if ($help)
 {
