@@ -26,12 +26,13 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.16'
+version = '0.17'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
 passman = urllib2.HTTPPasswordMgrWithDefaultRealm()	# not relevant for live Symbian website
 download_list = []
+failure_list = []
 unzip_list = []
 
 def build_opener(debug=False):
@@ -253,6 +254,7 @@ def md5_checksum(filename):
 	return md5.hexdigest().upper()
 
 checksums = {}
+filesizes = {}
 def parse_release_metadata(filename):
 	if os.path.exists(filename):
 		tree = ET.parse(filename)
@@ -262,18 +264,31 @@ def parse_release_metadata(filename):
 				file = element.get("name")
 				md5 = element.get("md5checksum")
 				checksums[file] = md5.upper()
+				size = element.get("size")
+				filesizes[file] = int(size)
 
 def download_file(filename,url):
 	global options
 	global checksums
+	global filesizes
+	resume_start = 0
 	if os.path.exists(filename):
 		if filename in checksums:
 			print 'Checking existing ' + filename
-			file_checksum = md5_checksum(filename)
-			if file_checksum == checksums[filename]:
+			file_size = os.stat(filename).st_size
+			if file_size == filesizes[filename]:
+				file_checksum = md5_checksum(filename)
+				if file_checksum == checksums[filename]:
+					if options.progress:
+						print '- OK ' + filename
+					return True
+			elif file_size < filesizes[filename]:
 				if options.progress:
-					print '- OK ' + filename
-				return True
+					print '- %s is too short' % (filename)
+				if options.debug:
+					print '- %s is %d bytes, should be %d bytes' % (filename, file_size, filesizes[filename])
+				if options.resume:
+					resume_start = file_size
 
 	if options.dryrun and not re.match(r"release_metadata", filename):
 		global download_list
@@ -283,7 +298,10 @@ def download_file(filename,url):
 
 	print 'Downloading ' + filename
 	global headers
-	req = urllib2.Request(url, None, headers)
+	request_headers = headers.copy()		# want a fresh copy for each request
+	if resume_start > 0:
+		request_headers['Range'] = "bytes=%d-%d" % (resume_start, filesizes[filename])
+	req = urllib2.Request(url, None, request_headers)
 	
 	CHUNK = 128 * 1024
 	size = 0
@@ -297,7 +315,7 @@ def download_file(filename,url):
 		if chunk.find('<div id="sign_in_box">') != -1:
 			# our urllib2 cookies have gone awol - login again
 			login(False)
-			req = urllib2.Request(url, None, headers)
+			req = urllib2.Request(url, None, request_headers)
 			response = urllib2.urlopen(req)
 			chunk = response.read(CHUNK)
 			if chunk.find('<div id="sign_in_box">') != -1:
@@ -306,7 +324,16 @@ def download_file(filename,url):
 				return False
 		info = response.info()
 		if 'Content-Length' in info:
-			filesize = int(info['Content-Length'])
+			filesize = resume_start + int(info['Content-Length'])		# NB. length of the requested content, taking into account the range
+			if resume_start > 0 and 'Content-Range' not in info:
+				# server doesn't believe in our range
+				filesize = int(info['Content-Length'])
+				if options.debug:
+					print "Server reports filesize as %d, ignoring our range request (%d-%d)" % (filesize, resume_start, filesizes[filename])
+				resume_start = 0;	# will have to download from scratch
+			if filename in filesizes:
+				if filesize != filesizes[filename]:
+					print "WARNING:  %s size %d does not match release_metadata.xml (%d)" % ( filename, filesize, filesizes[filename])
 		else:
 			match = re.search('>([^>]+Licen[^<]+)<', chunk, re.IGNORECASE)
 			if match:
@@ -328,9 +355,18 @@ def download_file(filename,url):
 		return False
 
 	# we are now up and running, and chunk contains the start of the download
-	
+	if options.debug:
+		print "\nReading %s from effective URL %s" % (filename, response.geturl())
+
 	try:
-		fp = open(filename, 'wb')
+		if resume_start > 0:
+			fp = open(filename, 'a+b')	# append to existing content
+			if options.progress:
+				print " - Resuming at offset %d" % (resume_start)
+				size = resume_start
+				last_size = size
+		else:
+			fp = open(filename, 'wb')		# write new file
 		md5 = hashlib.md5()
 		while True:
 			fp.write(chunk)
@@ -354,9 +390,6 @@ def download_file(filename,url):
 			if not chunk: break
 
 		fp.close()
-		if options.progress:
-			now = time.time()
-			print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-start_time)
 
 	#handle errors
 	except urllib2.URLError, e:
@@ -367,16 +400,36 @@ def download_file(filename,url):
 			print 'Error code: ', e.code
 		return False
 
+	if options.debug:
+		info = response.info()
+		print "Info from final response of transfer:"
+		print response.info()
+
+	if filesize > 0 and size != filesize:
+		print "Incomplete transfer - only received %d bytes of the expected %d byte file" % (size, filesize)
+		return False
+	
+	if options.progress:
+		now = time.time()
+		print "- Completed %s - %d Kb in %d seconds" % (filename, (filesize/1024)+0.5, now-start_time)
+
 	if filename in checksums:
 		download_checksum = md5.hexdigest().upper()
+		if resume_start > 0:
+			# did a partial download, so need to checksum the whole file
+			download_checksum = md5_checksum(filename)
 		if download_checksum != checksums[filename]:
-			print '- WARNING: %s checksum does not match' % filename
+			if options.debug:
+				print '- Checksum for %s was %s, expected %s' % (filename, download_checksum, checksums[filename])
+			print '- ERROR: %s checksum does not match' % filename
+			return False
 
 	return True
 
 def downloadkit(version):	
 	global headers
 	global options
+	global failure_list
 	urlbase = top_level_url + '/main/tools_and_kits/downloads/'
 
 	viewid = 5   # default to Symbian^3
@@ -439,6 +492,7 @@ def downloadkit(version):
 		if options.noarmv5 and options.nowinscw and re.search(r"binaries_epoc.zip|binaries_epoc_sdk", filename) :
 			continue 	# skip binaries_epoc and binaries_sdk ...
 		if download_file(filename, downloadurl) != True :
+			failure_list.append(filename)
 			continue # download failed
 
 		# unzip the file (if desired)
@@ -457,6 +511,13 @@ def downloadkit(version):
 	# wait for the unzipping threads to complete
 	complete_outstanding_unzips()  
 
+	if len(failure_list) > 0:
+		print "\n"
+		print "Downloading completed, with failures in %d files\n" % (len(failure_list))
+		print "\n\t".join(failure_list)
+		print "\n"
+	elif not options.dryrun:
+		print "\nDownloading completed successfully"
 	return 1
 
 parser = OptionParser(version="%prog "+version, usage="Usage: %prog [options] version")
@@ -482,6 +543,8 @@ parser.add_option("--debug", action="store_true", dest="debug",
 	help="debug HTML traffic (not recommended!)")
 parser.add_option("--webhost", dest="webhost", metavar="SITE",
 	help="use alternative website (for testing!)")
+parser.add_option("--noresume", action="store_false", dest="resume",
+	help="Do not attempt to continue a previous failed transfer")
 parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
@@ -493,6 +556,7 @@ parser.set_defaults(
 	username='',
 	password='',
 	webhost = 'developer.symbian.org',
+	resume=True,
 	debug=False
 	)
 
