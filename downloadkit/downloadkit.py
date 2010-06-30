@@ -26,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.17'
+version = '0.18'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
@@ -312,13 +312,15 @@ def download_file(filename,url):
 	try:
 		response = urllib2.urlopen(req)
 		chunk = response.read(CHUNK)
-		if chunk.find('<div id="sign_in_box">') != -1:
+		if chunk.find('<div class="signin">') != -1:
 			# our urllib2 cookies have gone awol - login again
+			if options.debug:
+				print "Redirected to login page? login again.."
 			login(False)
 			req = urllib2.Request(url, None, request_headers)
 			response = urllib2.urlopen(req)
 			chunk = response.read(CHUNK)
-			if chunk.find('<div id="sign_in_box">') != -1:
+			if chunk.find('<div class="signin">') != -1:
 				# still broken - give up on this one
 				print "*** ERROR trying to download %s" % (filename)
 				return False
@@ -407,6 +409,8 @@ def download_file(filename,url):
 
 	if filesize > 0 and size != filesize:
 		print "Incomplete transfer - only received %d bytes of the expected %d byte file" % (size, filesize)
+		if options.debug:
+			print "Transfer delivered %d bytes in %s seconds" % (size-resume_start, now-start_time)
 		return False
 	
 	if options.progress:
