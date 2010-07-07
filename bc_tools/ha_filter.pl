@@ -24,13 +24,15 @@ my $header_list;
 my $destfile;
 my $pkg_destfile;
 my $del_ok_issues = 1; # This variable determines whether to delete OK issues first.
-my $del_comp_issues = 0; # This variable determines whether to delete Compilation errors.
-my $del_boost_issues = 1; # This variable determines whether to delete issues for Boost API headers.
+my $del_comp_issues = 1; # This variable determines whether to delete Compilation errors.
+my $del_boost_issues = 0; # This variable determines whether to delete issues for Boost API headers.
 my $tsv_file; # If defined then sub-reports per package will be generated.
 my $n;
 my $m;
 my $p;
 my $file_name;
+my $type_id;
+my $identity_description;
 my $delete_node;
 my @lines;
 my $line;
@@ -193,6 +195,8 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 	$n = 0;
 	while ($n < $header_num) {
 		$file_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'shortname'}->[0];
+		$type_id = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'issue'}->[0]->{'typeid'}->[0];
+		$identity_description = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'issue'}->[0]->{'identitydescription'}->[0];
 		$pkg_found = 0;
 		open FILE, "<$tsv_file" or die("Failed to read $tsv_file: $!\n");
 		while ($line = <FILE>)
@@ -201,7 +205,7 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 			($hdr_to_pkg,$package) = split /\t/,$line;
 			$hdr_to_pkg =~ s/\//\\/g;
 			$hdr_to_pkg =~ s/\\epoc32\\include\\//;
-			if (lc($file_name) eq lc($hdr_to_pkg)) {
+			if ((lc($file_name) eq lc($hdr_to_pkg)) && (!(($type_id eq "0") && ($identity_description eq "File")))) {
 				print "Package found: $package for header file: $file_name \n";
 				$pkg_found = 1;
 				$pkgs_num = @pkgs;
@@ -225,7 +229,7 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 		}
 		close FILE;
 		if ($pkg_found == 0) {
-			print "Package not found for header file: $file_name \n";
+			print "Removed header file: $file_name \n";
 			$nopkg++;
 			$n++;
 		} else { # Delete the node.
@@ -263,6 +267,8 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 		print "Processing header files for $current_pkg... \n";
 		while ($n < $header_num) {
 			$file_name = $temp_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'shortname'}->[0];
+			$type_id = $temp_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'issue'}->[0]->{'typeid'}->[0];
+			$identity_description = $temp_report->{'bbcresults'}->{'issuelist'}->[0]->{'headerfile'}->[$n]->{'issue'}->[0]->{'identitydescription'}->[0];
 			$pkg_found = 0;
 			open FILE, "<$tsv_file" or die("Failed to read $tsv_file: $!\n");
 			while ($line = <FILE>)
@@ -271,7 +277,7 @@ if (defined($tsv_file)) { # Generate sub-reports per package.
 				($hdr_to_pkg,$package) = split /\t/,$line;
 				$hdr_to_pkg =~ s/\//\\/g;
 				$hdr_to_pkg =~ s/\\epoc32\\include\\//;	
-				if ((lc($file_name) eq lc($hdr_to_pkg)) && ($current_pkg eq $package)) {
+				if ((lc($file_name) eq lc($hdr_to_pkg)) && ($current_pkg eq $package) && (!(($type_id eq "0") && ($identity_description eq "File")))) {
 					$pkg_found = 1;
 					print "$file_name added to $package \n";
 				}

@@ -30,7 +30,8 @@ my $m;
 my $counter;
 my $short_name;
 my $del_ok_issues = 1; # This variable determines whether to delete OK issues first.
-my $gen_missing_report = 1; # This variable determines whether to produce report for missing libraries.
+my $del_non_public = 1; # This variable determines whether to delete non-public API issues.
+my $gen_missing_report = 0; # This variable determines whether to produce report for missing libraries.
 my $issues_num;
 my $issue_name;
 my ($xref_name, $xref_type, $xref_line, $xref_hdr, $xref_def);
@@ -40,7 +41,7 @@ my $current_item;
 my $check_against_xref;
 my $temp_lib_num;
 my $temp_counter;
-my $sub_reports = 1; # This variable determines whether to generate sub-reports per package.
+my $sub_reports = 0; # This variable determines whether to generate sub-reports per package.
 my @lines_to_ignore = ("\\\\build\\\\", "\\\\compsupp\\\\", "\\\\uc_dll."); # This is the list of key words based on which a line potentially containing a package name will be ignored (skipped).
 my @pkgs;
 my $baselinedlldir;
@@ -78,7 +79,7 @@ if ($help) {
 usage_error(), unless (defined($report));
 
 # --xref-file is mandatory.
-usage_error(), unless (defined($xref_file));
+usage_error(), unless ((defined($xref_file)) or (!($del_non_public)));
 
 # Define output files based on the libraries report name.
 $destfile = "filtered_" . $report;
@@ -125,29 +126,30 @@ if ($del_ok_issues) {
 }
 
 # Delete non-public API issues.
-$n = 0;
-$counter = 1;
-$temp_counter = 0;
-$temp_lib_num = $lib_num;
-# Temporary variables - namespace fix.
-my $count;
-my $temp_issue;
-while ($n < $lib_num) {
-	print "Processing library: $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'shortname'}->[0] ( $counter out of $temp_lib_num )\n";
-	$issues_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}};
-	$m = 0;
-	while ($m < $issues_num) {
-		$delete_node = 1;
-		$issue_name = "";
-		# Get issue name based on funcname or newfuncname (If both available get newfuncname).
-		if ($current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'newfuncname'}->[0]) {
-			$issue_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'newfuncname'}->[0];
-#			print "newfuncname - $issue_name \n";
-		} elsif ($current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'funcname'}->[0]) {
-			$issue_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'funcname'}->[0];
-#			print "funcname - $issue_name \n";
-		}
-		if ($issue_name) {
+if ($del_non_public) {
+	$n = 0;
+	$counter = 1;
+	$temp_counter = 0;
+	$temp_lib_num = $lib_num;
+	# Temporary variables - namespace fix.
+	my $count;
+	my $temp_issue;
+	while ($n < $lib_num) {
+		print "Processing library: $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'shortname'}->[0] ( $counter out of $temp_lib_num )\n";
+		$issues_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}};
+		$m = 0;
+		while ($m < $issues_num) {
+			$delete_node = 1;
+			$issue_name = "";
+			# Get issue name based on funcname or newfuncname (If both available get newfuncname).
+			if ($current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'newfuncname'}->[0]) {
+				$issue_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'newfuncname'}->[0];
+#				print "newfuncname - $issue_name \n";
+			} elsif ($current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'funcname'}->[0]) {
+				$issue_name = $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'funcname'}->[0];
+#				print "funcname - $issue_name \n";
+			}
+			if ($issue_name) {
 			# Leave only Class name - modified to fix namespace issue.
 #			$issue_name =~ s/::.*//;
 			# Find '(' and delete all characters following it.
@@ -165,63 +167,64 @@ while ($n < $lib_num) {
 				# Leave only the 1st part (xx) for other issues.
 				$issue_name =~ s/::.*//;
 			}
-			# Find '<' and delete all characters following it, e.g. TMeta<CommsDat
-			$issue_name =~ s/<.*//;
-			# Delete for example: 'typeinfo for ', 'vtable for ', etc. - will only be done for the likes of vtable for CTransportSelfSender (without '::').
-			$issue_name =~ s/^.* //; 
-#			print $issue_name . "\n";
-			# Check if Class/Macro already on the internal non-public API list.
-			$check_against_xref = 1;
-			foreach $current_item (@non_public_list) {
-				if (lc($issue_name) eq lc($current_item)) {	# Keep the node to be deleted and skip checking against the xref file.
-					$check_against_xref = 0;
-					last;
-				}
-			}
-			if ($check_against_xref) {
-				# Load xref file.
-				open FILE, "<$xref_file" or print "Failed to read $xref_file: $!\n" and return;
-				while ($line = <FILE>)
-				{
-					chomp $line;
-					($xref_name, $xref_type, $xref_line, $xref_hdr, $xref_def) = split /\s+/,$line;
-					if (lc($issue_name) eq lc($xref_name)) { # Mark the node to NOT be deleted.
-						# Insert reference to header file.
-						$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'refheaderfile'}->[0] = $xref_hdr;
-						$delete_node = 0;
-						print "Found issue: $issue_name in public header file: $xref_hdr\n";
+				# Find '<' and delete all characters following it, e.g. TMeta<CommsDat
+				$issue_name =~ s/<.*//;
+				# Delete for example: 'typeinfo for ', 'vtable for ', etc. - will only be done for the likes of vtable for CTransportSelfSender (without '::').
+				$issue_name =~ s/^.* //; 
+#				print $issue_name . "\n";
+				# Check if Class/Macro already on the internal non-public API list.
+				$check_against_xref = 1;
+				foreach $current_item (@non_public_list) {
+					if (lc($issue_name) eq lc($current_item)) {	# Keep the node to be deleted and skip checking against the xref file.
+						$check_against_xref = 0;
 						last;
 					}
 				}
-				# Close xref file.
-				close FILE;
+				if ($check_against_xref) {
+					# Load xref file.
+					open FILE, "<$xref_file" or die("Failed to read $xref_file: $!\n");
+					while ($line = <FILE>)
+					{
+						chomp $line;
+						($xref_name, $xref_type, $xref_line, $xref_hdr, $xref_def) = split /\s+/,$line;
+						if (lc($issue_name) eq lc($xref_name)) { # Mark the node to NOT be deleted.
+							# Insert reference to header file.
+							$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}->[$m]->{'refheaderfile'}->[0] = $xref_hdr;
+							$delete_node = 0;
+							print "Found issue: $issue_name in public header file: $xref_hdr\n";
+							last;
+						}
+					}
+					# Close xref file.
+					close FILE;
+				}
+			} else { # No newfuncname/funcname available (e.g. typeinfo only for missing DLLs or typeid only for not shown ones).
+#				print "Unclassified issue in $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'shortname'}->[0] \n";
 			}
-		} else { # No newfuncname/funcname available (e.g. typeinfo only for missing DLLs or typeid only for not shown ones).
-#			print "Unclassified issue in $current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'shortname'}->[0] \n";
+			if ($delete_node) { # Delete the issue (Not public API-related).
+				splice(@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}},$m, 1);
+				$issues_num--;
+				if (($issue_name) && ($check_against_xref)) { # Looked for not found in the xref file - add the issue to the internal non-public API list.
+					push @non_public_list, $issue_name;
+				}
+				$temp_counter++; # To count how many issues deleted.
+			} else {
+				$m++;
+			}
 		}
-		if ($delete_node) { # Delete the issue (Not public API-related).
-			splice(@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}->[$n]->{'issue'}},$m, 1);
-			$issues_num--;
-			if (($issue_name) && ($check_against_xref)) { # Looked for not found in the xref file - add the issue to the internal non-public API list.
-				push @non_public_list, $issue_name;
-			}
-			$temp_counter++; # To count how many issues deleted.
+		if ($issues_num == 0) { # If all issues deleted - remove the whole entry.
+			splice(@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}},$n, 1);
+			$lib_num--;
 		} else {
-			$m++;
+			$n++;
 		}
+		$counter++;
 	}
-	if ($issues_num == 0) { # If all issues deleted - remove the whole entry.
-		splice(@{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}},$n, 1);
-		$lib_num--;
-	} else {
-		$n++;
-	}
-	$counter++;
+	print "$temp_counter issue(s) has been deleted \n";
+	# Get number of libraries again.
+	$lib_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}};
+	print "Final number of libraries with public API-related issues: $lib_num \n";
 }
-print "$temp_counter issue(s) has been deleted \n";
-# Get number of libraries again.
-$lib_num = @{$current_report->{'bbcresults'}->{'issuelist'}->[0]->{'library'}};
-print "Final number of libraries with public API-related issues: $lib_num \n";
 
 # Write new XML to dest file.
 open OUT,">$destfile" or die("Cannot open file \"$destfile\" for writing. $!\n");
