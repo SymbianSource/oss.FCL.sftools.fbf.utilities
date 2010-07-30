@@ -26,7 +26,7 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.18'
+version = '0.19'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
 top_level_url = "https://developer.symbian.org"
@@ -430,6 +430,35 @@ def download_file(filename,url):
 
 	return True
 
+def report_to_symbian(version, what):
+	global options
+	if not options.publicity:
+		return
+	reporting_url = "http://developer.symbian.org/downloadkit_report/%s/%s/args=" % (version, what)
+	if options.dryrun:
+		reporting_url += "+dryrun" 
+	if options.nosrc:
+		reporting_url += "+nosrc" 
+	if options.nowinscw:
+		reporting_url += "+nowinscw" 
+	if options.noarmv5:
+		reporting_url += "+noarmv5" 
+	if options.nounzip:
+		reporting_url += "+nounzip" 
+	if options.nodelete:
+		reporting_url += "+nodelete" 
+	if options.progress:
+		reporting_url += "+progress" 
+	if options.resume:
+		reporting_url += "+resume" 
+	if options.debug:
+		reporting_url += "+debug" 
+	req = urllib2.Request(reporting_url, None, headers)
+	try:
+		urllib2.urlopen(req)	# ignore the response, which will always be 404
+	except urllib2.URLError, e:
+		return	
+
 def downloadkit(version):	
 	global headers
 	global options
@@ -438,9 +467,12 @@ def downloadkit(version):
 
 	viewid = 5   # default to Symbian^3
 	if version[0] == '2':
-		viewid= 1  # Symbian^2
+		viewid = 1  # Symbian^2
 	if version[0] == '3':
-		viewid= 5  # Symbian^3
+		viewid = 5  # Symbian^3
+	if version.startswith('lucky'):
+		viewid = 12 # Do you feel lucky?
+		version = version[5:]
 	url = urlbase + ('view.php?id=%d'% viewid)
 	if len(version) > 1:
 		# single character version means "give me the latest"
@@ -465,18 +497,18 @@ def downloadkit(version):
 	soup=BeautifulSoup(doc)
 
 	# check that this is the right version
-	match = re.search('Platform Release (\(Public\) )?v(\d\.\d\.[0-9a-z]+)', doc, re.IGNORECASE)
+	match = re.search(' v(\S+)</h2>', doc, re.IGNORECASE)
 	if not match:
 		print "*** ERROR: no version information in the download page"
 		return 0
 		
 	if len(version) > 1:
-		if match.group(2) != version:
+		if match.group(1) != version:
 			print "*** ERROR: version %s is not available" % version
-			print "*** the website is offering version %s instead" % match.group(2)
+			print "*** the website is offering version %s instead" % match.group(1)
 			return 0
 	else:
-		print "The latest version of Symbian^%s is PDK %s" % (version, match.group(2))
+		print "The latest version of Symbian^%s is PDK %s" % (version, match.group(1))
 		
 	# let's hope the HTML format never changes...
 	# <a href='download.php?id=27&cid=60&iid=270' title='src_oss_mw.zip'> ...</a> 
@@ -512,6 +544,8 @@ def downloadkit(version):
 		elif re.match(r"build_BOM.zip", filename):
 			schedule_unzip(filename, 1, 1)   # unpack then delete zip as it's not needed again
 
+	report_to_symbian(version, "downfailures_%d" % len(failure_list))
+
 	# wait for the unzipping threads to complete
 	complete_outstanding_unzips()  
 
@@ -541,7 +575,7 @@ parser.add_option("--progress", action="store_true", dest="progress",
 	help="Report download progress")
 parser.add_option("-u", "--username", dest="username", metavar="USER",
 	help="login to website as USER")
-parser.add_option("-p", "--password", dest="password", metavar="PWD",
+parser.add_option("--password", dest="password", metavar="PWD",		
 	help="specify the account password")
 parser.add_option("--debug", action="store_true", dest="debug", 
 	help="debug HTML traffic (not recommended!)")
@@ -549,6 +583,8 @@ parser.add_option("--webhost", dest="webhost", metavar="SITE",
 	help="use alternative website (for testing!)")
 parser.add_option("--noresume", action="store_false", dest="resume",
 	help="Do not attempt to continue a previous failed transfer")
+parser.add_option("--nopublicity", action="store_false", dest="publicity",
+	help="Do not tell Symbian how I am using downloadkit")
 parser.set_defaults(
 	dryrun=False, 
 	nosrc=False, 
@@ -561,6 +597,7 @@ parser.set_defaults(
 	password='',
 	webhost = 'developer.symbian.org',
 	resume=True,
+	publicity=True,
 	debug=False
 	)
 
@@ -574,10 +611,15 @@ top_level_url = "https://" + options.webhost
 opener = build_opener(options.debug)
 urllib2.install_opener(opener)
 
+report_to_symbian(args[0], "what")
 quick_networking_check()
 login(True)
-downloadkit(args[0])
-
+success = downloadkit(args[0])
+if success:
+	report_to_symbian(args[0], "success")
+else:
+	report_to_symbian(args[0], "failed")
+	
 if options.dryrun:
 	print "# instructions for downloading kit " + args[0]
 	for download in download_list:
