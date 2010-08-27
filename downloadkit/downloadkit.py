@@ -26,10 +26,10 @@ from optparse import OptionParser
 import hashlib
 import xml.etree.ElementTree as ET 
 
-version = '0.19'
+version = '0.20'
 user_agent = 'downloadkit.py script v' + version
 headers = { 'User-Agent' : user_agent }
-top_level_url = "https://developer.symbian.org"
+top_level_url = "https://developer-secure.symbian.org"
 passman = urllib2.HTTPPasswordMgrWithDefaultRealm()	# not relevant for live Symbian website
 download_list = []
 failure_list = []
@@ -434,7 +434,7 @@ def report_to_symbian(version, what):
 	global options
 	if not options.publicity:
 		return
-	reporting_url = "http://developer.symbian.org/downloadkit_report/%s/%s/args=" % (version, what)
+	reporting_url = "http://developer-secure.symbian.org/downloadkit_report/%s/%s/args=" % (version, what)
 	if options.dryrun:
 		reporting_url += "+dryrun" 
 	if options.nosrc:
@@ -482,17 +482,17 @@ def downloadkit(version):
 	response = urllib2.urlopen(req)
 	doc=response.read()
 	
+	if options.debug:
+		f = open("downloadpage.html","w")
+		print >>f, doc 
+		f.close()
+
 	# BeatifulSoup chokes on some javascript, so we cut away everything before the <body>
 	try:
 		bodystart=doc.find('<body>')
 		doc = doc[bodystart:]
 	except:
 		pass
-
-	if options.debug:
-		f = open("downloadpage.html","w")
-		print >>f, doc 
-		f.close()
 
 	soup=BeautifulSoup(doc)
 
@@ -595,7 +595,7 @@ parser.set_defaults(
 	progress=False,
 	username='',
 	password='',
-	webhost = 'developer.symbian.org',
+	webhost = 'developer-secure.symbian.org',
 	resume=True,
 	publicity=True,
 	debug=False
