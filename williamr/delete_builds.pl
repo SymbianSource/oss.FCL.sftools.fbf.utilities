@@ -53,10 +53,29 @@ foreach my $dir (@ARGV)
     }
   if (!-d "$dir/output")
     {
-    print "Ignoring $dir - not a build\n";
-    next;
+    # not a build - perhaps a directory of builds?
+    opendir DIR, $dir;
+    my @files = grep !/^\.\.?$/, readdir DIR;
+    closedir DIR;
+    
+    my @subbuilds = ();
+    foreach my $file (@files)
+      {
+      next if (!-d "$dir/$file");
+      next if (!-d "$dir/$file/output");
+      push @subbuilds, "$dir/$file";
+      }
+    if (scalar @subbuilds == 0)
+      {
+      print "Ignoring $dir - not a build and contains no builds\n";
+      next;
+      }
+    push @builds, @subbuilds;
     }
-  push @builds, $dir;
+  else
+    {
+    push @builds, $dir;
+    }
   }
 
 foreach my $subdir (@rich_pickings)
@@ -74,6 +93,6 @@ foreach my $subdir (@rich_pickings)
 foreach my $build (@builds)
   {
   $build =~ s/\//\\/g;
-  print "* rmdir /s/q $build";
+  print "* rmdir /s/q $build\n";
   system("rmdir","/s/q",$build);   
   }
