@@ -144,7 +144,20 @@ push @environment_info, {name=>'OS Version', version=>$os_ver};
 # Perl
 my $perl_ver = 'N.A.';
 my $perl_out = `perl -v`;
-$perl_ver = $1 if ($perl_out =~ /This is perl, v(\S+)/m);
+
+# match: 
+#match This is perl, v5.10.0 built for darwin-thread-multi-2level
+if($perl_out =~ /This is perl, v(\S+)/m)
+{
+	$perl_ver = $1;
+}
+# match:
+# This is perl 5, version 12, subversion 1 (v5.12.1) built for MSWin32-x64-multi-thread
+elsif($perl_out =~ /This is perl.*? \(v(\S+)\)/m)
+{
+	$perl_ver = $1;
+}
+
 push @environment_info, {name=>'Perl', version=>$perl_ver};
 
 # Python
