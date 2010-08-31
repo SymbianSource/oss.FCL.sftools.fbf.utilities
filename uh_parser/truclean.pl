@@ -64,7 +64,7 @@ $packageexpr =~ s,//,/,g;
 $packageexpr =~ s,^/,,;
 if (-d "$releaseablesdir/sf")
 {
-	$packageexpr = "sf/$packageexpr" if ($packageexpr =~ m,^(adaptation|app|mw|os|tools),);
+	$packageexpr = "sf/$packageexpr" if ($packageexpr =~ m,^(adaptation|adapt|app|mw|os|tools),);
 }
 
 my @targetfiles = grep {-f$_} glob("$releaseablesdir/$packageexpr/info.tsv");
