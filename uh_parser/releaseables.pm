@@ -17,6 +17,7 @@
 package releaseables;
 
 use File::Path;
+use File::Find;
 
 use strict;
 
@@ -256,6 +257,43 @@ sub on_end_whatlog
 		}
 	}
 }
+
+sub count_distinct
+{
+	my @files;
+    my $finder = sub {
+        return if ! -f;
+        return if ! /\.tsv$/;
+        push @files, $File::Find::name;
+    };
+    find($finder, $::releaseablesdir);
+	
+	for my $file (@files)
+	{
+		$file =~ /$::releaseablesdir[\\\/](.*)[\\\/]info\.tsv/;
+		my $package = $1;
+		$package =~ s,\\,/,g;
+		
+		my @releasables;
+		open(FILE, $file);
+		while (<FILE>)
+		{
+			my $line = $_;
+			next if ($line !~ /^([^\t]*)\t[^\t]*\t[^\t]*$/);
+			push @releasables, $1;
+		}
+		close(FILE);
+		#for my $r (@releasables) {print "$r\n";}
+		#print "\n\n\n\n";
+		my $previous = '';
+		my @distincts = grep {$_ ne $previous && ($previous = $_, 1) } sort @releasables;
+		
+		my $nd = scalar(@distincts);
+		#print "adding $package -> $nd to releaseables_by_package\n";
+		$::releaseables_by_package->{$package} = $nd;
+	}
+}
+
 sub remove_missing_duplicates
 {
 	opendir(DIR, $::raptorbitsdir);
@@ -265,7 +303,7 @@ sub remove_missing_duplicates
 	for my $file (@files)
 	{
 		open(FILE, "+<$::raptorbitsdir/$file");	
-		print "working on $file\n";	
+		#print "working on $file\n";	
 	
 		# Read it
 		my @content = <FILE>;

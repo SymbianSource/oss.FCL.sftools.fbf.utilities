@@ -132,6 +132,7 @@ $saxhandler->add_observer('releaseables', $releaseables::reset_status);
 
 our $allbldinfs = {};
 our $allconfigs = {};
+our $releaseables_by_package = {};
 
 my $parser = XML::SAX::ParserFactory->parser(Handler=>$saxhandler);
 for (@logfiles)
@@ -141,11 +142,14 @@ for (@logfiles)
 	$parser->parse_uri($_);
 }
 
+print "Removing duplicates from missing files\n";
 releaseables::remove_missing_duplicates();
+print "Counting releasables\n";
+releaseables::count_distinct();
 
 my @allpackages = distinct_packages($allbldinfs);
 
-print "Generating HTML...\n";
+print "Generating HTML\n";
 
 system("rd /S /Q $outputdir") if (-d $outputdir);
 mkdir ($outputdir);
@@ -315,7 +319,8 @@ for my $package (@allpackages)
 			$failuresbyseverity = $recipe_failures_num_by_severity->{$package}->{$_} if (defined $recipe_failures_num_by_severity->{$package}->{$_});
 			$packageline .= "<td>$failuresbyseverity</td>";
 		}
-		$packageline .= "<td>".$missing_by_package->{$package}."</td>" if ($missing);
+		#print "package $package, releasables in this package: $releaseables_by_package->{$package}\n";
+		$packageline .= "<td>".$missing_by_package->{$package}."/".$releaseables_by_package->{$package}."</td>" if ($missing);
 		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
 	}
@@ -325,7 +330,7 @@ for my $package (@allpackages)
 	{
 		my $packageline = "<tr><td>$package</td>";
 		for (@severities) { $packageline .= "<td>0</td>"; }
-		$packageline .= "<td>0</td>" if ($missing);
+		$packageline .= "<td>0/$releaseables_by_package->{$package}</td>" if ($missing);
 		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
 	}
