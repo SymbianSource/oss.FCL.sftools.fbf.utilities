@@ -81,7 +81,7 @@ EOF
 
 my @clone_options = (); # use ("--noupdate") to clone without extracting the source
 my @pull_options  = (); # use ("--rebase") to rebase your changes when pulling
-my $hostname = "developer.symbian.org";
+my $hostname = "developer-secure.symbian.org";
 
 my $username = "";
 my $password = "";
