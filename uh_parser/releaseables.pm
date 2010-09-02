@@ -289,7 +289,7 @@ sub count_distinct
 		my @distincts = grep {$_ ne $previous && ($previous = $_, 1) } sort @releasables;
 		
 		my $nd = scalar(@distincts);
-		#print "adding $package -> $nd to releaseables_by_package\n";
+		print "adding $package -> $nd to releaseables_by_package\n";
 		$::releaseables_by_package->{$package} = $nd;
 	}
 }
