@@ -21,7 +21,26 @@ use strict;
 my @rich_pickings = (
   'output/zips',
   'output/logs',
-  'epoc32/release/winscw/udeb'
+  'epoc32/release/armv5/udeb',
+  # Would be worth finding and deleting just the armv5 subtrees in epoc32\build
+  'epoc32/build/avkon',
+  'epoc32/build/hitchcock',
+  'epoc32/build/aknlayout2',
+  'epoc32/build/hb',
+  'epoc32/build/qt',
+  'epoc32/build/browserui',
+  'sf/mw/uiresources/layouts',
+  'epoc32/release/tools2',
+  'epoc32/data/media',
+  'sf/os/security/securityanddataprivacytools/securitytools/openssllib',
+  'sf/mw/appinstall/secureswitools/openssllib',
+  'sf/os/mm/mmapitest/mmsvs/testdata/mmf',
+  'sf/os/mm/devsound/a3fintegrationtest',
+  'sf/app/homescreentools',
+  'sf/mw/qt',
+  'sf/os/deviceplatformrelease',
+  'epoc32/release/winscw/udeb',
+  'rnd'
   );
   
 if (scalar @ARGV == 0)
