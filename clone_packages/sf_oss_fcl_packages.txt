@@ -99,6 +99,7 @@ https://developer.symbian.org/oss/FCL/sf/mw/platformthemes
 https://developer.symbian.org/oss/FCL/sf/mw/platformtools
 https://developer.symbian.org/oss/FCL/sf/mw/qt
 https://developer.symbian.org/oss/FCL/sf/mw/qtextensions
+https://developer.symbian.org/oss/FCL/sf/mw/qtmobility
 https://developer.symbian.org/oss/FCL/sf/mw/qttranslations
 https://developer.symbian.org/oss/FCL/sf/mw/remoteconn
 https://developer.symbian.org/oss/FCL/sf/mw/remotemgmt
