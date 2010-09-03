@@ -1,8 +1,10 @@
 https://developer.symbian.org/oss/MCL/sf/adaptation/beagleboard
-https://developer.symbian.org/oss/MCL/sf/adaptation/openmaxil.adapt
+https://developer.symbian.org/oss/MCL/sf/adaptation/openmaxil.nokia
 https://developer.symbian.org/oss/MCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/MCL/sf/adaptation/stubs
 https://developer.symbian.org/oss/MCL/sf/app/browserui
+https://developer.symbian.org/oss/MCL/sf/app/btapp
+https://developer.symbian.org/oss/MCL/sf/app/calendarwidget
 https://developer.symbian.org/oss/MCL/sf/app/camera
 https://developer.symbian.org/oss/MCL/sf/app/commonemail
 https://developer.symbian.org/oss/MCL/sf/app/conntools
@@ -41,6 +43,7 @@ https://developer.symbian.org/oss/MCL/sf/app/search
 https://developer.symbian.org/oss/MCL/sf/app/settingsuis
 https://developer.symbian.org/oss/MCL/sf/app/speechsrv
 https://developer.symbian.org/oss/MCL/sf/app/techview
+https://developer.symbian.org/oss/MCL/sf/app/testtools
 https://developer.symbian.org/oss/MCL/sf/app/utils
 https://developer.symbian.org/oss/MCL/sf/app/videoeditor
 https://developer.symbian.org/oss/MCL/sf/app/videoplayer
@@ -116,6 +119,7 @@ https://developer.symbian.org/oss/MCL/sf/os/cellularsrv
 https://developer.symbian.org/oss/MCL/sf/os/commsfw
 https://developer.symbian.org/oss/MCL/sf/os/deviceplatformrelease
 https://developer.symbian.org/oss/MCL/sf/os/devicesrv
+https://developer.symbian.org/oss/MCL/sf/os/fshell
 https://developer.symbian.org/oss/MCL/sf/os/graphics
 https://developer.symbian.org/oss/MCL/sf/os/imagingext
 https://developer.symbian.org/oss/MCL/sf/os/kernelhwsrv
@@ -129,6 +133,7 @@ https://developer.symbian.org/oss/MCL/sf/os/networkingsrv
 https://developer.symbian.org/oss/MCL/sf/os/openmaxil
 https://developer.symbian.org/oss/MCL/sf/os/osrndtools
 https://developer.symbian.org/oss/MCL/sf/os/ossrv
+https://developer.symbian.org/oss/MCL/sf/os/ostesttools
 https://developer.symbian.org/oss/MCL/sf/os/persistentdata
 https://developer.symbian.org/oss/MCL/sf/os/security
 https://developer.symbian.org/oss/MCL/sf/os/textandloc

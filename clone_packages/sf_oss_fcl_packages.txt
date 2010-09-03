@@ -1,9 +1,11 @@
 https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
-https://developer.symbian.org/oss/FCL/sf/adaptation/openmaxil.adapt
+https://developer.symbian.org/oss/FCL/sf/adaptation/openmaxil.nokia
 https://developer.symbian.org/oss/FCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/FCL/sf/adaptation/stubs
 https://developer.symbian.org/oss/FCL/sf/adaptation/wlan.ti.WL1271
 https://developer.symbian.org/oss/FCL/sf/app/browserui
+https://developer.symbian.org/oss/FCL/sf/app/btapp
+https://developer.symbian.org/oss/FCL/sf/app/calendarwidget
 https://developer.symbian.org/oss/FCL/sf/app/camera
 https://developer.symbian.org/oss/FCL/sf/app/commonemail
 https://developer.symbian.org/oss/FCL/sf/app/conntools
@@ -42,6 +44,7 @@ https://developer.symbian.org/oss/FCL/sf/app/search
 https://developer.symbian.org/oss/FCL/sf/app/settingsuis
 https://developer.symbian.org/oss/FCL/sf/app/speechsrv
 https://developer.symbian.org/oss/FCL/sf/app/techview
+https://developer.symbian.org/oss/FCL/sf/app/testtools
 https://developer.symbian.org/oss/FCL/sf/app/utils
 https://developer.symbian.org/oss/FCL/sf/app/videoeditor
 https://developer.symbian.org/oss/FCL/sf/app/videoplayer
@@ -49,7 +52,7 @@ https://developer.symbian.org/oss/FCL/sf/app/videotelephony
 https://developer.symbian.org/oss/FCL/sf/app/voicerec
 https://developer.symbian.org/oss/FCL/sf/app/webuis
 https://developer.symbian.org/oss/FCL/sf/incubator/freedomfighters
-httsp://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
+https://developer.symbian.org/oss/FCL/sf/incubator/mobilewebserver
 https://developer.symbian.org/oss/FCL/sf/incubator/modemadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/multimediaadaptation
 https://developer.symbian.org/oss/FCL/sf/incubator/openmar
@@ -126,6 +129,7 @@ https://developer.symbian.org/oss/FCL/sf/os/cellularsrv
 https://developer.symbian.org/oss/FCL/sf/os/commsfw
 https://developer.symbian.org/oss/FCL/sf/os/deviceplatformrelease
 https://developer.symbian.org/oss/FCL/sf/os/devicesrv
+https://developer.symbian.org/oss/FCL/sf/os/fshell
 https://developer.symbian.org/oss/FCL/sf/os/graphics
 https://developer.symbian.org/oss/FCL/sf/os/imagingext
 https://developer.symbian.org/oss/FCL/sf/os/kernelhwsrv
@@ -139,6 +143,7 @@ https://developer.symbian.org/oss/FCL/sf/os/networkingsrv
 https://developer.symbian.org/oss/FCL/sf/os/openmaxil
 https://developer.symbian.org/oss/FCL/sf/os/osrndtools
 https://developer.symbian.org/oss/FCL/sf/os/ossrv
+https://developer.symbian.org/oss/FCL/sf/os/ostesttools
 https://developer.symbian.org/oss/FCL/sf/os/persistentdata
 https://developer.symbian.org/oss/FCL/sf/os/security
 https://developer.symbian.org/oss/FCL/sf/os/textandloc
@@ -152,15 +157,8 @@ https://developer.symbian.org/oss/FCL/sf/tools/makefile_templates
 https://developer.symbian.org/oss/FCL/sf/tools/platformtools
 https://developer.symbian.org/oss/FCL/sf/tools/rndtools
 https://developer.symbian.org/oss/FCL/sf/tools/swconfigtools
-https://developer.symbian.org/oss/FCL/interim/QEMU
 https://developer.symbian.org/oss/FCL/interim/contrib/QtExamples
 https://developer.symbian.org/oss/FCL/interim/contrib/WidgetExamples
-https://developer.symbian.org/oss/FCL/interim/fbf/bootstrap
-https://developer.symbian.org/oss/FCL/interim/fbf/configs/default
-https://developer.symbian.org/oss/FCL/interim/fbf/configs/pkgbuild
-https://developer.symbian.org/oss/FCL/interim/fbf/hudson
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/packages
-https://developer.symbian.org/oss/FCL/interim/fbf/projects/platforms
 https://developer.symbian.org/oss/FCL/interim/sf-test/platform/smoketest
 https://developer.symbian.org/oss/FCL/interim/sftools/linux_build
 
