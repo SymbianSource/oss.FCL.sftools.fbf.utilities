@@ -270,7 +270,8 @@ sub count_distinct
 	
 	for my $file (@files)
 	{
-		$file =~ /$::releaseablesdir[\\\/](.*)[\\\/]info\.tsv/;
+		print "counting distinct releasables in file $file\n";
+		$file =~ /$::releaseablesdir[\\\/]*(.*)[\\\/]info\.tsv/;
 		my $package = $1;
 		$package =~ s,\\,/,g;
 		
