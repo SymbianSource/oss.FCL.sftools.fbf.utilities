@@ -270,8 +270,9 @@ sub count_distinct
 	
 	for my $file (@files)
 	{
-		print "counting distinct releasables in file $file\n";
-		$file =~ /$::releaseablesdir[\\\/]*(.*)[\\\/]info\.tsv/;
+		#print "counting distinct releasables in file $file\n";
+		my $escaped_releaseablesdir = quotemeta($::releaseablesdir);
+		$file =~ m/$escaped_releaseablesdir[\\\/]*(.*)[\\\/]info\.tsv/;
 		my $package = $1;
 		$package =~ s,\\,/,g;
 		
@@ -290,7 +291,7 @@ sub count_distinct
 		my @distincts = grep {$_ ne $previous && ($previous = $_, 1) } sort @releasables;
 		
 		my $nd = scalar(@distincts);
-		print "adding $package -> $nd to releaseables_by_package\n";
+		#print "adding $package -> $nd to releaseables_by_package\n";
 		$::releaseables_by_package->{$package} = $nd;
 	}
 }

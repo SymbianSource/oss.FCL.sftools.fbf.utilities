@@ -151,6 +151,7 @@ my @allpackages = distinct_packages($allbldinfs);
 
 print "Generating HTML\n";
 
+$outputdir =~ s,/,\\,g;
 system("rd /S /Q $outputdir") if (-d $outputdir);
 mkdir ($outputdir);
 
@@ -319,7 +320,7 @@ for my $package (@allpackages)
 			$failuresbyseverity = $recipe_failures_num_by_severity->{$package}->{$_} if (defined $recipe_failures_num_by_severity->{$package}->{$_});
 			$packageline .= "<td>$failuresbyseverity</td>";
 		}
-		print "package $package, releasables in this package: $releaseables_by_package->{$package}\n";
+		#print "package $package, releasables in this package: $releaseables_by_package->{$package}\n";
 		$packageline .= "<td>".$missing_by_package->{$package}."/".$releaseables_by_package->{$package}."</td>" if ($missing);
 		$packageline .= "</tr>\n";
 		print AGGREGATED "$packageline\n";
