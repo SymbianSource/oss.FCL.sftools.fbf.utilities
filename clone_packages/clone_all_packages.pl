@@ -59,6 +59,7 @@ Options:
 -filter <RE>   only process repository paths matching regular expression <RE>
 -dummyrun      Dummy Run, don't execute any Mercurial commands.
 -webhost       Web Mercurial host (defaults to developer.symbian.org)
+-norev         Ignore any revision information in packagelist
 
 The -exec option processes the rest of the command line, treating it as
 a command to apply to each repository in turn. Some keywords are expanded
@@ -81,7 +82,9 @@ EOF
 
 my @clone_options = (); # use ("--noupdate") to clone without extracting the source
 my @pull_options  = (); # use ("--rebase") to rebase your changes when pulling
-my $hostname = "developer-secure.symbian.org";
+my $hostname = "developer.symbian.org";
+my $pushhostname = "developer-secure.symbian.org";
+my $webhost_option = "";
 
 my $username = "";
 my $password = "";
@@ -92,6 +95,7 @@ my $do_nothing = 0; # print the hg commands, don't actually do them
 my $help = 0;
 my $exec = 0;
 my $filter = "";
+my $norev = 0; # ignore revision information in packagelist files
 my @packagelist_files = ();
 
 # Analyse the rest of command-line parameters
@@ -107,7 +111,8 @@ if (!GetOptions(
     "f|filter=s" => \$filter,
     "l|packagelist=s" => \@packagelist_files,
     "d|dummyrun" => \$do_nothing,
-    "w|webhost=s" => \$hostname,
+    "w|webhost=s" => \$webhost_option,
+    "norev" => \$norev,
     ))
   {
   Usage("Invalid argument");
@@ -116,6 +121,12 @@ if (!GetOptions(
 Usage("Too many arguments") if (scalar @ARGV > 0 && !$exec);
 Usage("Too few arguments for -exec") if (scalar @ARGV == 0 && $exec);
 Usage("") if ($help);
+
+if ($webhost_option)
+	{
+	$hostname = $webhost_option;
+	$pushhostname = $webhost_option;
+	}
 
 # Important: This script uses http access to the repositories, so
 # the username and password will be stored as cleartext in the
@@ -150,11 +161,6 @@ if ($needs_id && $password eq "" )
   $password = <STDIN>;
   chomp $password;
   }
-
-my %export_control_special_case = (
-  "oss/MCL/sf/os/security" => 1,
-  "oss/FCL/sf/os/security" => 1,
-  );
 
 sub do_system(@)
   {
@@ -199,9 +205,9 @@ sub process_one_repo($)
   
   $path .= "/$destdir";   # this is where the repository will go
 
-  my $repo_url = "https://$username:$password\@$hostname/$package/";
-  my $repo_push_url =$repo_url;
-  if ($license ne "sfl" && !$export_control_special_case{$package})
+  my $repo_push_url = "https://$username:$password\@$pushhostname/$package/";
+  my $repo_url = $repo_push_url;
+  if ($license ne "sfl")
     {
     # user registration is not required for reading public package repositories
     $repo_url = "http://$hostname/$package/";
@@ -209,7 +215,7 @@ sub process_one_repo($)
   
   my @rev_options = ();
   my $revision = $revisions{$package};
-  if (defined($revision))
+  if (defined($revision) && $norev == 0)
     {
     @rev_options = ("--rev", $revision);
     }
@@ -314,7 +320,7 @@ foreach my $file (@packagelist_files)
  		# sources.csv format
  		# http://developer.symbian.org/oss/FCL/sf/app/browserui/,/sf/app/browserui,tag,tip_bulk,layers.sysdef.xml
  		# http://developer.symbian.org/oss/FCL/sf/app/browserui/,/sf/app/browserui,changeset,e086c7f635d5,layers.sysdef.xml
-		if ($line =~ /^(http[^,]+),(\S+),\S+,(\S+),\S*$/)
+		if ($line =~ /^(http[^,]+),([^,]+),[^,]+,([^,]+),.*$/)
 			{
 			$line = $1;
 			$revision = $3;
