@@ -1,5 +1,7 @@
 https://developer.symbian.org/oss/MCL/sf/adaptation/beagleboard
+https://developer.symbian.org/oss/MCL/sf/adaptation/codecs.aricent
 https://developer.symbian.org/oss/MCL/sf/adaptation/openmaxil.nokia
+https://developer.symbian.org/oss/MCL/sf/adaptation/naviengine.nec
 https://developer.symbian.org/oss/MCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/MCL/sf/adaptation/stubs
 https://developer.symbian.org/oss/MCL/sf/app/browserui

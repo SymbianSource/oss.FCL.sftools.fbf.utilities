@@ -1,5 +1,7 @@
 https://developer.symbian.org/oss/FCL/sf/adaptation/beagleboard
+https://developer.symbian.org/oss/FCL/sf/adaptation/codecs.aricent
 https://developer.symbian.org/oss/FCL/sf/adaptation/openmaxil.nokia
+https://developer.symbian.org/oss/FCL/sf/adaptation/naviengine.nec
 https://developer.symbian.org/oss/FCL/sf/adaptation/qemu
 https://developer.symbian.org/oss/FCL/sf/adaptation/stubs
 https://developer.symbian.org/oss/FCL/sf/adaptation/wlan.ti.WL1271
