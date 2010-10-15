@@ -470,6 +470,8 @@ def downloadkit(version):
 		viewid = 1  # Symbian^2
 	if version[0] == '3':
 		viewid = 5  # Symbian^3
+	if version[0] == '4':
+		viewid = 14  # Symbian^4
 	if version.startswith('lucky'):
 		viewid = 12 # Do you feel lucky?
 		version = version[5:]
